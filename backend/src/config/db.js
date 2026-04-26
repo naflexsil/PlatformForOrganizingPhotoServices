@@ -11,13 +11,16 @@ const pool = new Pool({
   user: DB_USER,
   password: DB_PASSWORD,
   database: DB_NAME,
+  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 30000,
 });
 
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 export const connectDB = async () => {
-  await prisma.$connect();
+  const result = await pool.query('SELECT 1 AS ok');
+  if (result.rows[0].ok !== 1) throw new Error('DB health check failed');
 };
 
 export default prisma;

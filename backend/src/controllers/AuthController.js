@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
 import prisma from '../config/db.js';
+import { generateAccessToken, generateRefreshToken } from '../utils/jwt.js';
 import {
   generatePkce,
   buildAuthUrl,
@@ -9,33 +9,17 @@ import {
 
 const PKCE_COOKIE = 'pkce_verifier';
 
-const processVkAuth = async (code, codeVerifier, role) => {
+const buildUserAndTokens = async ({ vkId, firstName, lastName, avatarUrl, username }, role) => {
   const normalizedRole = role === 'PHOTOGRAPHER' ? 'PHOTOGRAPHER' : 'CLIENT';
 
-  const { idToken, userId: tokenUserId } = await exchangeCodeForToken(code, codeVerifier);
-
-  const { userId, firstName, lastName, avatarUrl } = idToken
-    ? parseUserFromIdToken(idToken)
-    : { userId: tokenUserId, firstName: '', lastName: '', avatarUrl: null };
-
-  const finalUserId = userId || tokenUserId;
-  const username = `vk_${finalUserId}`;
-
-  const existingUser = await prisma.user.findUnique({ where: { vkId: finalUserId } });
+  const existingUser = await prisma.user.findUnique({ where: { vkId } });
   const isNewUser = !existingUser;
 
   const user = await prisma.$transaction(async (tx) => {
     const upserted = await tx.user.upsert({
-      where: { vkId: finalUserId },
+      where: { vkId },
       update: { firstName, lastName, avatarUrl },
-      create: {
-        vkId: finalUserId,
-        firstName,
-        lastName,
-        username,
-        avatarUrl,
-        role: normalizedRole,
-      },
+      create: { vkId, firstName, lastName, username, avatarUrl, role: normalizedRole },
     });
 
     if (isNewUser && normalizedRole === 'PHOTOGRAPHER') {
@@ -48,14 +32,11 @@ const processVkAuth = async (code, codeVerifier, role) => {
     });
   });
 
-  const token = jwt.sign(
-    { id: user.id, vkId: user.vkId, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: '30d' },
-  );
+  const jwtPayload = { id: user.id, vkId: user.vkId, role: user.role };
 
   return {
-    token,
+    accessToken: generateAccessToken(jwtPayload),
+    refreshToken: generateRefreshToken(jwtPayload),
     user: {
       id: user.id,
       firstName: user.firstName,
@@ -68,6 +49,21 @@ const processVkAuth = async (code, codeVerifier, role) => {
   };
 };
 
+const processVkAuth = async (code, codeVerifier, role) => {
+  const { idToken, userId: tokenUserId } = await exchangeCodeForToken(code, codeVerifier);
+
+  const { userId, firstName, lastName, avatarUrl } = idToken
+    ? parseUserFromIdToken(idToken)
+    : { userId: tokenUserId, firstName: '', lastName: '', avatarUrl: null };
+
+  const finalUserId = userId || tokenUserId;
+
+  return buildUserAndTokens(
+    { vkId: finalUserId, firstName, lastName, avatarUrl, username: `vk_${finalUserId}` },
+    role,
+  );
+};
+
 export const initiateVkLogin = (req, res) => {
   const { role = 'CLIENT' } = req.query;
   const { codeVerifier, codeChallenge } = generatePkce();
@@ -76,7 +72,7 @@ export const initiateVkLogin = (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 5 * 60 * 1000, 
+    maxAge: 5 * 60 * 1000,
   });
 
   const authUrl = buildAuthUrl(codeChallenge, role);
@@ -130,6 +126,60 @@ export const loginWithVk = async (req, res) => {
     return res.status(200).json({ status: 'success', data });
   } catch (err) {
     console.error('[VK ID] loginWithVk error:', err.message);
+    return res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
+export const mockLogin = async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(404).json({ status: 'error', message: 'Not found' });
+  }
+
+  const { role = 'CLIENT' } = req.query;
+
+  try {
+    const data = await buildUserAndTokens(
+      {
+        vkId: 'mock_12345',
+        firstName: 'Test',
+        lastName: 'User',
+        avatarUrl: null,
+        username: 'vk_mock_12345',
+      },
+      role,
+    );
+    return res.status(200).json({ status: 'success', data });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
+export const getMe = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { photographer: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ status: 'error', message: 'Пользователь не найден' });
+    }
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        bio: user.bio,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        photographer: user.photographer ?? null,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (err) {
     return res.status(500).json({ status: 'error', message: err.message });
   }
 };
