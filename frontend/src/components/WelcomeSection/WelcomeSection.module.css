@@ -1,0 +1,78 @@
+.welcome {
+  display: flex;
+  min-height: 85vh;
+  padding: 40px 8%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 60px;
+  overflow: hidden;
+}
+
+.textSide {
+  flex: 1;
+  z-index: 2;
+}
+
+.title {
+  font-size: clamp(32px, 4.5vw, 56px);
+  line-height: 1.1;
+  text-transform: uppercase;
+  font-family: "Farabee", serif;
+  color: var(--white);
+}
+
+.highlight {
+  color: var(--accent-red);
+}
+
+.subtitle {
+  margin-top: 20px;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
+.actionBtn {
+  margin-top: 40px;
+  background-color: var(--white);
+  color: var(--dark-text);
+  padding: 18px 40px;
+  border: none;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.actionBtn:hover {
+  transform: scale(1.05);
+}
+
+.imageSide {
+  flex: 1.2;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mainImage {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 1024px) {
+  .welcome {
+    flex-direction: column;
+    text-align: center;
+    padding: 60px 5%;
+    gap: 40px;
+  }
+
+  .imageSide {
+    justify-content: center;
+    width: 100%;
+  }
+}

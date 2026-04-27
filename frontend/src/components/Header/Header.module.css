@@ -1,0 +1,37 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 5%;
+  background-color: var(--bg-color);
+}
+
+.nav a {
+  color: var(--white);
+  text-decoration: none;
+  margin-left: 30px;
+  font-size: 14px;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.nav a:hover {
+  opacity: 1;
+}
+
+.loginBtn {
+  margin-left: 30px;
+  background: transparent;
+  color: var(--white);
+  border: 1px solid var(--white);
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+}
+
+@media (max-width: 768px) {
+  .nav {
+    display: none;
+  }
+}
