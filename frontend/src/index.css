@@ -5,7 +5,7 @@
 
 @font-face {
   font-family: "Inter";
-  src: url("./assets/fonts/INTERTIGHT-EXTRALIGHT.TTF") format("truetype");
+  src: url("./assets/fonts/INTERTIGHT-SEMIBOLD.TTF") format("truetype");
 }
 
 :root {
@@ -14,6 +14,7 @@
   --white: #ffffff;
   --light-pink: #ead0d0;
   --dark-text: #331f1f;
+  --side-padding: 8%;
 }
 
 * {
@@ -32,4 +33,9 @@ h1,
 h2,
 h3 {
   font-family: "Farabee", serif;
+}
+
+nav a,
+button {
+  font-family: "Farabee", serif !important;
 }

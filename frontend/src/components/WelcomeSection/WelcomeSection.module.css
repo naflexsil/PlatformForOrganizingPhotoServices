@@ -1,16 +1,28 @@
 .welcome {
+  min-height: 80vh;
+  padding: 60px var(--side-padding);
+  background-color: var(--bg-color);
   display: flex;
-  min-height: 85vh;
-  padding: 40px 8%;
-  align-items: center;
+  justify-content: center;
+}
+
+.contentWrapper {
+  display: flex;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 60px;
-  overflow: hidden;
+  gap: 80px;
+  width: 100%;
+  max-width: 1400px;
 }
 
 .textSide {
   flex: 1;
+  max-width: 550px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   z-index: 2;
+  padding-bottom: 20px;
 }
 
 .title {
@@ -18,61 +30,81 @@
   line-height: 1.1;
   text-transform: uppercase;
   font-family: "Farabee", serif;
-  color: var(--white);
-}
-
-.highlight {
-  color: var(--accent-red);
+  margin: 0;
 }
 
 .subtitle {
-  margin-top: 20px;
-  font-size: 18px;
-  letter-spacing: 0.05em;
-  opacity: 0.9;
+  margin: 0;
+  padding-bottom: 15px;
+}
+
+.pink {
+  color: var(--light-pink);
+}
+
+.red {
+  color: var(--accent-red);
 }
 
 .actionBtn {
-  margin-top: 40px;
+  margin-top: 20px;
   background-color: var(--white);
   color: var(--dark-text);
-  padding: 18px 40px;
+  padding: 20px 50px;
   border: none;
   border-radius: 8px;
-  font-family: "Inter", sans-serif;
+  font-family: "Farabee", serif !important;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 22px;
   cursor: pointer;
-  transition: transform 0.2s;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .actionBtn:hover {
-  transform: scale(1.05);
+  background-color: var(--accent-red);
+  color: var(--white);
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+  filter: none;
+}
+
+.actionBtn:active {
+  transform: translateY(-2px) scale(0.98);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.1s;
 }
 
 .imageSide {
   flex: 1.2;
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .mainImage {
   width: 100%;
-  max-width: 600px;
+  max-width: 650px;
   height: auto;
   object-fit: contain;
+  filter: drop-shadow(0 20px 50px rgba(0, 0, 0, 0.3));
 }
 
 @media (max-width: 1024px) {
   .welcome {
+    padding: 60px 5%;
+  }
+
+  .contentWrapper {
     flex-direction: column;
     text-align: center;
-    padding: 60px 5%;
     gap: 40px;
   }
 
   .imageSide {
     justify-content: center;
+    align-items: center;
     width: 100%;
   }
 }
