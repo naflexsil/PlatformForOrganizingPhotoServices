@@ -50,28 +50,34 @@
   margin-top: 20px;
   background-color: var(--white);
   color: var(--dark-text);
-  padding: 20px 50px;
+  /* Пункт 1: Размер как у AboutSection */
+  padding: 18px 45px;
+  font-size: 20px;
+
   border: none;
   border-radius: 8px;
   font-family: "Farabee", serif !important;
   font-weight: 600;
-  font-size: 22px;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
+  /* Изначальная тень */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  /* Пункт 2: Анимация как у AboutSection */
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .actionBtn:hover {
+  /* Пункт 3.2: Белая -> Красная */
   background-color: var(--accent-red);
   color: var(--white);
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
-  filter: none;
+
+  transform: translateY(-5px);
+  /* Пункт 2: Свечение красным оттенком при наведении */
+  box-shadow: 0 15px 30px rgba(162, 85, 85, 0.4);
 }
 
 .actionBtn:active {
   transform: translateY(-2px) scale(0.98);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   transition: all 0.1s;
 }
 
