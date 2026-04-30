@@ -7,7 +7,7 @@ datasource db {
 }
 
 enum Role {
-  CLIENT
+  USER
   PHOTOGRAPHER
 }
 
@@ -16,11 +16,20 @@ model User {
   vkId         String        @unique
   firstName    String
   lastName     String
-  username     String        @unique
+  tag          String        @unique
   bio          String?
+  gender       String?
+  birthDate    DateTime?
   avatarUrl    String?
-  role         Role          @default(CLIENT)
+  role         Role          @default(USER)
   photographer Photographer?
+  posts        Post[]
+  likes        Like[]
+  favorites    Favorite[]
+  portfolios   PortfolioFolder[]
+  // Self-relation: подписки
+  followers    Follow[]      @relation("UserFollowing")
+  following    Follow[]      @relation("UserFollowers")
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -28,15 +37,77 @@ model User {
 }
 
 model Photographer {
-  id               String   @id @default(uuid())
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rating           Float    @default(0)
-  pricePerHour     Decimal  @default(0) @db.Decimal(10, 2)
-  priceDescription String?
-  hasSubscription  Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating              Float    @default(0)
+  pricePerHour        Decimal  @default(0) @db.Decimal(10, 2)
+  priceAdditionalInfo String?
+  hasSubscription     Boolean  @default(false)
+  searchPhotos        String[]
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   @@map("photographers")
+}
+
+model Post {
+  id          String     @id @default(uuid())
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  description String?
+  images      String[]
+  isPinned    Boolean    @default(false)
+  likes       Like[]
+  favorites   Favorite[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("posts")
+}
+
+model PortfolioFolder {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  theme     String?
+  images    String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("portfolio_folders")
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@id([followerId, followingId])
+  @@map("follows")
+}
+
+model Like {
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, postId])
+  @@map("likes")
+}
+
+model Favorite {
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, postId])
+  @@map("favorites")
 }

@@ -6,10 +6,12 @@ import prisma from '../config/db.js';
  * @property {string} vkId        - VK user id (unique)
  * @property {string} firstName
  * @property {string} lastName
- * @property {string} username    - Public tag (unique)
+ * @property {string} tag         - Public tag / @name (unique)
  * @property {string|null} bio
+ * @property {string|null} gender
+ * @property {Date|null} birthDate
  * @property {string|null} avatarUrl
- * @property {'CLIENT'|'PHOTOGRAPHER'|'ADMIN'} role
+ * @property {'USER'|'PHOTOGRAPHER'} role
  * @property {import('./photographer.js').Photographer|null} photographer
  * @property {Date} createdAt
  * @property {Date} updatedAt

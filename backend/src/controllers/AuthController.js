@@ -9,8 +9,8 @@ import {
 
 const PKCE_COOKIE = 'pkce_verifier';
 
-const buildUserAndTokens = async ({ vkId, firstName, lastName, avatarUrl, username }, role) => {
-  const normalizedRole = role === 'PHOTOGRAPHER' ? 'PHOTOGRAPHER' : 'CLIENT';
+const buildUserAndTokens = async ({ vkId, firstName, lastName, avatarUrl, tag }, role) => {
+  const normalizedRole = role === 'PHOTOGRAPHER' ? 'PHOTOGRAPHER' : 'USER';
 
   const existingUser = await prisma.user.findUnique({ where: { vkId } });
   const isNewUser = !existingUser;
@@ -19,7 +19,7 @@ const buildUserAndTokens = async ({ vkId, firstName, lastName, avatarUrl, userna
     const upserted = await tx.user.upsert({
       where: { vkId },
       update: { firstName, lastName, avatarUrl },
-      create: { vkId, firstName, lastName, username, avatarUrl, role: normalizedRole },
+      create: { vkId, firstName, lastName, tag, avatarUrl, role: normalizedRole },
     });
 
     if (isNewUser && normalizedRole === 'PHOTOGRAPHER') {
@@ -41,7 +41,7 @@ const buildUserAndTokens = async ({ vkId, firstName, lastName, avatarUrl, userna
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
-      username: user.username,
+      tag: user.tag,
       role: user.role,
       avatarUrl: user.avatarUrl,
       photographer: user.photographer ?? null,
@@ -59,13 +59,13 @@ const processVkAuth = async (code, codeVerifier, role) => {
   const finalUserId = userId || tokenUserId;
 
   return buildUserAndTokens(
-    { vkId: finalUserId, firstName, lastName, avatarUrl, username: `vk_${finalUserId}` },
+    { vkId: finalUserId, firstName, lastName, avatarUrl, tag: `vk_${finalUserId}` },
     role,
   );
 };
 
 export const initiateVkLogin = (req, res) => {
-  const { role = 'CLIENT' } = req.query;
+  const { role = 'USER' } = req.query;
   const { codeVerifier, codeChallenge } = generatePkce();
 
   res.cookie(PKCE_COOKIE, codeVerifier, {
@@ -135,7 +135,7 @@ export const mockLogin = async (req, res) => {
     return res.status(404).json({ status: 'error', message: 'Not found' });
   }
 
-  const { role = 'CLIENT' } = req.query;
+  const { role = 'USER' } = req.query;
 
   try {
     const data = await buildUserAndTokens(
@@ -144,7 +144,7 @@ export const mockLogin = async (req, res) => {
         firstName: 'Test',
         lastName: 'User',
         avatarUrl: null,
-        username: 'vk_mock_12345',
+        tag: 'vk_mock_12345',
       },
       role,
     );
@@ -171,7 +171,7 @@ export const getMe = async (req, res) => {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
-        username: user.username,
+        tag: user.tag,
         bio: user.bio,
         avatarUrl: user.avatarUrl,
         role: user.role,
