@@ -1,51 +1,46 @@
-.about {
+.feed {
   padding: 100px var(--side-padding);
-  background-color: var(--white);
+  background-color: var(--bg-color);
   display: flex;
   justify-content: center;
 }
 
-.contentWrapper {
+.container {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.mainCard {
+  background-color: var(--light-pink);
+  border-radius: 20px 200px 100px 20px;
+  padding: 60px 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 60px;
-  width: 100%;
-  max-width: 1400px;
 }
 
-.textSide {
+.textContent {
   flex: 1;
-  color: var(--dark-text);
 }
 
 .title {
-  font-size: clamp(28px, 4vw, 48px);
-  line-height: 1.2;
-  text-transform: uppercase;
   font-family: "Farabee", serif;
-  margin-bottom: 40px;
+  font-size: 36px;
   color: var(--dark-text);
+  margin-bottom: 25px;
+  text-transform: uppercase;
 }
 
 .description {
   font-family: "Inter", sans-serif;
   font-size: 18px;
-  line-height: 1.6;
-  max-width: 500px;
-}
-
-.description p {
-  margin-bottom: 25px;
-}
-
-.description strong {
-  font-weight: 700;
-  color: var(--accent-red);
+  line-height: 1.5;
+  color: var(--dark-text);
+  margin-bottom: 40px;
 }
 
 .showBtn {
-  margin-top: 20px;
   background-color: var(--accent-red);
   color: var(--white);
   padding: 18px 45px;
@@ -72,41 +67,29 @@
   transition: all 0.1s;
 }
 
-.imageSide {
+.imageWrapper {
   flex: 1;
   display: flex;
   justify-content: flex-end;
 }
 
-.mainImage {
+.photo {
   width: 100%;
-  max-width: 600px;
-  height: auto;
-  object-fit: contain;
+  max-width: 450px;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 40px 140px 40px 100px;
 }
 
 @media (max-width: 1024px) {
-  .contentWrapper {
+  .mainCard {
     flex-direction: column;
+    padding: 40px;
+    border-radius: 40px;
     text-align: center;
-    gap: 40px;
   }
 
-  .textSide {
-    order: 1;
-  }
-
-  .imageSide {
-    order: 2;
-    justify-content: center;
-    width: 100%;
-  }
-
-  .description {
-    max-width: 100%;
-  }
-
-  .showBtn {
-    margin-bottom: 20px;
+  .description br {
+    display: none;
   }
 }
