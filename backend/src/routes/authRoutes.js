@@ -5,6 +5,7 @@ import {
   loginWithVk,
   mockLogin,
   getMe,
+  completeRegistration,
 } from '../controllers/AuthController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 
@@ -16,5 +17,6 @@ router.post('/vk', loginWithVk);
 
 router.get('/mock-login', mockLogin);
 router.get('/me', authMiddleware, getMe);
+router.post('/complete-registration', authMiddleware, completeRegistration);
 
 export default router;

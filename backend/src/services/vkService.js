@@ -73,6 +73,6 @@ export const parseUserFromIdToken = (idToken) => {
     };
   } catch (err) {
     console.error('[VK ID] id_token parse error:', err.message);
-    throw new Error('Не удалось разобрать id_token от VK ID');
+    throw new Error('Не удалось разобрать id_token от VK ID', { cause: err });
   }
 };

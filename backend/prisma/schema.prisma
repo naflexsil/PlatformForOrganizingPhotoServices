@@ -22,6 +22,8 @@ model User {
   birthDate    DateTime?
   avatarUrl    String?
   role         Role          @default(USER)
+  isDeleted    Boolean       @default(false)
+  deletedAt    DateTime?
   photographer Photographer?
   posts        Post[]
   likes        Like[]

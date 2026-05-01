@@ -154,6 +154,51 @@ export const mockLogin = async (req, res) => {
   }
 };
 
+export const completeRegistration = async (req, res) => {
+  const { firstName, lastName, gender, birthDate, role, tag } = req.body;
+
+  if (!firstName || !lastName || !gender || !birthDate || !role || !tag) {
+    return res.status(400).json({ status: 'error', message: 'Все поля обязательны' });
+  }
+
+  if (role !== 'USER' && role !== 'PHOTOGRAPHER') {
+    return res.status(400).json({ status: 'error', message: 'Роль должна быть USER или PHOTOGRAPHER' });
+  }
+
+  try {
+    const tagTaken = await prisma.user.findFirst({
+      where: { tag, NOT: { id: req.user.id } },
+    });
+    if (tagTaken) {
+      return res.status(409).json({ status: 'error', message: 'Тег уже занят' });
+    }
+
+    const user = await prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({
+        where: { id: req.user.id },
+        data: { firstName, lastName, gender, birthDate: new Date(birthDate), tag, role },
+      });
+
+      if (role === 'PHOTOGRAPHER') {
+        await tx.photographer.upsert({
+          where: { userId: updated.id },
+          update: {},
+          create: { userId: updated.id },
+        });
+      }
+
+      return tx.user.findUnique({
+        where: { id: updated.id },
+        include: { photographer: true },
+      });
+    });
+
+    return res.status(200).json({ status: 'success', data: user });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
 export const getMe = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
