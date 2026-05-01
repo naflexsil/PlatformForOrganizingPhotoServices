@@ -90,6 +90,9 @@
   cursor: pointer;
   box-shadow: 0 10px 20px rgba(162, 85, 85, 0.2);
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 .regBtn:hover {
@@ -125,16 +128,33 @@
   .contentWrapper {
     flex-direction: column;
     text-align: center;
-    gap: 50px;
+    gap: 40px;
+  }
+
+  .textSide {
+    order: 1;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .imageSide {
+    order: 2;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .title {
+    margin-bottom: 15px;
   }
 
   .subtitle {
     max-width: 100%;
-    margin-bottom: 35px;
+    margin-bottom: 30px;
   }
 
   .benefitsList {
     align-items: center;
+    margin-bottom: 40px;
   }
 
   .benefitItem {
@@ -142,13 +162,15 @@
     max-width: 450px;
   }
 
-  .imageSide {
-    order: -1;
-    justify-content: center;
-    width: 100%;
+  .regBtn {
+    align-self: center;
+    padding: 16px 40px;
+    font-size: 18px;
+    width: auto;
   }
 
   .mainImage {
-    max-width: 80%;
+    max-width: 100%;
+    height: auto;
   }
 }
