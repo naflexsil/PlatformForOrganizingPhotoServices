@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import prisma from '../config/db.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
-import { deleteAccount, restoreAccount } from '../controllers/UserController.js';
+import {
+  deleteAccount,
+  restoreAccount,
+  updateMe,
+  updatePhotographerData,
+} from '../controllers/UserController.js';
 
 const router = Router();
 
@@ -14,6 +19,8 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.patch('/me', authMiddleware, updateMe);
+router.patch('/me/photographer', authMiddleware, updatePhotographerData);
 router.delete('/me', authMiddleware, deleteAccount);
 router.patch('/me/restore', authMiddleware, restoreAccount);
 

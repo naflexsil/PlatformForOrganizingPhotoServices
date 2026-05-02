@@ -12,28 +12,28 @@ enum Role {
 }
 
 model User {
-  id           String        @id @default(uuid())
-  vkId         String        @unique
-  firstName    String
-  lastName     String
-  tag          String        @unique
-  bio          String?
-  gender       String?
-  birthDate    DateTime?
-  avatarUrl    String?
-  role         Role          @default(USER)
-  isDeleted    Boolean       @default(false)
-  deletedAt    DateTime?
-  photographer Photographer?
-  posts        Post[]
-  likes        Like[]
-  favorites    Favorite[]
-  portfolios   PortfolioFolder[]
-  // Self-relation: подписки
-  followers    Follow[]      @relation("UserFollowing")
-  following    Follow[]      @relation("UserFollowers")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id            String           @id @default(uuid())
+  vkId          String           @unique
+  firstName     String
+  lastName      String
+  tag           String           @unique
+  bio           String?
+  gender        String?
+  birthDate     DateTime?
+  city          String?
+  avatarUrl     String?
+  role          Role             @default(USER)
+  isDeleted     Boolean          @default(false)
+  deletedAt     DateTime?
+  photographer  Photographer?
+  posts         Post[]
+  likes         Like[]
+  favorites     Favorite[]
+  portfolios    PortfolioFolder[]
+  subscriptions Subscription[]   @relation("Subscriber")
+  subscribers   Subscription[]   @relation("Subscribed")
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   @@map("users")
 }
@@ -43,10 +43,13 @@ model Photographer {
   userId              String   @unique
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   rating              Float    @default(0)
-  pricePerHour        Decimal  @default(0) @db.Decimal(10, 2)
-  priceAdditionalInfo String?
   hasSubscription     Boolean  @default(false)
+  experienceYears     Int?
+  experienceMonths    Int?
+  deliveryTime        Int?
   searchPhotos        String[]
+  pricePerHour        Float?
+  additionalPriceInfo String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -81,11 +84,11 @@ model PortfolioFolder {
   @@map("portfolio_folders")
 }
 
-model Follow {
+model Subscription {
   followerId  String
   followingId String
-  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
-  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  follower    User     @relation("Subscriber", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Subscribed", fields: [followingId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
 
   @@id([followerId, followingId])

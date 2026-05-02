@@ -4,3 +4,5 @@ node_modules
 /src/generated/prisma
 
 /uploads/posts
+/uploads/search
+/uploads/avatars

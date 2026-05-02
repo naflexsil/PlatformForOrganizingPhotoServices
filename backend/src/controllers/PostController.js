@@ -167,7 +167,6 @@ export const pinPost = async (req, res) => {
     }
 
     if (isPinned) {
-      // Exclude the current post from the count so re-pinning an already-pinned post is idempotent
       const pinnedCount = await prisma.post.count({
         where: { authorId: req.user.id, isPinned: true, NOT: { id } },
       });

@@ -9,7 +9,7 @@ import {
 
 const PKCE_COOKIE = 'pkce_verifier';
 
-const buildUserAndTokens = async ({ vkId, firstName, lastName, avatarUrl, tag }, role) => {
+const buildUserAndTokens = async ({ vkId, firstName, lastName, avatarUrl, tag, birthDate, gender }, role) => {
   const normalizedRole = role === 'PHOTOGRAPHER' ? 'PHOTOGRAPHER' : 'USER';
 
   const existingUser = await prisma.user.findUnique({ where: { vkId } });
@@ -19,7 +19,16 @@ const buildUserAndTokens = async ({ vkId, firstName, lastName, avatarUrl, tag },
     const upserted = await tx.user.upsert({
       where: { vkId },
       update: { firstName, lastName, avatarUrl },
-      create: { vkId, firstName, lastName, tag, avatarUrl, role: normalizedRole },
+      create: {
+        vkId,
+        firstName,
+        lastName,
+        tag,
+        avatarUrl,
+        role: normalizedRole,
+        ...(birthDate && { birthDate }),
+        ...(gender && { gender }),
+      },
     });
 
     if (isNewUser && normalizedRole === 'PHOTOGRAPHER') {
@@ -52,14 +61,14 @@ const buildUserAndTokens = async ({ vkId, firstName, lastName, avatarUrl, tag },
 const processVkAuth = async (code, codeVerifier, role) => {
   const { idToken, userId: tokenUserId } = await exchangeCodeForToken(code, codeVerifier);
 
-  const { userId, firstName, lastName, avatarUrl } = idToken
+  const { userId, firstName, lastName, avatarUrl, birthDate, gender } = idToken
     ? parseUserFromIdToken(idToken)
-    : { userId: tokenUserId, firstName: '', lastName: '', avatarUrl: null };
+    : { userId: tokenUserId, firstName: '', lastName: '', avatarUrl: null, birthDate: null, gender: null };
 
   const finalUserId = userId || tokenUserId;
 
   return buildUserAndTokens(
-    { vkId: finalUserId, firstName, lastName, avatarUrl, tag: `vk_${finalUserId}` },
+    { vkId: finalUserId, firstName, lastName, avatarUrl, tag: `vk_${finalUserId}`, birthDate, gender },
     role,
   );
 };
@@ -135,16 +144,19 @@ export const mockLogin = async (req, res) => {
     return res.status(404).json({ status: 'error', message: 'Not found' });
   }
 
-  const { role = 'USER' } = req.query;
+  const { role = 'USER', id = '1' } = req.query;
+  const vkId = `mock_${id}`;
 
   try {
     const data = await buildUserAndTokens(
       {
-        vkId: 'mock_12345',
+        vkId,
         firstName: 'Test',
-        lastName: 'User',
+        lastName: `User${id}`,
         avatarUrl: null,
-        tag: 'vk_mock_12345',
+        tag: `vk_${vkId}`,
+        birthDate: null,
+        gender: null,
       },
       role,
     );
@@ -166,6 +178,16 @@ export const completeRegistration = async (req, res) => {
   }
 
   try {
+    const currentUser = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!currentUser) {
+      return res.status(404).json({ status: 'error', message: 'Пользователь не найден' });
+    }
+
+    const isAlreadyRegistered = currentUser.tag && !currentUser.tag.startsWith('vk_');
+    if (isAlreadyRegistered && role !== currentUser.role) {
+      return res.status(409).json({ status: 'error', message: 'Роль нельзя изменить после регистрации' });
+    }
+
     const tagTaken = await prisma.user.findFirst({
       where: { tag, NOT: { id: req.user.id } },
     });
@@ -218,6 +240,9 @@ export const getMe = async (req, res) => {
         lastName: user.lastName,
         tag: user.tag,
         bio: user.bio,
+        gender: user.gender,
+        birthDate: user.birthDate,
+        city: user.city,
         avatarUrl: user.avatarUrl,
         role: user.role,
         photographer: user.photographer ?? null,

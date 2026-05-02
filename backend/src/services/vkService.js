@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 
 
 export const generatePkce = () => {
-  const codeVerifier = crypto.randomBytes(64).toString('base64url'); 
+  const codeVerifier = crypto.randomBytes(64).toString('base64url');
   const codeChallenge = crypto
     .createHash('sha256')
     .update(codeVerifier)
@@ -65,11 +65,24 @@ export const parseUserFromIdToken = (idToken) => {
     const payload = JSON.parse(Buffer.from(raw, 'base64').toString('utf8'));
     console.log('[VK ID] id_token claims:', Object.keys(payload));
 
+    let birthDate = null;
+    if (payload.bdate) {
+      const parts = payload.bdate.split('.').map(Number);
+      const [day, month, year] = parts;
+      if (year && month && day) birthDate = new Date(year, month - 1, day);
+    }
+
+    let gender = null;
+    if (payload.sex === 1) gender = 'female';
+    else if (payload.sex === 2) gender = 'male';
+
     return {
       userId: String(payload.sub),
       firstName: payload.first_name ?? '',
       lastName: payload.last_name ?? '',
       avatarUrl: payload.avatar ?? null,
+      birthDate,
+      gender,
     };
   } catch (err) {
     console.error('[VK ID] id_token parse error:', err.message);

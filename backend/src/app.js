@@ -12,6 +12,8 @@ import authRoutes from './routes/authRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
+import portfolioRoutes from './routes/portfolioRoutes.js';
+import subscriptionRoutes from './routes/subscriptionRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,6 +34,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
