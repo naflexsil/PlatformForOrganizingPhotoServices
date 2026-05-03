@@ -1,0 +1,42 @@
+@font-face {
+  font-family: "Farabee";
+  src: url("./assets/fonts/OFONT.RU_FARABEE.TTF") format("truetype");
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("./assets/fonts/INTERTIGHT-SEMIBOLD.TTF") format("truetype");
+}
+
+:root {
+  --bg-color: #332727;
+  --accent-red: #a25555;
+  --white: #ffffff;
+  --light-pink: #ead0d0;
+  --dark-text: #331f1f;
+  --side-padding: 8%;
+  --gray: #d9d9d9;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--white);
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Farabee", serif;
+}
+
+nav a,
+button {
+  font-family: "Farabee", serif !important;
+}
