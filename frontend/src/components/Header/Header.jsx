@@ -8,7 +8,6 @@ const Header = () => {
       <nav className={s.nav}>
         <a href="#">Поиск</a>
         <a href="#">Лента вдохновения</a>
-        <a href="#">Блог</a>
         <button className={s.loginBtn}>Войти</button>
       </nav>
     </header>

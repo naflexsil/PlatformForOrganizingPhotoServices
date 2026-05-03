@@ -116,11 +116,10 @@ const Footer = () => {
           <div className={s.navGrid}>
             <div className={s.navColumn}>
               <a href="/">Главная</a>
-              <a href="/catalog">Каталог фотографов</a>
+              <a href="/catalog">Поиск</a>
               <a href="/inspiration">Лента вдохновения</a>
             </div>
             <div className={s.navColumn}>
-              <a href="/blog">Блог</a>
               <a href="/contacts">Контакты</a>
               <a href="/login">Войти</a>
             </div>
