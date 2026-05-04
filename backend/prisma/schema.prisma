@@ -21,8 +21,9 @@ model User {
   gender        String?
   birthDate     DateTime?
   city          String?
-  avatarUrl     String?
-  role          Role             @default(USER)
+  avatarUrl         String?
+  avatarUrlOriginal String?
+  role              Role             @default(USER)
   isDeleted     Boolean          @default(false)
   deletedAt     DateTime?
   photographer  Photographer?
@@ -30,8 +31,10 @@ model User {
   likes         Like[]
   favorites     Favorite[]
   portfolios    PortfolioFolder[]
-  subscriptions Subscription[]   @relation("Subscriber")
-  subscribers   Subscription[]   @relation("Subscribed")
+  subscriptions  Subscription[]   @relation("Subscriber")
+  subscribers    Subscription[]   @relation("Subscribed")
+  photoLikes     PhotoLike[]
+  photoFavorites PhotoFavorite[]
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
@@ -62,6 +65,7 @@ model Post {
   author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
   description String?
   images      String[]
+  photos      Photo[]
   isPinned    Boolean    @default(false)
   likes       Like[]
   favorites   Favorite[]
@@ -78,10 +82,47 @@ model PortfolioFolder {
   name      String
   theme     String?
   images    String[]
+  photos    Photo[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("portfolio_folders")
+}
+
+model Photo {
+  id          String           @id @default(uuid())
+  urlOriginal String
+  urlPreview  String
+  folderId    String?
+  folder      PortfolioFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  posts       Post[]
+  likes       PhotoLike[]
+  favorites   PhotoFavorite[]
+  createdAt   DateTime         @default(now())
+
+  @@map("photos")
+}
+
+model PhotoLike {
+  userId    String
+  photoId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, photoId])
+  @@map("photo_likes")
+}
+
+model PhotoFavorite {
+  userId    String
+  photoId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, photoId])
+  @@map("photo_favorites")
 }
 
 model Subscription {

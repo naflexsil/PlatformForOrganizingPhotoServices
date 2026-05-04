@@ -1,0 +1,15 @@
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+replication_mode = "none"
+
+rpc_bind_addr = "0.0.0.0:3901"
+rpc_secret = "REPLACE_WITH_64_HEX_CHARS_openssl_rand_-hex_32"
+
+[s3_api]
+api_bind_addr = "0.0.0.0:3900"
+root_domain = ".s3.docker.localhost"
+s3_region = "garage"
+
+[s3_web]
+bind_addr = "0.0.0.0:3902"
+root_domain = ".web.docker.localhost"

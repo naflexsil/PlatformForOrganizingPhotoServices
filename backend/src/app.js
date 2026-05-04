@@ -14,6 +14,9 @@ import uploadRoutes from './routes/uploadRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
 import portfolioRoutes from './routes/portfolioRoutes.js';
 import subscriptionRoutes from './routes/subscriptionRoutes.js';
+import fileRoutes from './routes/fileRoutes.js';
+import feedRoutes from './routes/feedRoutes.js';
+import photoRoutes from './routes/photoRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,6 +39,9 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/files', fileRoutes);
+app.use('/api/feed', feedRoutes);
+app.use('/api/photos', photoRoutes);
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
