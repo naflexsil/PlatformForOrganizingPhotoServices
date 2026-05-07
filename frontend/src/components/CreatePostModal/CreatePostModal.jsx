@@ -5,7 +5,7 @@ import arrowLeftIcon from "../../assets/icons/carousel_arrow_left.svg";
 import arrowRightIcon from "../../assets/icons/carousel_arrow_right.svg";
 import closeIcon from "../../assets/icons/carousel_close.svg";
 
-const CreatePostModal = ({ onClose }) => {
+const CreatePostModal = ({ onClose, onPublish }) => {
   const [images, setImages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [text, setText] = useState("");
@@ -65,8 +65,8 @@ const CreatePostModal = ({ onClose }) => {
   };
 
   const handlePublish = () => {
-    console.log("Публикация:", { images, text });
-    onClose();
+    if (images.length === 0 && !text.trim()) return;
+    onPublish({ images, text });
   };
 
   const handleOverlayClick = (e) => {
@@ -164,7 +164,11 @@ const CreatePostModal = ({ onClose }) => {
         </div>
 
         <div className={s.modalFooter}>
-          <button className={s.publishBtn} onClick={handlePublish}>
+          <button
+            className={s.publishBtn}
+            onClick={handlePublish}
+            disabled={images.length === 0 && !text.trim()}
+          >
             Выложить
           </button>
         </div>

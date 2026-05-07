@@ -16,6 +16,7 @@ import CreatePostModal from "../../components/CreatePostModal/CreatePostModal";
 const PhotographerProfile = ({ isMyProfile = true }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [posts, setPosts] = useState([]);
 
   const [userData] = useState({
     firstName: "Алина",
@@ -28,8 +29,38 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
     deliveryTime: "от 3 дней",
     priceText:
       "Час от 4500 руб. Свадебная съемка от 4500 руб. Парная съемка от 4500 руб.",
-    posts: [],
   });
+
+  const handleCreatePost = ({ images, text }) => {
+    if (images.length === 0 && !text.trim()) return;
+    const newPost = {
+      id: Date.now(),
+      image: images[0] || null,
+      text,
+      likes: 0,
+      liked: false,
+    };
+    setPosts((prev) => [newPost, ...prev]);
+  };
+
+  const handleLike = (postId) => {
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? {
+              ...p,
+              liked: !p.liked,
+              likes: p.liked ? p.likes - 1 : p.likes + 1,
+            }
+          : p,
+      ),
+    );
+  };
+
+  const formatLikes = (n) => {
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(".", ",") + "к";
+    return String(n);
+  };
 
   return (
     <div className={s.pageWrapper}>
@@ -153,8 +184,40 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
         )}
 
         <div className={s.postsSection}>
-          {userData.posts.length > 0 ? (
-            <div className={s.postsGrid}></div>
+          {posts.length > 0 ? (
+            <div className={s.postsGrid}>
+              {posts.map((post) => (
+                <div key={post.id} className={s.postCard}>
+                  <div className={s.postImageWrapper}>
+                    {post.image ? (
+                      <img
+                        src={post.image}
+                        alt="Пост"
+                        className={s.postImage}
+                      />
+                    ) : (
+                      <div className={s.postNoImage} />
+                    )}
+                  </div>
+
+                  <div className={s.postFooter}>
+                    <button
+                      className={s.likeBtn}
+                      onClick={() => handleLike(post.id)}
+                    >
+                      <img
+                        src={post.liked ? heartFilledIcon : heartIcon}
+                        alt="Лайк"
+                        className={s.heartIcon}
+                      />
+                      <span className={post.liked ? s.likedCount : s.likeCount}>
+                        {formatLikes(post.likes)}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <div className={s.emptyPosts}>
               <p>Здесь пока нет публикаций</p>
@@ -164,7 +227,13 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
       </div>
 
       {isCreatePostOpen && (
-        <CreatePostModal onClose={() => setIsCreatePostOpen(false)} />
+        <CreatePostModal
+          onClose={() => setIsCreatePostOpen(false)}
+          onPublish={(data) => {
+            handleCreatePost(data);
+            setIsCreatePostOpen(false);
+          }}
+        />
       )}
     </div>
   );
