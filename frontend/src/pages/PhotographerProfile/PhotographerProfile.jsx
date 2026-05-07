@@ -11,9 +11,11 @@ import defaultAvatar from "../../assets/images/default_avatar.png";
 import mailLogo from "../../assets/icons/mail_logo.svg";
 import chartIcon from "../../assets/icons/chart.svg";
 import editIcon from "../../assets/icons/edit.svg";
+import CreatePostModal from "../../components/CreatePostModal/CreatePostModal";
 
 const PhotographerProfile = ({ isMyProfile = true }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
 
   const [userData] = useState({
     firstName: "Алина",
@@ -141,7 +143,12 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
         {isMyProfile && (
           <div className={s.createPostBanner}>
             <span>Есть чем поделиться? Мы ждем!</span>
-            <button className={s.createBtn}>Создать пост</button>
+            <button
+              className={s.createBtn}
+              onClick={() => setIsCreatePostOpen(true)}
+            >
+              Создать пост
+            </button>
           </div>
         )}
 
@@ -155,6 +162,10 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
           )}
         </div>
       </div>
+
+      {isCreatePostOpen && (
+        <CreatePostModal onClose={() => setIsCreatePostOpen(false)} />
+      )}
     </div>
   );
 };
