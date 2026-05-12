@@ -8,14 +8,15 @@ import expIcon from "../../assets/icons/experience.svg";
 import heartIcon from "../../assets/icons/heart.svg";
 import heartFilledIcon from "../../assets/icons/heart_filled.svg";
 import defaultAvatar from "../../assets/images/default_avatar.png";
-import mailLogo from "../../assets/icons/mail_logo.svg";
 import chartIcon from "../../assets/icons/chart.svg";
 import editIcon from "../../assets/icons/edit.svg";
 import CreatePostModal from "../../components/CreatePostModal/CreatePostModal";
+import PostModal from "../../components/PostModal/PostModal";
 
 const PhotographerProfile = ({ isMyProfile = true }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
   const [posts, setPosts] = useState([]);
 
   const [userData] = useState({
@@ -35,10 +36,14 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
     if (images.length === 0 && !text.trim()) return;
     const newPost = {
       id: Date.now(),
+      images,
       image: images[0] || null,
       text,
       likes: 0,
       liked: false,
+      bookmarks: 0,
+      pinned: false,
+      authorName: `${userData.firstName} ${userData.lastName}`,
     };
     setPosts((prev) => [newPost, ...prev]);
   };
@@ -55,6 +60,33 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
           : p,
       ),
     );
+
+    setSelectedPost((prev) =>
+      prev && prev.id === postId
+        ? {
+            ...prev,
+            liked: !prev.liked,
+            likes: prev.liked ? prev.likes - 1 : prev.likes + 1,
+          }
+        : prev,
+    );
+  };
+
+  const handleDelete = (postId) => {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+    setSelectedPost(null);
+  };
+
+  const handlePin = (postId) => {
+    setPosts((prev) =>
+      prev.map((p) => (p.id === postId ? { ...p, pinned: !p.pinned } : p)),
+    );
+    setSelectedPost(null);
+  };
+
+  const handleEdit = (post) => {
+    console.log("Редактировать пост:", post);
+    setSelectedPost(null);
   };
 
   const formatLikes = (n) => {
@@ -78,7 +110,6 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
                 </h1>
                 <p className={s.username}>{userData.username}</p>
               </div>
-
               <div className={s.stats}>
                 <p>
                   <span className={s.clickableStat}>Подписчики</span> 0
@@ -87,7 +118,6 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
                   <span className={s.clickableStat}>Подписки</span> 0
                 </p>
               </div>
-
               <div className={s.rating}>
                 <img src={starIcon} alt="Rating" /> {userData.rating}
               </div>
@@ -119,7 +149,6 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
                   </div>
                 )}
               </div>
-
               <div className={s.bio}>
                 <p>{userData.bio}</p>
                 {!isMyProfile && (
@@ -187,7 +216,11 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
           {posts.length > 0 ? (
             <div className={s.postsGrid}>
               {posts.map((post) => (
-                <div key={post.id} className={s.postCard}>
+                <div
+                  key={post.id}
+                  className={s.postCard}
+                  onClick={() => setSelectedPost(post)}
+                >
                   <div className={s.postImageWrapper}>
                     {post.image ? (
                       <img
@@ -199,11 +232,13 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
                       <div className={s.postNoImage} />
                     )}
                   </div>
-
                   <div className={s.postFooter}>
                     <button
                       className={s.likeBtn}
-                      onClick={() => handleLike(post.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLike(post.id);
+                      }}
                     >
                       <img
                         src={post.liked ? heartFilledIcon : heartIcon}
@@ -233,6 +268,18 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
             handleCreatePost(data);
             setIsCreatePostOpen(false);
           }}
+        />
+      )}
+
+      {selectedPost && (
+        <PostModal
+          post={selectedPost}
+          onClose={() => setSelectedPost(null)}
+          onLike={handleLike}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+          onPin={handlePin}
+          isMyProfile={isMyProfile}
         />
       )}
     </div>
