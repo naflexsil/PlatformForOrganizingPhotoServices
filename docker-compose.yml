@@ -4,26 +4,50 @@ services:
     container_name: garage
     restart: always
     ports:
-      - "3900:3900" # S3 API
-      - "3901:3901" # RPC (внутренняя связь)
-      - "3902:3902" # Admin API
+      - "127.0.0.1:3900:3900" # S3 API — только localhost
+      - "127.0.0.1:3901:3901" # RPC (внутренняя связь) — только localhost
+      - "127.0.0.1:3902:3902" # Admin API — только localhost
     environment:
-      - GARAGE_ALLOW_WORLD_READABLE=1 
+      - GARAGE_ALLOW_WORLD_READABLE=1
     volumes:
       - ./garage_data:/var/lib/garage
       - ./garage.toml:/etc/garage.toml
+
   postgres:
     image: postgres:16-alpine
     container_name: photoservices_postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: MoeL1obimoe96ivotnoe-Din0
       POSTGRES_DB: photoservices_db
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432" # PostgreSQL — только localhost
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: photoservices_backend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - ./backend/.env   # читает все переменные из .env
+    environment:
+      # Переопределяем переменные, специфичные для Docker-сети:
+      # внутри сети сервисы доступны по именам (postgres, garage), а не localhost
+      HOST: "0.0.0.0"
+      DB_HOST: "postgres"
+      DB_PORT: "5432"
+      # Если изменишь пароль в postgres.POSTGRES_PASSWORD — обнови и здесь
+      DATABASE_URL: "postgresql://postgres:MoeL1obimoe96ivotnoe-Din0@postgres:5432/photoservices_db"
+      S3_ENDPOINT: "http://garage:3900"
+    depends_on:
+      - postgres
+      - garage
 
 volumes:
   postgres_data:

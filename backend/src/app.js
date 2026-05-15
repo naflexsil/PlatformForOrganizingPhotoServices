@@ -23,9 +23,13 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '127.0.0.1';
 
 app.use(helmet());
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+  credentials: true,
+}));
 app.use(cookieParser());
 app.use(morgan('dev'));
 app.use(express.json());
@@ -48,8 +52,8 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 connectDB()
   .then(() => {
     console.log('PostgreSQL connected');
-    app.listen(PORT, '127.0.0.1', () => {
-      console.log(`Server running on http://127.0.0.1:${PORT}`);
+    app.listen(PORT, HOST, () => {
+      console.log(`Server running on http://${HOST}:${PORT}`);
     });
   })
   .catch((err) => {
