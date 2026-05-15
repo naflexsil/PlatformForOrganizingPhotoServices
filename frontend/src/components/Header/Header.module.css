@@ -1,0 +1,45 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px var(--side-padding);
+  background-color: var(--accent-red);
+}
+
+.nav a {
+  color: var(--white);
+  text-decoration: none;
+  margin-left: 30px;
+  font-size: 16px;
+  font-family: "Farabee", serif;
+  opacity: 0.9;
+  transition: opacity 0.3s;
+}
+
+.nav a:hover {
+  opacity: 1;
+}
+
+.loginBtn {
+  margin-left: 30px;
+  background: transparent;
+  color: var(--white);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: "Farabee", serif;
+  font-size: 16px;
+  font-weight: normal;
+  opacity: 0.9;
+  transition: opacity 0.3s;
+}
+
+.loginBtn:hover {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .nav {
+    display: none;
+  }
+}

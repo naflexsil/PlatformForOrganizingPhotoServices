@@ -36,3 +36,7 @@ venv/
 
 .claude/
 claude.md
+
+garage_data/data
+garage_data/meta
+garage.toml
