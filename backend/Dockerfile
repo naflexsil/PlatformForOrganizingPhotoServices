@@ -4,10 +4,7 @@
 # Запуск: docker build -t photoservices-backend ./backend
 # =============================================================================
 
-FROM node:20-alpine
-
-# sharp (обработка изображений) требует нативных зависимостей
-RUN apk add --no-cache python3 make g++
+FROM node:20-slim
 
 WORKDIR /app
 
