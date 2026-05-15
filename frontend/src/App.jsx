@@ -1,24 +1,25 @@
+import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header/Header";
-import WelcomeSection from "./components/WelcomeSection/WelcomeSection";
-import AboutSection from "./components/AboutSection/AboutSection";
-import FeaturesSection from "./components/FeaturesSection/FeaturesSection";
-import FeedSection from "./components/FeedSection/FeedSection";
-import SoulSection from "./components/SoulSection/SoulSection";
 import Footer from "./components/Footer/Footer";
+import MainPage from "./pages/MainPage/MainPage";
+import PhotographerProfile from "./pages/PhotographerProfile/PhotographerProfile";
 
 function App() {
+  const [isAuth, setIsAuth] = useState(true);
+
   return (
-    <div className="App">
-      <Header />
-      <main>
-        <WelcomeSection />
-        <AboutSection />
-        <FeaturesSection />
-        <FeedSection />
-        <SoulSection />
-      </main>
+    <Router>
+      <Header isAuthenticated={isAuth} />
+      <Routes>
+        <Route path="/" element={<MainPage />} />
+        <Route
+          path="/profile"
+          element={<PhotographerProfile isMyProfile={true} />}
+        />
+      </Routes>
       <Footer />
-    </div>
+    </Router>
   );
 }
 
