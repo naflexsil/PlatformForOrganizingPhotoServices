@@ -6,6 +6,19 @@
 @font-face {
   font-family: "Inter";
   src: url("./assets/fonts/INTERTIGHT-SEMIBOLD.TTF") format("truetype");
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("./assets/fonts/INTERTIGHT-MEDIUM.TTF") format("truetype");
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("./assets/fonts/INTERTIGHT-EXTRABOLD.TTF") format("truetype");
+  font-weight: 800;
 }
 
 :root {
@@ -26,6 +39,7 @@
 
 body {
   font-family: "Inter", sans-serif;
+  font-weight: 600;
   background-color: var(--bg-color);
   color: var(--white);
 }
@@ -38,5 +52,5 @@ h3 {
 
 nav a,
 button {
-  font-family: "Farabee", serif !important;
+  font-family: "Farabee", serif;
 }

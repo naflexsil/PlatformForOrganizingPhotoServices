@@ -1,6 +1,6 @@
 import React from "react";
 import s from "./FeedSection.module.css";
-import feedPhoto from "../../assets/images/feed_preview.png";
+import feedPhoto from "../../../assets/images/feed_preview.png";
 
 const FeedSection = () => {
   return (

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import s from "./Footer.module.css";
-import vkLogo from "../../assets/images/vk_logo.svg";
-import mailLogo from "../../assets/images/mail_logo.svg";
+import vkLogo from "../../assets/icons/vk_logo.svg";
+import mailLogo from "../../assets/icons/mail_logo.svg";
 
 const Footer = () => {
   const [isOpen, setIsOpen] = useState(false);
