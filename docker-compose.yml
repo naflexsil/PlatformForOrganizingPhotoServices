@@ -1,0 +1,29 @@
+services:
+  garage:
+    image: dxflrs/garage:v0.9.0
+    container_name: garage
+    restart: always
+    ports:
+      - "3900:3900" # S3 API
+      - "3901:3901" # RPC (внутренняя связь)
+      - "3902:3902" # Admin API
+    environment:
+      - GARAGE_ALLOW_WORLD_READABLE=1 
+    volumes:
+      - ./garage_data:/var/lib/garage
+      - ./garage.toml:/etc/garage.toml
+  postgres:
+    image: postgres:16-alpine
+    container_name: photoservices_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: photoservices_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  PHOTOGRAPHER
+}
+
+model User {
+  id            String           @id @default(uuid())
+  vkId          String           @unique
+  firstName     String
+  lastName      String
+  tag           String           @unique
+  bio           String?
+  gender        String?
+  birthDate     DateTime?
+  city          String?
+  avatarUrl         String?
+  avatarUrlOriginal String?
+  role              Role             @default(USER)
+  isDeleted     Boolean          @default(false)
+  deletedAt     DateTime?
+  photographer  Photographer?
+  posts         Post[]
+  likes         Like[]
+  favorites     Favorite[]
+  portfolios    PortfolioFolder[]
+  subscriptions  Subscription[]   @relation("Subscriber")
+  subscribers    Subscription[]   @relation("Subscribed")
+  photoLikes     PhotoLike[]
+  photoFavorites PhotoFavorite[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@map("users")
+}
+
+model Photographer {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating              Float    @default(0)
+  hasSubscription     Boolean  @default(false)
+  experienceYears     Int?
+  experienceMonths    Int?
+  deliveryTime        Int?
+  searchPhotos        String[]
+  pricePerHour        Float?
+  additionalPriceInfo String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("photographers")
+}
+
+model Post {
+  id          String     @id @default(uuid())
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  description String?
+  images      String[]
+  photos      Photo[]
+  isPinned    Boolean    @default(false)
+  likes       Like[]
+  favorites   Favorite[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("posts")
+}
+
+model PortfolioFolder {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  theme     String?
+  images    String[]
+  photos    Photo[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("portfolio_folders")
+}
+
+model Photo {
+  id          String           @id @default(uuid())
+  urlOriginal String
+  urlPreview  String
+  folderId    String?
+  folder      PortfolioFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  posts       Post[]
+  likes       PhotoLike[]
+  favorites   PhotoFavorite[]
+  createdAt   DateTime         @default(now())
+
+  @@map("photos")
+}
+
+model PhotoLike {
+  userId    String
+  photoId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, photoId])
+  @@map("photo_likes")
+}
+
+model PhotoFavorite {
+  userId    String
+  photoId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, photoId])
+  @@map("photo_favorites")
+}
+
+model Subscription {
+  followerId  String
+  followingId String
+  follower    User     @relation("Subscriber", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Subscribed", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@id([followerId, followingId])
+  @@map("follows")
+}
+
+model Like {
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, postId])
+  @@map("likes")
+}
+
+model Favorite {
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, postId])
+  @@map("favorites")
+}
