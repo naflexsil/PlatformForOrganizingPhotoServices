@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import s from "./PhotographerProfile.module.css";
 import settingsIcon from "../../assets/icons/settings.svg";
 import starIcon from "../../assets/icons/star.svg";
@@ -12,25 +12,122 @@ import chartIcon from "../../assets/icons/chart.svg";
 import editIcon from "../../assets/icons/edit.svg";
 import CreatePostModal from "../../components/CreatePostModal/CreatePostModal";
 import PostModal from "../../components/PostModal/PostModal";
+import EditProfile from "../EditProfile/EditProfile";
+
+const PRICE_PREVIEW_LIMIT = 80;
+
+const PriceModal = ({ text, onClose }) => {
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <div
+      className={s.priceOverlay}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className={s.priceModal}>
+        <h2 className={s.priceModalTitle}>Прайс</h2>
+        <p className={s.priceModalText}>{text}</p>
+        <button className={s.priceModalClose} onClick={onClose}>
+          Закрыть
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const PhotographerProfile = ({ isMyProfile = true }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [posts, setPosts] = useState([]);
+  const settingsRef = useRef(null);
 
-  const [userData] = useState({
+  useEffect(() => {
+    if (!isSettingsOpen) return;
+    const handleClickOutside = (e) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target)) {
+        setIsSettingsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isSettingsOpen]);
+
+  const [userData, setUserData] = useState({
     firstName: "Алина",
     lastName: "Старикова",
     username: "@flexsana",
     bio: "Обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне...",
     rating: "4,56",
     city: "Кемерово",
-    experience: "11 месяцев",
-    deliveryTime: "от 3 дней",
+    experienceYears: "",
+    experienceMonths: "11",
+    deliveryDays: "3",
+    hourlyRate: "4500",
     priceText:
       "Час от 4500 руб. Свадебная съемка от 4500 руб. Парная съемка от 4500 руб.",
   });
+
+  const formatExperience = (years, months) => {
+    const y = Number(years);
+    const m = Number(months);
+    const parts = [];
+    if (y > 0) parts.push(`${y} лет`);
+    if (m > 0) parts.push(`${m} месяцев`);
+    return parts.length > 0 ? parts.join(" ") : "—";
+  };
+
+  const formatDelivery = (days) => {
+    const d = Number(days);
+    return d > 0 ? `от ${d} дней` : "—";
+  };
+
+  if (isEditProfileOpen) {
+    return (
+      <EditProfile
+        isPhotographer={true}
+        initialData={{
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          username: userData.username,
+          city: userData.city,
+          bio: userData.bio,
+          hourlyRate: userData.hourlyRate,
+          priceList: userData.priceText,
+          experienceYears: userData.experienceYears,
+          experienceMonths: userData.experienceMonths,
+          deliveryDays: userData.deliveryDays,
+        }}
+        onSave={(data) => {
+          setUserData((prev) => ({
+            ...prev,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            username: "@" + data.tag,
+            city: data.city,
+            bio: data.bio,
+            hourlyRate: data.hourlyRate,
+            priceText: data.priceList || prev.priceText,
+            experienceYears: data.experienceYears,
+            experienceMonths: data.experienceMonths,
+            deliveryDays: data.deliveryDays,
+          }));
+          setIsEditProfileOpen(false);
+        }}
+        onCancel={() => setIsEditProfileOpen(false)}
+      />
+    );
+  }
 
   const handleCreatePost = ({ images, text }) => {
     if (images.length === 0 && !text.trim()) return;
@@ -60,7 +157,6 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
           : p,
       ),
     );
-
     setSelectedPost((prev) =>
       prev && prev.id === postId
         ? {
@@ -93,6 +189,11 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
     if (n >= 1000) return (n / 1000).toFixed(1).replace(".", ",") + "к";
     return String(n);
   };
+
+  const pricePreview =
+    userData.priceText.length > PRICE_PREVIEW_LIMIT
+      ? userData.priceText.slice(0, PRICE_PREVIEW_LIMIT) + "..."
+      : userData.priceText;
 
   return (
     <div className={s.pageWrapper}>
@@ -127,7 +228,7 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
               <div className={s.roleBlock}>
                 <span className={s.roleLabel}>Фотограф</span>
                 {isMyProfile && (
-                  <div className={s.settingsWrapper}>
+                  <div className={s.settingsWrapper} ref={settingsRef}>
                     <img
                       src={settingsIcon}
                       className={s.iconBtn}
@@ -140,7 +241,13 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
                           <img src={chartIcon} alt="Stats" />
                           <span>Статистика</span>
                         </div>
-                        <div className={s.modalItem}>
+                        <div
+                          className={s.modalItem}
+                          onClick={() => {
+                            setIsSettingsOpen(false);
+                            setIsEditProfileOpen(true);
+                          }}
+                        >
                           <img src={editIcon} alt="Edit" />
                           <span>Редактировать профиль</span>
                         </div>
@@ -166,9 +273,14 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
               <button className={s.portfolioBtn}>Портфолио</button>
             </div>
             <div className={s.priceContent}>
-              <p className={s.priceText}>{userData.priceText}</p>
-              {userData.priceText.length > 50 && (
-                <button className={s.moreBtn}>Подробнее</button>
+              <p className={s.priceText}>{pricePreview}</p>
+              {userData.priceText.length > PRICE_PREVIEW_LIMIT && (
+                <button
+                  className={s.moreBtn}
+                  onClick={() => setIsPriceModalOpen(true)}
+                >
+                  Подробнее
+                </button>
               )}
             </div>
           </div>
@@ -186,14 +298,19 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
                 <span className={s.detailLabel}>Срок сдачи</span>
                 <div className={s.detailValueLine}>
                   <img src={clockIcon} alt="Delivery" />
-                  <strong>{userData.deliveryTime}</strong>
+                  <strong>{formatDelivery(userData.deliveryDays)}</strong>
                 </div>
               </div>
               <div className={s.detailItem}>
                 <span className={s.detailLabel}>Опыт</span>
                 <div className={s.detailValueLine}>
                   <img src={expIcon} alt="Experience" />
-                  <strong>{userData.experience}</strong>
+                  <strong>
+                    {formatExperience(
+                      userData.experienceYears,
+                      userData.experienceMonths,
+                    )}
+                  </strong>
                 </div>
               </div>
             </div>
@@ -280,6 +397,13 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
           onEdit={handleEdit}
           onPin={handlePin}
           isMyProfile={isMyProfile}
+        />
+      )}
+
+      {isPriceModalOpen && (
+        <PriceModal
+          text={userData.priceText}
+          onClose={() => setIsPriceModalOpen(false)}
         />
       )}
     </div>
