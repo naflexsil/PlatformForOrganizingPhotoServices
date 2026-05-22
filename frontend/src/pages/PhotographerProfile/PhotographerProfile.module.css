@@ -239,9 +239,7 @@
   font-size: 15px;
   line-height: 1.8;
   color: var(--dark-text);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  word-break: break-word;
 }
 
 .moreBtn {
@@ -251,9 +249,9 @@
   font-family: "Farabee", serif;
   font-weight: 700;
   cursor: pointer;
-  padding: 10px 0;
-  text-decoration: none;
+  padding: 10px 0 0 0;
   font-size: 18px;
+  display: block;
 }
 
 .detailsBlock {
@@ -420,4 +418,80 @@
   font-family: "Inter", sans-serif;
   font-size: 15px;
   color: var(--accent-red);
+}
+
+.priceOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.priceModal {
+  background: var(--white);
+  border-radius: 30px;
+  padding: 50px;
+  width: 620px;
+  max-width: 90vw;
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.25s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.priceModalTitle {
+  font-family: "Farabee", serif;
+  font-size: 26px;
+  color: var(--dark-text);
+  margin: 0;
+}
+
+.priceModalText {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--dark-text);
+  font-family: "Inter", sans-serif;
+  white-space: pre-wrap;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray) transparent;
+}
+
+.priceModalClose {
+  background-color: var(--accent-red);
+  color: var(--white);
+  border: 4px solid transparent;
+  border-radius: 12px;
+  padding: 12px 30px;
+  cursor: pointer;
+  font-family: "Farabee", serif;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  align-self: center;
+}
+
+.priceModalClose:hover {
+  filter: brightness(1.1);
+  background-color: var(--white);
+  color: var(--dark-text);
+  border-color: var(--accent-red);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
