@@ -166,11 +166,79 @@ export const mockLogin = async (req, res) => {
   }
 };
 
+export const loginWithVkSdk = async (req, res) => {
+  const { idToken } = req.body;
+  if (!idToken) {
+    return res.status(400).json({ status: 'error', message: 'idToken обязателен' });
+  }
+
+  let vkData;
+  try {
+    vkData = parseUserFromIdToken(idToken);
+  } catch {
+    return res.status(400).json({ status: 'error', message: 'Не удалось разобрать id_token от VK ID' });
+  }
+
+  const { userId: vkId, firstName, lastName, avatarUrl, birthDate, gender } = vkData;
+
+  try {
+    let user = await prisma.user.findUnique({ where: { vkId } });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          vkId,
+          firstName,
+          lastName,
+          tag: `vk_${vkId}`,
+          avatarUrl,
+          role: 'USER',
+          ...(birthDate && { birthDate }),
+          ...(gender && { gender }),
+        },
+      });
+    } else {
+      user = await prisma.user.update({
+        where: { vkId },
+        data: { firstName, lastName, avatarUrl },
+      });
+    }
+
+    const registrationComplete = !user.tag.startsWith('vk_');
+    const jwtPayload = { id: user.id, vkId: user.vkId, role: user.role };
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        accessToken: generateAccessToken(jwtPayload),
+        refreshToken: generateRefreshToken(jwtPayload),
+        user: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          tag: user.tag,
+          role: user.role,
+          avatarUrl: user.avatarUrl,
+          birthDate: user.birthDate,
+          gender: user.gender,
+        },
+        registrationComplete,
+      },
+    });
+  } catch (err) {
+    console.error('[VK SDK] loginWithVkSdk error:', err.message);
+    return res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
 export const completeRegistration = async (req, res) => {
-  const { firstName, lastName, gender, birthDate, role, tag } = req.body;
+  const {
+    firstName, lastName, gender, birthDate, role, tag, city, bio,
+    pricePerHour, additionalPriceInfo, experienceYears, experienceMonths, deliveryTime,
+  } = req.body;
 
   if (!firstName || !lastName || !gender || !birthDate || !role || !tag) {
-    return res.status(400).json({ status: 'error', message: 'Все поля обязательны' });
+    return res.status(400).json({ status: 'error', message: 'Обязательные поля: firstName, lastName, gender, birthDate, role, tag' });
   }
 
   if (role !== 'USER' && role !== 'PHOTOGRAPHER') {
@@ -198,14 +266,30 @@ export const completeRegistration = async (req, res) => {
     const user = await prisma.$transaction(async (tx) => {
       const updated = await tx.user.update({
         where: { id: req.user.id },
-        data: { firstName, lastName, gender, birthDate: new Date(birthDate), tag, role },
+        data: {
+          firstName,
+          lastName,
+          gender,
+          birthDate: new Date(birthDate),
+          tag,
+          role,
+          ...(city !== undefined && { city }),
+          ...(bio !== undefined && { bio }),
+        },
       });
 
       if (role === 'PHOTOGRAPHER') {
+        const photographerData = {
+          ...(pricePerHour !== undefined && { pricePerHour: parseFloat(pricePerHour) || null }),
+          ...(additionalPriceInfo !== undefined && { additionalPriceInfo }),
+          ...(experienceYears !== undefined && { experienceYears: parseInt(experienceYears) || null }),
+          ...(experienceMonths !== undefined && { experienceMonths: parseInt(experienceMonths) || null }),
+          ...(deliveryTime !== undefined && { deliveryTime: parseInt(deliveryTime) || null }),
+        };
         await tx.photographer.upsert({
           where: { userId: updated.id },
-          update: {},
-          create: { userId: updated.id },
+          update: photographerData,
+          create: { userId: updated.id, ...photographerData },
         });
       }
 

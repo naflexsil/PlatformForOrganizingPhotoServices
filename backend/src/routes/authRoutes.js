@@ -3,6 +3,7 @@ import {
   initiateVkLogin,
   handleVkCallback,
   loginWithVk,
+  loginWithVkSdk,
   mockLogin,
   getMe,
   completeRegistration,
@@ -14,6 +15,7 @@ const router = Router();
 router.get('/login', initiateVkLogin);
 router.get('/callback', handleVkCallback);
 router.post('/vk', loginWithVk);
+router.post('/vk-sdk', loginWithVkSdk);
 
 router.get('/mock-login', mockLogin);
 router.get('/me', authMiddleware, getMe);
