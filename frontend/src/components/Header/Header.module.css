@@ -38,6 +38,24 @@
   opacity: 1;
 }
 
+.logoutBtn {
+  margin-left: 30px;
+  background: transparent;
+  color: var(--white);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: "Farabee", serif;
+  font-size: 16px;
+  font-weight: normal;
+  opacity: 0.6;
+  transition: opacity 0.3s;
+}
+
+.logoutBtn:hover {
+  opacity: 1;
+}
+
 @media (max-width: 768px) {
   .nav {
     display: none;
