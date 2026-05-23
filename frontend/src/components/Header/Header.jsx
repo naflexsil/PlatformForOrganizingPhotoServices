@@ -1,10 +1,8 @@
 import React from "react";
 import s from "./Header.module.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-const Header = ({ isAuthenticated }) => {
-  const navigate = useNavigate();
-
+const Header = ({ isAuthenticated, onLoginClick }) => {
   return (
     <header className={s.header}>
       <Link to="/">
@@ -25,7 +23,7 @@ const Header = ({ isAuthenticated }) => {
             </Link>
           </>
         ) : (
-          <button className={s.loginBtn} onClick={() => navigate("/login")}>
+          <button className={s.loginBtn} onClick={onLoginClick}>
             Войти
           </button>
         )}

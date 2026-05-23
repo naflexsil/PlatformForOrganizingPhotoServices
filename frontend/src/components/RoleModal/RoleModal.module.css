@@ -1,0 +1,225 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--white);
+  border-radius: 30px;
+  padding: 36px 40px 40px;
+  width: 580px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.25s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  opacity: 1;
+}
+
+.closeBtn img {
+  width: 18px;
+  height: 18px;
+  filter: brightness(0);
+}
+
+.header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.title {
+  font-family: "Farabee", serif;
+  font-size: 24px;
+  color: var(--dark-text);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--dark-text);
+  opacity: 0.5;
+  font-family: "Inter", sans-serif;
+  margin: 0;
+}
+
+.cards {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+.roleCard {
+  flex: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+  transition: transform 0.25s ease;
+}
+
+.roleCard:hover {
+  transform: translateY(-6px);
+}
+
+.cardImage {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 20px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.25s ease;
+}
+
+.roleCard:hover .cardImage {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.cardOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 40%,
+    rgba(51, 31, 31, 0.5) 100%
+  );
+  transition: background 0.25s ease;
+}
+
+.roleCard:hover .cardOverlay {
+  background: linear-gradient(
+    to bottom,
+    transparent 20%,
+    rgba(162, 85, 85, 0.45) 100%
+  );
+}
+
+.cardLabel {
+  font-family: "Farabee", serif;
+  font-size: 20px;
+  color: var(--dark-text);
+  text-align: center;
+}
+
+/* Warning overlay inside the modal */
+.warningOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.warningBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 20px;
+}
+
+.warningText {
+  font-family: "Farabee", serif;
+  font-size: 20px;
+  color: var(--dark-text);
+  text-align: center;
+  margin: 0;
+}
+
+.warningButtons {
+  display: flex;
+  gap: 14px;
+}
+
+.warningStay {
+  background-color: var(--accent-red);
+  color: var(--white);
+  padding: 12px 28px;
+  font-size: 18px;
+  border: 4px solid transparent;
+  border-radius: 12px;
+  font-family: "Farabee", serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.warningStay:hover {
+  background-color: var(--white);
+  color: var(--dark-text);
+  border-color: var(--accent-red);
+  transform: translateY(-3px);
+}
+
+.warningLeave {
+  background-color: var(--white);
+  color: var(--dark-text);
+  padding: 12px 28px;
+  font-size: 18px;
+  border: 4px solid var(--accent-red);
+  border-radius: 12px;
+  font-family: "Farabee", serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.warningLeave:hover {
+  background-color: var(--accent-red);
+  color: var(--white);
+  transform: translateY(-3px);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

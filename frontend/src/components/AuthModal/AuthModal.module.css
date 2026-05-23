@@ -1,0 +1,137 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--white);
+  border-radius: 30px;
+  padding: 36px 40px 32px;
+  width: 420px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.25s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  opacity: 1;
+}
+
+.closeBtn img {
+  width: 18px;
+  height: 18px;
+  filter: brightness(0);
+}
+
+.title {
+  font-family: "Farabee", serif;
+  font-size: 24px;
+  color: var(--dark-text);
+  text-align: center;
+  margin: 0;
+}
+
+.vkContainer {
+  width: 100%;
+  min-height: 44px;
+}
+
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--dark-text);
+  font-family: "Inter", sans-serif;
+  opacity: 0.7;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--gray);
+  border-top-color: var(--accent-red);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.devSection {
+  width: 100%;
+  border-top: 1.5px dashed var(--gray);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.devLabel {
+  font-size: 11px;
+  color: var(--dark-text);
+  opacity: 0.4;
+  font-family: "Inter", sans-serif;
+  text-align: center;
+}
+
+.devButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.devBtn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: "Inter", sans-serif;
+  background: var(--gray);
+  border: none;
+  border-radius: 10px;
+  color: var(--dark-text);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.devBtn:hover {
+  background: var(--light-pink);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
