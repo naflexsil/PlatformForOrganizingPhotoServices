@@ -1,8 +1,10 @@
-import React from "react";
 import s from "./Header.module.css";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const Header = ({ isAuthenticated, onLoginClick }) => {
+  const { logout } = useAuth();
+
   return (
     <header className={s.header}>
       <Link to="/">
@@ -21,6 +23,9 @@ const Header = ({ isAuthenticated, onLoginClick }) => {
             <Link to="/profile" className={s.profileLink}>
               Профиль
             </Link>
+            <button className={s.logoutBtn} onClick={logout}>
+              Выйти
+            </button>
           </>
         ) : (
           <button className={s.loginBtn} onClick={onLoginClick}>
