@@ -7,6 +7,7 @@ import heartFilledIcon from "../../assets/icons/heart_filled.svg";
 import defaultAvatar from "../../assets/images/default_avatar.png";
 import editIcon from "../../assets/icons/edit.svg";
 import PostModal from "../../components/PostModal/PostModal";
+import EditProfile from "../EditProfile/EditProfile";
 import { useAuth } from "../../context/AuthContext";
 
 const EMPTY_PROFILE = {
@@ -22,6 +23,7 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(!profileData);
   const settingsRef = useRef(null);
 
@@ -87,6 +89,33 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
     return <div className={s.pageWrapper} />;
   }
 
+  if (isEditProfileOpen) {
+    return (
+      <EditProfile
+        isPhotographer={false}
+        initialData={{
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          username: userData.username,
+          city: userData.city,
+          bio: userData.bio,
+        }}
+        onSave={(data) => {
+          setUserData((prev) => ({
+            ...prev,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            username: "@" + data.tag,
+            city: data.city,
+            bio: data.bio,
+          }));
+          setIsEditProfileOpen(false);
+        }}
+        onCancel={() => setIsEditProfileOpen(false)}
+      />
+    );
+  }
+
   return (
     <div className={s.pageWrapper}>
       <div className={s.container}>
@@ -135,7 +164,13 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
                     />
                     {isSettingsOpen && (
                       <div className={s.settingsModal}>
-                        <div className={s.modalItem}>
+                        <div
+                          className={s.modalItem}
+                          onClick={() => {
+                            setIsSettingsOpen(false);
+                            setIsEditProfileOpen(true);
+                          }}
+                        >
                           <img src={editIcon} alt="Edit" />
                           <span>Редактировать профиль</span>
                         </div>
@@ -155,6 +190,7 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
         {isMyProfile && (
           <div className={s.createPostBanner}>
             <span>Есть чем поделиться? Мы ждём!</span>
+            <button className={s.createBtn}>Создать пост</button>
           </div>
         )}
 

@@ -298,6 +298,12 @@
   font-family: "Farabee", serif !important;
   font-size: 18px;
   transition: all 0.3s ease;
+  align-self: flex-start;
+  width: fit-content;
+}
+
+.messageBtn {
+  align-self: flex-end;
 }
 
 .subscribeBtn:hover,

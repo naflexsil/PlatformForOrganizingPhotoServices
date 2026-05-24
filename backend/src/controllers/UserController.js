@@ -47,6 +47,19 @@ export const restoreAccount = async (req, res) => {
   }
 };
 
+export const checkTag = async (req, res) => {
+  const { tag } = req.query;
+  if (!tag) return res.status(400).json({ status: 'error', message: 'tag обязателен' });
+  try {
+    const where = { tag };
+    if (req.user?.id) where.NOT = { id: req.user.id };
+    const existing = await prisma.user.findFirst({ where });
+    return res.status(200).json({ status: 'success', data: { available: !existing } });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
 export const updateMe = async (req, res) => {
   const { id } = req.user;
   const { firstName, lastName, bio, tag, gender, birthDate, city } = req.body;

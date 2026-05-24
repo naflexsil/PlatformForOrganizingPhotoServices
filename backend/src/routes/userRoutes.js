@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import prisma from '../config/db.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
+import optionalAuthMiddleware from '../middlewares/optionalAuthMiddleware.js';
 import {
+  checkTag,
   deleteAccount,
   restoreAccount,
   updateMe,
@@ -19,6 +21,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/check-tag', optionalAuthMiddleware, checkTag);
 router.patch('/me', authMiddleware, updateMe);
 router.patch('/me/photographer', authMiddleware, updatePhotographerData);
 router.delete('/me', authMiddleware, deleteAccount);

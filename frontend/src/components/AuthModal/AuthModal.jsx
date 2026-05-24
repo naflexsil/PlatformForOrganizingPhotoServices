@@ -74,10 +74,10 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
     }
   };
 
-  const handleMockLogin = async (role) => {
+  const handleMockLogin = async (role, id = "1") => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/auth/mock-login?role=${role}`);
+      const res = await fetch(`/api/auth/mock-login?role=${role}&id=${id}`);
       const result = await res.json();
       if (result.status === "error") throw new Error(result.message);
       const { accessToken, refreshToken, user } = result.data;
@@ -120,18 +120,34 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
         {import.meta.env.DEV && (
           <div className={s.devSection}>
             <p className={s.devLabel}>Dev-режим (mock login)</p>
+            <p className={s.devHint}>Существующий аккаунт (id=1)</p>
             <div className={s.devButtons}>
               <button
                 className={s.devBtn}
-                onClick={() => handleMockLogin("USER")}
+                onClick={() => handleMockLogin("USER", "1")}
               >
-                Войти как Клиент
+                Клиент
               </button>
               <button
                 className={s.devBtn}
-                onClick={() => handleMockLogin("PHOTOGRAPHER")}
+                onClick={() => handleMockLogin("PHOTOGRAPHER", "1")}
               >
-                Войти как Фотограф
+                Фотограф
+              </button>
+            </div>
+            <p className={s.devHint}>Новый аккаунт (покажет форму регистрации)</p>
+            <div className={s.devButtons}>
+              <button
+                className={s.devBtn}
+                onClick={() => handleMockLogin("USER", String(Date.now()))}
+              >
+                Новый Клиент
+              </button>
+              <button
+                className={s.devBtn}
+                onClick={() => handleMockLogin("PHOTOGRAPHER", String(Date.now()))}
+              >
+                Новый Фотограф
               </button>
             </div>
           </div>

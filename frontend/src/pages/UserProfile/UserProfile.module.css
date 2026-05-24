@@ -213,6 +213,12 @@
   font-family: "Farabee", serif !important;
   font-size: 18px;
   transition: all 0.3s ease;
+  align-self: flex-start;
+  width: fit-content;
+}
+
+.messageBtn {
+  align-self: flex-end;
 }
 
 .subscribeBtn:hover,
@@ -233,8 +239,31 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 40px;
   font-size: 20px;
   font-family: "Inter", serif;
+}
+
+.createBtn {
+  background-color: var(--accent-red);
+  color: var(--white);
+  border: 4px solid transparent;
+  border-radius: 12px;
+  padding: 12px 30px;
+  cursor: pointer;
+  font-family: "Farabee", serif !important;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.createBtn:hover {
+  filter: brightness(1.1);
+  background-color: var(--white);
+  color: var(--dark-text);
+  border-color: var(--accent-red);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
 .emptyPosts {
