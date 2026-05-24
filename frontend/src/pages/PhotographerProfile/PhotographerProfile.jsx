@@ -254,6 +254,9 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
                   <span className={s.clickableStat}>Подписки</span> 0
                 </p>
               </div>
+              {!isMyProfile && (
+                <button className={s.subscribeBtn}>Подписаться</button>
+              )}
             </div>
 
             <div className={s.rightCol}>
@@ -288,12 +291,10 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
                   </div>
                 )}
               </div>
-              <div className={s.bio}>
-                <p>{userData.bio}</p>
-                {!isMyProfile && (
-                  <button className={s.messageBtn}>Написать</button>
-                )}
-              </div>
+              <p className={s.bioText}>{userData.bio}</p>
+              {!isMyProfile && (
+                <button className={s.messageBtn}>Написать</button>
+              )}
             </div>
           </div>
         </section>
