@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import s from "./EditProfile.module.css";
 import choiceArrowIcon from "../../assets/icons/choice_arrow_down.svg";
 import closeIcon from "../../assets/icons/carousel_close.svg";
@@ -7,8 +7,12 @@ import arrowRightIcon from "../../assets/icons/carousel_arrow_right.svg";
 import imagePlaceholderIcon from "../../assets/icons/image_placeholder.svg";
 import defaultAvatar from "../../assets/images/default_avatar.png";
 import { RUSSIAN_CITIES } from "../../data/russianCities";
+import { useAuth } from "../../context/AuthContext";
 
-const CitySelect = ({ value, onChange, error }) => {
+const NAME_REGEX = /[^a-zA-Zа-яёА-ЯЁ\s-]/g;
+const TAG_REGEX = /[^a-zA-Z0-9_]/g;
+
+const CitySelect = ({ value, onChange, onQueryChange, error }) => {
   const [query, setQuery] = useState(value || "");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -22,18 +26,21 @@ const CitySelect = ({ value, onChange, error }) => {
   const handleSelect = (city) => {
     setQuery(city);
     onChange(city);
+    onQueryChange?.(city);
     setIsOpen(false);
   };
 
   const handleClear = () => {
     setQuery("");
     onChange("");
+    onQueryChange?.("");
     setIsOpen(false);
   };
 
   const handleInputChange = (e) => {
     setQuery(e.target.value);
     onChange("");
+    onQueryChange?.(e.target.value);
     setIsOpen(true);
   };
 
@@ -101,6 +108,7 @@ const EditProfile = ({
   onSave,
   onCancel,
 }) => {
+  const { accessToken } = useAuth();
   const avatarInputRef = useRef(null);
   const searchPhotosInputRef = useRef(null);
 
@@ -117,6 +125,7 @@ const EditProfile = ({
     deliveryDays: initialData.deliveryDays || "",
   });
 
+  const [cityQuery, setCityQuery] = useState(initialData.city || "Кемерово");
   const [avatar, setAvatar] = useState(initialData.avatar || null);
   const [searchPhotos, setSearchPhotos] = useState(
     initialData.searchPhotos || [],
@@ -125,8 +134,33 @@ const EditProfile = ({
   const [errors, setErrors] = useState({});
   const [searchPhotosError, setSearchPhotosError] = useState("");
 
-  const set = (field) => (e) =>
-    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  const setName = (field) => (e) => {
+    const val = e.target.value.replace(NAME_REGEX, "");
+    setForm((prev) => ({ ...prev, [field]: val }));
+  };
+
+  const handleTagChange = (e) => {
+    const val = e.target.value.replace(TAG_REGEX, "");
+    setForm((prev) => ({ ...prev, tag: val }));
+    setErrors((prev) => ({ ...prev, tag: undefined }));
+  };
+
+  const handleTagBlur = async () => {
+    const tag = form.tag.trim();
+    if (!tag) return;
+    try {
+      const headers = accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : {};
+      const res = await fetch(`/api/users/check-tag?tag=${encodeURIComponent(tag)}`, { headers });
+      const result = await res.json();
+      if (result.status === "success" && !result.data.available) {
+        setErrors((prev) => ({ ...prev, tag: "Этот тег уже занят другим пользователем" }));
+      }
+    } catch {
+      // network error — skip check
+    }
+  };
 
   const setNumeric = (field) => (e) => {
     const val = e.target.value.replace(/\D/g, "");
@@ -171,7 +205,13 @@ const EditProfile = ({
       newErrors.firstName = "Это поле обязательно к заполнению";
     if (!form.lastName.trim())
       newErrors.lastName = "Это поле обязательно к заполнению";
-    if (!form.city) newErrors.city = "Это поле обязательно к заполнению";
+
+    if (!form.city) {
+      newErrors.city = cityQuery.trim()
+        ? "Такого города нет в нашем списке городов"
+        : "Это поле обязательно к заполнению";
+    }
+
     if (isPhotographer && !form.hourlyRate)
       newErrors.hourlyRate = "Это поле обязательно к заполнению";
     if (isPhotographer && form.hourlyRate && isNaN(Number(form.hourlyRate)))
@@ -189,6 +229,10 @@ const EditProfile = ({
       newErrors.experienceMonths = "От 0 до 12 месяцев";
     if (form.deliveryDays && isNaN(Number(form.deliveryDays)))
       newErrors.deliveryDays = "Введите число";
+
+    // preserve existing tag error from blur check
+    if (errors.tag) newErrors.tag = errors.tag;
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -237,7 +281,7 @@ const EditProfile = ({
               <input
                 className={`${s.input} ${errors.firstName ? s.inputError : ""}`}
                 value={form.firstName}
-                onChange={set("firstName")}
+                onChange={setName("firstName")}
                 placeholder="Введите имя"
               />
               {errors.firstName && (
@@ -249,7 +293,7 @@ const EditProfile = ({
               <input
                 className={`${s.input} ${errors.lastName ? s.inputError : ""}`}
                 value={form.lastName}
-                onChange={set("lastName")}
+                onChange={setName("lastName")}
                 placeholder="Введите фамилию"
               />
               {errors.lastName && (
@@ -259,17 +303,22 @@ const EditProfile = ({
 
             <Field label="Тег">
               <input
-                className={s.input}
+                className={`${s.input} ${errors.tag ? s.inputError : ""}`}
                 value={form.tag}
-                onChange={set("tag")}
+                onChange={handleTagChange}
+                onBlur={handleTagBlur}
                 placeholder="username"
               />
+              {errors.tag && (
+                <span className={s.errorText}>{errors.tag}</span>
+              )}
             </Field>
 
             <Field label="Город" required>
               <CitySelect
                 value={form.city}
                 onChange={(val) => setForm((prev) => ({ ...prev, city: val }))}
+                onQueryChange={setCityQuery}
                 error={errors.city}
               />
             </Field>
@@ -312,7 +361,9 @@ const EditProfile = ({
                   <textarea
                     className={s.textarea}
                     value={form.priceList}
-                    onChange={set("priceList")}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, priceList: e.target.value }))
+                    }
                     placeholder={
                       "Свадебная съемка от 4500 руб\nПарная съемка от 4500 руб"
                     }
