@@ -4,11 +4,28 @@ import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import MainPage from "./pages/MainPage/MainPage";
 import PhotographerProfile from "./pages/PhotographerProfile/PhotographerProfile";
+import UserProfile from "./pages/UserProfile/UserProfile";
 import AuthModal from "./components/AuthModal/AuthModal";
 import RoleModal from "./components/RoleModal/RoleModal";
 import RegistrationFormModal from "./components/RegistrationFormModal/RegistrationFormModal";
+import DevPanel from "./components/DevPanel/DevPanel";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
+import {
+  PHOTOGRAPHER_MINE,
+  PHOTOGRAPHER_OTHER,
+  USER_MINE,
+  USER_OTHER,
+} from "./data/testProfiles";
+
+const MyProfile = () => {
+  const { user } = useAuth();
+  if (!user) return null;
+  if (user.role === "PHOTOGRAPHER") {
+    return <PhotographerProfile isMyProfile={true} />;
+  }
+  return <UserProfile isMyProfile={true} />;
+};
 
 const AppContent = () => {
   const navigate = useNavigate();
@@ -67,12 +84,29 @@ const AppContent = () => {
       />
       <Routes>
         <Route path="/" element={<MainPage />} />
+        <Route path="/profile" element={<MyProfile />} />
+
+        {/* Dev test routes — only rendered in dev, no server-side guard needed */}
         <Route
-          path="/profile"
-          element={<PhotographerProfile isMyProfile={true} />}
+          path="/dev/photographer-mine"
+          element={<PhotographerProfile isMyProfile={true} profileData={PHOTOGRAPHER_MINE} />}
+        />
+        <Route
+          path="/dev/photographer-other"
+          element={<PhotographerProfile isMyProfile={false} profileData={PHOTOGRAPHER_OTHER} />}
+        />
+        <Route
+          path="/dev/user-mine"
+          element={<UserProfile isMyProfile={true} profileData={USER_MINE} />}
+        />
+        <Route
+          path="/dev/user-other"
+          element={<UserProfile isMyProfile={false} profileData={USER_OTHER} />}
         />
       </Routes>
       <Footer />
+
+      <DevPanel />
 
       {showAuthModal && (
         <AuthModal
