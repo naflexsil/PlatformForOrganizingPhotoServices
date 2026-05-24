@@ -117,6 +117,9 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
                   </p>
                 )}
               </div>
+              {!isMyProfile && (
+                <button className={s.subscribeBtn}>Подписаться</button>
+              )}
             </div>
 
             <div className={s.rightCol}>
@@ -141,18 +144,19 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
                   </div>
                 )}
               </div>
-              <div className={s.bio}>
-                <p>{userData.bio}</p>
-              </div>
+              <p className={s.bioText}>{userData.bio}</p>
               {!isMyProfile && (
-                <div className={s.actionRow}>
-                  <button className={s.subscribeBtn}>Подписаться</button>
-                  <button className={s.messageBtn}>Написать</button>
-                </div>
+                <button className={s.messageBtn}>Написать</button>
               )}
             </div>
           </div>
         </section>
+
+        {isMyProfile && (
+          <div className={s.createPostBanner}>
+            <span>Есть чем поделиться? Мы ждём!</span>
+          </div>
+        )}
 
         <div className={s.postsSection}>
           {posts.length > 0 ? (

@@ -96,25 +96,13 @@
   cursor: pointer;
 }
 
-.rating {
-  display: flex;
-  align-items: center;
-  font-family: "Inter", serif;
-  font-size: 20px;
-  color: var(--dark-text);
-}
-
-.rating img {
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
-}
 
 .rightCol {
   display: flex;
   flex-direction: column;
   flex: 1;
   gap: 15px;
+  min-width: 0;
 }
 
 .roleBlock {
@@ -130,12 +118,11 @@
   color: var(--dark-text);
 }
 
-.bio {
+.bioText {
   font-size: 15px;
   line-height: 1.6;
   color: var(--dark-text);
-  display: flex;
-  justify-content: flex-end;
+  flex: 1;
 }
 
 .settingsWrapper {
@@ -298,6 +285,7 @@
   gap: 15px;
 }
 
+.subscribeBtn,
 .messageBtn,
 .portfolioBtn,
 .createBtn {
@@ -312,6 +300,7 @@
   transition: all 0.3s ease;
 }
 
+.subscribeBtn:hover,
 .messageBtn:hover,
 .portfolioBtn:hover,
 .createBtn:hover {
@@ -494,4 +483,97 @@
   border-color: var(--accent-red);
   transform: translateY(-3px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .postsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .pageWrapper {
+    padding: 30px 0;
+  }
+
+  .profileCard {
+    flex-direction: column;
+  }
+
+  .avatarWrapper {
+    width: 100%;
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .avatar {
+    width: 140px;
+    height: 140px;
+  }
+
+  .profileContent {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 24px;
+  }
+
+  .leftCol {
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .nameBlock h1 {
+    font-size: 22px;
+  }
+
+  .rightCol {
+    gap: 12px;
+  }
+
+  .roleLabel {
+    font-size: 18px;
+  }
+
+  .detailRow {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .createPostBanner {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+    font-size: 16px;
+    padding: 20px 24px;
+  }
+
+  .postsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .profileContent {
+    padding: 16px;
+  }
+
+  .postsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .subscribeBtn,
+  .messageBtn,
+  .portfolioBtn,
+  .createBtn {
+    width: 100%;
+    text-align: center;
+  }
 }
