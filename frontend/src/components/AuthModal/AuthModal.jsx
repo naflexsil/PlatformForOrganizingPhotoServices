@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import s from "./AuthModal.module.css";
 import closeIcon from "../../assets/icons/carousel_close.svg";
+import { SHOW_DEV_PANEL } from "../../devConfig";
 
 let vkConfigInitialized = false;
 
@@ -117,7 +118,7 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
           </div>
         )}
 
-        {import.meta.env.DEV && (
+        {SHOW_DEV_PANEL && (
           <div className={s.devSection}>
             <p className={s.devLabel}>Dev-режим (mock login)</p>
             <p className={s.devHint}>Существующий аккаунт (id=1)</p>

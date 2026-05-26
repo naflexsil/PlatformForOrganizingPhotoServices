@@ -7,23 +7,43 @@ import heartFilledIcon from "../../assets/icons/heart_filled.svg";
 import defaultAvatar from "../../assets/images/default_avatar.png";
 import editIcon from "../../assets/icons/edit.svg";
 import PostModal from "../../components/PostModal/PostModal";
+import CreatePostModal from "../../components/CreatePostModal/CreatePostModal";
 import EditProfile from "../EditProfile/EditProfile";
 import { useAuth } from "../../context/AuthContext";
 
 const EMPTY_PROFILE = {
+  id: null,
   firstName: "",
   lastName: "",
   username: "",
   bio: "",
   city: "—",
+  avatarUrl: null,
+  avatarUrlOriginal: null,
 };
+
+const normalizePost = (p) => ({
+  id: p.id,
+  images: p.photos?.map((ph) => ph.urlPreview) || p.images || [],
+  originalImages: p.photos?.map((ph) => ph.urlOriginal) || p.images || [],
+  description: p.description || "",
+  likes: p._count?.likes ?? 0,
+  isLiked: p.isLiked ?? false,
+  isFavorited: p.isFavorited ?? false,
+  isPinned: p.isPinned ?? false,
+  createdAt: p.createdAt,
+  author: p.author,
+  authorId: p.authorId,
+});
 
 const UserProfile = ({ isMyProfile = true, profileData = null }) => {
   const { accessToken } = useAuth();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [posts, setPosts] = useState([]);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(!profileData);
   const settingsRef = useRef(null);
 
@@ -39,15 +59,30 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
         if (result.status !== "success") return;
         const d = result.data;
         setUserData({
+          id: d.id,
           firstName: d.firstName || "",
           lastName: d.lastName || "",
           username: "@" + (d.tag || ""),
           bio: d.bio || "",
           city: d.city || "—",
+          avatarUrl: d.avatarUrl || null,
+          avatarUrlOriginal: d.avatarUrlOriginal || d.avatarUrl || null,
         });
       })
       .finally(() => setIsLoading(false));
   }, [profileData, accessToken]);
+
+  useEffect(() => {
+    if (!userData.id || profileData) return;
+    const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+    fetch(`/api/posts?authorId=${userData.id}`, { headers })
+      .then((r) => r.json())
+      .then((result) => {
+        if (result.status === "success") {
+          setPosts(result.data.map(normalizePost));
+        }
+      });
+  }, [userData.id, accessToken, profileData]);
 
   useEffect(() => {
     if (!isSettingsOpen) return;
@@ -60,24 +95,90 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isSettingsOpen]);
 
-  const handleLike = (postId) => {
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId
-          ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 }
-          : p,
-      ),
-    );
-    setSelectedPost((prev) =>
-      prev && prev.id === postId
-        ? { ...prev, liked: !prev.liked, likes: prev.liked ? prev.likes - 1 : prev.likes + 1 }
-        : prev,
-    );
+  const handleCreatePost = async ({ photoIds, description }) => {
+    const res = await fetch("/api/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ description, photoIds }),
+    });
+    const result = await res.json();
+    if (result.status === "success") {
+      setPosts((prev) => [normalizePost(result.data), ...prev]);
+    }
   };
 
-  const handleDelete = (postId) => {
-    setPosts((prev) => prev.filter((p) => p.id !== postId));
-    setSelectedPost(null);
+  const handleLike = async (postId) => {
+    const res = await fetch(`/api/posts/${postId}/like`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const result = await res.json();
+    if (result.status !== "success") return;
+    const { liked, count } = result.data;
+    const update = (p) =>
+      p.id === postId ? { ...p, isLiked: liked, likes: count } : p;
+    setPosts((prev) => prev.map(update));
+    setSelectedPost((prev) => (prev?.id === postId ? update(prev) : prev));
+  };
+
+  const handleFavorite = async (postId) => {
+    const res = await fetch(`/api/posts/${postId}/favorite`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const result = await res.json();
+    if (result.status !== "success") return;
+    const { favorited } = result.data;
+    const update = (p) =>
+      p.id === postId ? { ...p, isFavorited: favorited } : p;
+    setPosts((prev) => prev.map(update));
+    setSelectedPost((prev) => (prev?.id === postId ? update(prev) : prev));
+  };
+
+  const handleDelete = async (postId) => {
+    const res = await fetch(`/api/posts/${postId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (res.ok) {
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      setSelectedPost(null);
+    }
+  };
+
+  const handlePin = async (postId, isPinned) => {
+    const res = await fetch(`/api/posts/${postId}/pin`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ isPinned }),
+    });
+    const result = await res.json();
+    if (result.status !== "success") return;
+    const updated = normalizePost(result.data);
+    setPosts((prev) => prev.map((p) => (p.id === postId ? updated : p)));
+    setSelectedPost(updated);
+  };
+
+  const handleSaveEdit = async (postId, description) => {
+    const res = await fetch(`/api/posts/${postId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ description }),
+    });
+    const result = await res.json();
+    if (result.status !== "success") return;
+    const updated = normalizePost(result.data);
+    setPosts((prev) => prev.map((p) => (p.id === postId ? updated : p)));
+    setSelectedPost(updated);
   };
 
   const formatLikes = (n) => {
@@ -85,9 +186,7 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
     return String(n);
   };
 
-  if (isLoading) {
-    return <div className={s.pageWrapper} />;
-  }
+  if (isLoading) return <div className={s.pageWrapper} />;
 
   if (isEditProfileOpen) {
     return (
@@ -121,24 +220,23 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
       <div className={s.container}>
         <section className={s.profileCard}>
           <div className={s.avatarWrapper}>
-            <img src={defaultAvatar} alt="Avatar" className={s.avatar} />
+            <img
+              src={userData.avatarUrl || defaultAvatar}
+              alt="Avatar"
+              className={`${s.avatar} ${userData.avatarUrl ? s.avatarClickable : ""}`}
+              onClick={() => userData.avatarUrl && setIsAvatarOpen(true)}
+            />
           </div>
 
           <div className={s.profileContent}>
             <div className={s.leftCol}>
               <div className={s.nameBlock}>
-                <h1>
-                  {userData.firstName} {userData.lastName}
-                </h1>
+                <h1>{userData.firstName} {userData.lastName}</h1>
                 <p className={s.username}>{userData.username}</p>
               </div>
               <div className={s.stats}>
-                <p>
-                  <span className={s.clickableStat}>Подписчики</span> 0
-                </p>
-                <p>
-                  <span className={s.clickableStat}>Подписки</span> 0
-                </p>
+                <p><span className={s.clickableStat}>Подписчики</span> 0</p>
+                <p><span className={s.clickableStat}>Подписки</span> 0</p>
                 {userData.city && userData.city !== "—" && (
                   <p className={s.cityRow}>
                     <img src={locIcon} alt="" className={s.cityIcon} />
@@ -190,7 +288,9 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
         {isMyProfile && (
           <div className={s.createPostBanner}>
             <span>Есть чем поделиться? Мы ждём!</span>
-            <button className={s.createBtn}>Создать пост</button>
+            <button className={s.createBtn} onClick={() => setIsCreatePostOpen(true)}>
+              Создать пост
+            </button>
           </div>
         )}
 
@@ -204,8 +304,8 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
                   onClick={() => setSelectedPost(post)}
                 >
                   <div className={s.postImageWrapper}>
-                    {post.image ? (
-                      <img src={post.image} alt="Пост" className={s.postImage} />
+                    {post.images[0] ? (
+                      <img src={post.images[0]} alt="Пост" className={s.postImage} />
                     ) : (
                       <div className={s.postNoImage} />
                     )}
@@ -219,11 +319,11 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
                       }}
                     >
                       <img
-                        src={post.liked ? heartFilledIcon : heartIcon}
+                        src={post.isLiked ? heartFilledIcon : heartIcon}
                         alt="Лайк"
                         className={s.heartIcon}
                       />
-                      <span className={post.liked ? s.likedCount : s.likeCount}>
+                      <span className={post.isLiked ? s.likedCount : s.likeCount}>
                         {formatLikes(post.likes)}
                       </span>
                     </button>
@@ -239,16 +339,41 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
         </div>
       </div>
 
+      {isCreatePostOpen && (
+        <CreatePostModal
+          accessToken={accessToken}
+          onClose={() => setIsCreatePostOpen(false)}
+          onPublish={async (data) => {
+            await handleCreatePost(data);
+            setIsCreatePostOpen(false);
+          }}
+        />
+      )}
+
       {selectedPost && (
         <PostModal
           post={selectedPost}
           onClose={() => setSelectedPost(null)}
           onLike={handleLike}
+          onFavorite={handleFavorite}
           onDelete={handleDelete}
-          onEdit={() => setSelectedPost(null)}
-          onPin={() => setSelectedPost(null)}
+          onPin={handlePin}
+          onSaveEdit={handleSaveEdit}
           isMyProfile={isMyProfile}
         />
+      )}
+      {isAvatarOpen && (
+        <div
+          className={s.avatarOverlayModal}
+          onClick={() => setIsAvatarOpen(false)}
+        >
+          <img
+            src={userData.avatarUrlOriginal || userData.avatarUrl}
+            alt="Фото профиля"
+            className={s.avatarFullImg}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       )}
     </div>
   );

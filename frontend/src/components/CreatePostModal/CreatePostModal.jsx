@@ -1,24 +1,30 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import s from "./CreatePostModal.module.css";
 import imagePlaceholderIcon from "../../assets/icons/image_placeholder.svg";
 import arrowLeftIcon from "../../assets/icons/carousel_arrow_left.svg";
 import arrowRightIcon from "../../assets/icons/carousel_arrow_right.svg";
 import closeIcon from "../../assets/icons/carousel_close.svg";
 
-const CreatePostModal = ({ onClose, onPublish }) => {
-  const [images, setImages] = useState([]);
+const MAX_PHOTOS = 10;
+const ALLOWED_TYPES = ["image/jpeg", "image/png"];
+
+const filterFiles = (files) =>
+  Array.from(files).filter((f) => ALLOWED_TYPES.includes(f.type));
+
+const CreatePostModal = ({ onClose, onPublish, accessToken }) => {
+  const [previews, setPreviews] = useState([]);
+  const [files, setFiles] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [text, setText] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
-  const modalRef = useRef(null);
 
   useEffect(() => {
     const preventScroll = (e) => {
-      if (textareaRef.current && textareaRef.current.contains(e.target)) {
-        return;
-      }
+      if (textareaRef.current && textareaRef.current.contains(e.target)) return;
       e.preventDefault();
     };
     document.addEventListener("wheel", preventScroll, { passive: false });
@@ -29,17 +35,34 @@ const CreatePostModal = ({ onClose, onPublish }) => {
     };
   }, []);
 
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    const urls = files.map((file) => URL.createObjectURL(file));
-    setImages((prev) => [...prev, ...urls]);
+  const addFiles = (newFiles) => {
+    const valid = filterFiles(newFiles);
+    if (valid.length < newFiles.length) {
+      setUploadError("Допустимы только файлы PNG и JPEG");
+    } else {
+      setUploadError("");
+    }
+    const remaining = MAX_PHOTOS - files.length;
+    const toAdd = valid.slice(0, remaining);
+    if (valid.length > remaining) {
+      setUploadError(`Максимум ${MAX_PHOTOS} фотографий`);
+    }
+    if (toAdd.length === 0) return;
+    setPreviews((prev) => [...prev, ...toAdd.map((f) => URL.createObjectURL(f))]);
+    setFiles((prev) => [...prev, ...toAdd]);
     setCurrentIndex(0);
   };
 
+  const handleFileChange = (e) => {
+    addFiles(e.target.files);
+    e.target.value = "";
+  };
+
   const handleRemoveImage = () => {
-    const updated = images.filter((_, i) => i !== currentIndex);
-    setImages(updated);
-    setCurrentIndex(Math.max(0, currentIndex - 1));
+    const idx = currentIndex;
+    setPreviews((prev) => prev.filter((_, i) => i !== idx));
+    setFiles((prev) => prev.filter((_, i) => i !== idx));
+    setCurrentIndex(Math.max(0, idx - 1));
   };
 
   const handlePrev = () => setCurrentIndex((prev) => prev - 1);
@@ -49,33 +72,48 @@ const CreatePostModal = ({ onClose, onPublish }) => {
     e.preventDefault();
     setIsDragging(true);
   };
-
   const handleDragLeave = () => setIsDragging(false);
 
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    const files = Array.from(e.dataTransfer.files).filter((f) =>
-      f.type.startsWith("image/"),
-    );
+    addFiles(e.dataTransfer.files);
+  };
+
+  const handlePublish = async () => {
     if (files.length === 0) return;
-    const urls = files.map((file) => URL.createObjectURL(file));
-    setImages((prev) => [...prev, ...urls]);
-    setCurrentIndex(0);
-  };
-
-  const handlePublish = () => {
-    if (images.length === 0 && !text.trim()) return;
-    onPublish({ images, text });
-  };
-
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) onClose();
+    setIsUploading(true);
+    setUploadError("");
+    try {
+      const photoIds = [];
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("image", file);
+        const res = await fetch("/api/upload/photo", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: formData,
+        });
+        const result = await res.json();
+        if (result.status !== "success") throw new Error(result.message);
+        photoIds.push(result.data.photo.id);
+      }
+      await onPublish({ photoIds, description: text });
+    } catch (err) {
+      setUploadError(err.message || "Ошибка при загрузке фото");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
-    <div className={s.overlay} onClick={handleOverlayClick}>
-      <div className={s.modal} ref={modalRef}>
+    <div
+      className={s.overlay}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isUploading) onClose();
+      }}
+    >
+      <div className={s.modal}>
         <div className={s.modalHeader}>
           <h2 className={s.title}>Новый пост</h2>
         </div>
@@ -87,7 +125,7 @@ const CreatePostModal = ({ onClose, onPublish }) => {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            {images.length === 0 ? (
+            {previews.length === 0 ? (
               <div className={s.emptyPhoto}>
                 <img
                   src={imagePlaceholderIcon}
@@ -105,7 +143,7 @@ const CreatePostModal = ({ onClose, onPublish }) => {
                     <img src={closeIcon} alt="Удалить" />
                   </button>
 
-                  {images.length > 1 && currentIndex > 0 && (
+                  {previews.length > 1 && currentIndex > 0 && (
                     <button
                       className={`${s.arrowBtn} ${s.arrowLeft}`}
                       onClick={handlePrev}
@@ -115,12 +153,12 @@ const CreatePostModal = ({ onClose, onPublish }) => {
                   )}
 
                   <img
-                    src={images[currentIndex]}
+                    src={previews[currentIndex]}
                     alt={`Фото ${currentIndex + 1}`}
                     className={s.carouselImage}
                   />
 
-                  {images.length > 1 && currentIndex < images.length - 1 && (
+                  {previews.length > 1 && currentIndex < previews.length - 1 && (
                     <button
                       className={`${s.arrowBtn} ${s.arrowRight}`}
                       onClick={handleNext}
@@ -129,29 +167,36 @@ const CreatePostModal = ({ onClose, onPublish }) => {
                     </button>
                   )}
 
-                  {images.length > 1 && (
+                  {previews.length > 1 && (
                     <div className={s.counter}>
-                      {currentIndex + 1} / {images.length}
+                      {currentIndex + 1} / {previews.length}
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            <button
-              className={s.uploadBtn}
-              onClick={() => fileInputRef.current.click()}
-            >
-              Загрузить с устройства
-            </button>
+            {files.length < MAX_PHOTOS && (
+              <button
+                className={s.uploadBtn}
+                onClick={() => fileInputRef.current.click()}
+                disabled={isUploading}
+              >
+                Загрузить с устройства
+              </button>
+            )}
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png"
               multiple
               ref={fileInputRef}
               onChange={handleFileChange}
               className={s.hiddenInput}
             />
+
+            {uploadError && (
+              <p className={s.errorText}>{uploadError}</p>
+            )}
           </div>
 
           <textarea
@@ -160,6 +205,7 @@ const CreatePostModal = ({ onClose, onPublish }) => {
             placeholder="Напишите что-нибудь..."
             value={text}
             onChange={(e) => setText(e.target.value)}
+            disabled={isUploading}
           />
         </div>
 
@@ -167,9 +213,9 @@ const CreatePostModal = ({ onClose, onPublish }) => {
           <button
             className={s.publishBtn}
             onClick={handlePublish}
-            disabled={images.length === 0 && !text.trim()}
+            disabled={files.length === 0 || isUploading}
           >
-            Выложить
+            {isUploading ? "Публикация..." : "Выложить"}
           </button>
         </div>
       </div>

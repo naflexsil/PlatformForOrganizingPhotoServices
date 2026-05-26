@@ -39,6 +39,34 @@
   display: block;
 }
 
+.avatarClickable {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.avatarClickable:hover {
+  opacity: 0.85;
+}
+
+.avatarOverlayModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  cursor: pointer;
+}
+
+.avatarFullImg {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 16px;
+  object-fit: contain;
+  cursor: default;
+}
+
 .profileContent {
   background: var(--white);
   border-radius: 30px;

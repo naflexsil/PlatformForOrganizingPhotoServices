@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authMiddleware from '../middlewares/authMiddleware.js';
+import optionalAuthMiddleware from '../middlewares/optionalAuthMiddleware.js';
 import {
   getAllPosts,
   getPostById,
@@ -13,15 +14,13 @@ import {
 
 const router = Router();
 
-router.use(authMiddleware);
-
-router.get('/', getAllPosts);
-router.get('/:id', getPostById);
-router.post('/', createPost);
-router.put('/:id', updatePost);
-router.delete('/:id', deletePost);
-router.post('/:id/like', toggleLike);
-router.post('/:id/favorite', toggleFavorite);
-router.patch('/:id/pin', pinPost);
+router.get('/', optionalAuthMiddleware, getAllPosts);
+router.get('/:id', optionalAuthMiddleware, getPostById);
+router.post('/', authMiddleware, createPost);
+router.put('/:id', authMiddleware, updatePost);
+router.delete('/:id', authMiddleware, deletePost);
+router.post('/:id/like', authMiddleware, toggleLike);
+router.post('/:id/favorite', authMiddleware, toggleFavorite);
+router.patch('/:id/pin', authMiddleware, pinPost);
 
 export default router;
