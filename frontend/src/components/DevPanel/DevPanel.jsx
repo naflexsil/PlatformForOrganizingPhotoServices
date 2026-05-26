@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import s from "./DevPanel.module.css";
+import { SHOW_DEV_PANEL } from "../../devConfig";
 
 const DEV_ROUTES = [
   { path: "/dev/photographer-mine", label: "Фотограф (мой)" },
@@ -9,7 +10,7 @@ const DEV_ROUTES = [
 ];
 
 const DevPanel = () => {
-  if (!import.meta.env.DEV) return null;
+  if (!SHOW_DEV_PANEL) return null;
   const location = useLocation();
 
   return (

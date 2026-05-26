@@ -112,11 +112,13 @@ const EditProfile = ({
   const avatarInputRef = useRef(null);
   const searchPhotosInputRef = useRef(null);
 
+  const rawCity = initialData.city && initialData.city !== "—" ? initialData.city : "";
+
   const [form, setForm] = useState({
-    firstName: initialData.firstName || "Алина",
-    lastName: initialData.lastName || "Старикова",
-    tag: initialData.username?.replace("@", "") || "flexsana",
-    city: initialData.city || "Кемерово",
+    firstName: initialData.firstName || "",
+    lastName: initialData.lastName || "",
+    tag: initialData.username?.replace("@", "") || "",
+    city: rawCity,
     bio: initialData.bio || "",
     hourlyRate: initialData.hourlyRate || "",
     priceList: initialData.priceList || "",
@@ -125,8 +127,11 @@ const EditProfile = ({
     deliveryDays: initialData.deliveryDays || "",
   });
 
-  const [cityQuery, setCityQuery] = useState(initialData.city || "Кемерово");
+  const [cityQuery, setCityQuery] = useState(rawCity);
   const [avatar, setAvatar] = useState(initialData.avatar || null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [searchPhotos, setSearchPhotos] = useState(
     initialData.searchPhotos || [],
   );
@@ -169,7 +174,10 @@ const EditProfile = ({
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
-    if (file) setAvatar(URL.createObjectURL(file));
+    if (file) {
+      setAvatar(URL.createObjectURL(file));
+      setAvatarFile(file);
+    }
   };
 
   const handleSearchPhotosChange = (e) => {
@@ -237,9 +245,62 @@ const EditProfile = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return;
-    onSave?.({ ...form, avatar, searchPhotos });
+    setIsSaving(true);
+    setSaveError("");
+    try {
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      };
+
+      if (avatarFile) {
+        const fd = new FormData();
+        fd.append("image", avatarFile);
+        await fetch("/api/upload/avatar", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: fd,
+        });
+      }
+
+      const userRes = await fetch("/api/users/me", {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          tag: form.tag || undefined,
+          bio: form.bio,
+          city: form.city,
+        }),
+      });
+      const userResult = await userRes.json();
+      if (userResult.status !== "success") throw new Error(userResult.message);
+
+      if (isPhotographer) {
+        const phRes = await fetch("/api/users/me/photographer", {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({
+            pricePerHour: form.hourlyRate ? Number(form.hourlyRate) : undefined,
+            additionalPriceInfo: form.priceList || undefined,
+            experienceYears: form.experienceYears ? Number(form.experienceYears) : undefined,
+            experienceMonths: form.experienceMonths ? Number(form.experienceMonths) : undefined,
+            deliveryTime: form.deliveryDays ? Number(form.deliveryDays) : undefined,
+          }),
+        });
+        const phResult = await phRes.json();
+        if (phResult.status !== "success") throw new Error(phResult.message);
+      }
+
+      onSave?.({ ...form, avatar, searchPhotos });
+    } catch (err) {
+      setSaveError(err.message || "Ошибка при сохранении");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -523,16 +584,25 @@ const EditProfile = ({
               </>
             )}
 
+            {saveError && (
+              <span className={s.errorText}>{saveError}</span>
+            )}
             <div className={s.buttons}>
-              <button className={s.cancelBtn} onClick={onCancel} type="button">
+              <button
+                className={s.cancelBtn}
+                onClick={onCancel}
+                type="button"
+                disabled={isSaving}
+              >
                 Отменить изменения
               </button>
               <button
                 className={s.saveBtn}
                 onClick={handleSubmit}
                 type="button"
+                disabled={isSaving}
               >
-                Сохранить изменения
+                {isSaving ? "Сохранение..." : "Сохранить изменения"}
               </button>
             </div>
           </div>

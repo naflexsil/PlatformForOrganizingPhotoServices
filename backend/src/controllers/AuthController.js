@@ -140,10 +140,6 @@ export const loginWithVk = async (req, res) => {
 };
 
 export const mockLogin = async (req, res) => {
-  if (process.env.NODE_ENV === 'production') {
-    return res.status(404).json({ status: 'error', message: 'Not found' });
-  }
-
   const { role = 'USER', id = '1' } = req.query;
   const vkId = `mock_${id}`;
 
@@ -328,6 +324,7 @@ export const getMe = async (req, res) => {
         birthDate: user.birthDate,
         city: user.city,
         avatarUrl: user.avatarUrl,
+        avatarUrlOriginal: user.avatarUrlOriginal,
         role: user.role,
         photographer: user.photographer ?? null,
         createdAt: user.createdAt,

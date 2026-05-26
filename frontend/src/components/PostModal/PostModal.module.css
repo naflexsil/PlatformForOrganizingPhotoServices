@@ -344,3 +344,66 @@
   filter: invert(41%) sepia(19%) saturate(1148%) hue-rotate(314deg)
     brightness(91%) contrast(85%);
 }
+
+.editBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.editTextarea {
+  width: 100%;
+  min-height: 80px;
+  border: 1.5px solid var(--gray);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  color: var(--dark-text);
+  resize: vertical;
+  outline: none;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+.editTextarea:focus {
+  border-color: var(--accent-red);
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+}
+
+.editSaveBtn {
+  padding: 6px 16px;
+  background: var(--accent-red);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.editSaveBtn:hover {
+  opacity: 0.85;
+}
+
+.editCancelBtn {
+  padding: 6px 16px;
+  background: var(--gray);
+  color: var(--dark-text);
+  border: none;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.editCancelBtn:hover {
+  opacity: 0.7;
+}

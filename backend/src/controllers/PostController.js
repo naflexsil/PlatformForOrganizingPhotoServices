@@ -53,9 +53,11 @@ const transformPost = (post, userId) => {
 };
 
 export const getAllPosts = async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user?.id ?? null;
+  const { authorId } = req.query;
   try {
     const posts = await prisma.post.findMany({
+      where: authorId ? { authorId } : {},
       include: buildPostInclude(userId),
       orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
     });
@@ -67,7 +69,7 @@ export const getAllPosts = async (req, res) => {
 
 export const getPostById = async (req, res) => {
   const { id } = req.params;
-  const userId = req.user.id;
+  const userId = req.user?.id ?? null;
   try {
     const post = await prisma.post.findUnique({ where: { id }, include: buildPostInclude(userId) });
     if (!post) {

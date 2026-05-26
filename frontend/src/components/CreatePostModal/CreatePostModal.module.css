@@ -284,3 +284,23 @@
   transform: translateY(-3px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
+
+.publishBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.uploadBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.errorText {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: var(--accent-red);
+  margin-top: 4px;
+  text-align: center;
+}

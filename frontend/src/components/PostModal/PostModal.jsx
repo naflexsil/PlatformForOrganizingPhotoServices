@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import s from "./PostModal.module.css";
 import heartIcon from "../../assets/icons/heart.svg";
 import heartFilledIcon from "../../assets/icons/heart_filled.svg";
@@ -8,6 +8,7 @@ import moreIcon from "../../assets/icons/more.svg";
 import editIcon from "../../assets/icons/edit.svg";
 import deleteIcon from "../../assets/icons/delete.svg";
 import pinIcon from "../../assets/icons/pin.svg";
+import unpinIcon from "../../assets/icons/unpin.svg";
 import arrowLeftIcon from "../../assets/icons/carousel_arrow_left.svg";
 import arrowRightIcon from "../../assets/icons/carousel_arrow_right.svg";
 import closeIcon from "../../assets/icons/carousel_close.svg";
@@ -17,41 +18,57 @@ const PostModal = ({
   post,
   onClose,
   onLike,
+  onFavorite,
   onDelete,
-  onEdit,
   onPin,
+  onSaveEdit,
   isMyProfile,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editDescription, setEditDescription] = useState(
+    post.description || post.text || "",
+  );
 
   useEffect(() => {
     const handleKey = (e) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        if (isEditing) { setIsEditing(false); return; }
+        onClose();
+      }
     };
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
-  }, [onClose]);
+  }, [onClose, isEditing]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => { document.body.style.overflow = ""; };
   }, []);
 
   const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) onClose();
-    if (isMenuOpen) setIsMenuOpen(false);
+    if (e.target === e.currentTarget) {
+      if (isMenuOpen) { setIsMenuOpen(false); return; }
+      onClose();
+    }
   };
 
-  const images = post.images || (post.image ? [post.image] : []);
-  const handlePrev = () => setCurrentIndex((prev) => prev - 1);
-  const handleNext = () => setCurrentIndex((prev) => prev + 1);
+  const images = post.originalImages || post.images || (post.image ? [post.image] : []);
+  const handlePrev = () => setCurrentIndex((p) => p - 1);
+  const handleNext = () => setCurrentIndex((p) => p + 1);
 
-  const formatDate = (timestamp) => {
-    return new Date(timestamp).toLocaleDateString("ru-RU", {
+  const authorName = post.author
+    ? `${post.author.firstName} ${post.author.lastName}`
+    : post.authorName || "";
+
+  const authorAvatar = post.author?.avatarUrl || null;
+
+  const formatDate = (val) => {
+    if (!val) return "";
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("ru-RU", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -61,6 +78,16 @@ const PostModal = ({
   const handleMenuAction = (action) => {
     setIsMenuOpen(false);
     action();
+  };
+
+  const handleSaveEdit = () => {
+    onSaveEdit?.(post.id, editDescription);
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditDescription(post.description || post.text || "");
+    setIsEditing(false);
   };
 
   return (
@@ -75,25 +102,17 @@ const PostModal = ({
                 className={s.photo}
               />
               {images.length > 1 && currentIndex > 0 && (
-                <button
-                  className={`${s.arrowBtn} ${s.arrowLeft}`}
-                  onClick={handlePrev}
-                >
+                <button className={`${s.arrowBtn} ${s.arrowLeft}`} onClick={handlePrev}>
                   <img src={arrowLeftIcon} alt="Назад" />
                 </button>
               )}
               {images.length > 1 && currentIndex < images.length - 1 && (
-                <button
-                  className={`${s.arrowBtn} ${s.arrowRight}`}
-                  onClick={handleNext}
-                >
+                <button className={`${s.arrowBtn} ${s.arrowRight}`} onClick={handleNext}>
                   <img src={arrowRightIcon} alt="Вперёд" />
                 </button>
               )}
               {images.length > 1 && (
-                <div className={s.counter}>
-                  {currentIndex + 1} / {images.length}
-                </div>
+                <div className={s.counter}>{currentIndex + 1} / {images.length}</div>
               )}
             </>
           ) : (
@@ -103,12 +122,10 @@ const PostModal = ({
 
         <div className={s.contentSide}>
           <div className={s.header}>
-            <img src={defaultAvatar} alt="Avatar" className={s.avatar} />
+            <img src={authorAvatar || defaultAvatar} alt="Avatar" className={s.avatar} />
             <div className={s.authorInfo}>
-              <span className={s.authorName}>
-                {post.authorName || "Алина Старикова"}
-              </span>
-              <span className={s.date}>{formatDate(post.id)}</span>
+              <span className={s.authorName}>{authorName}</span>
+              <span className={s.date}>{formatDate(post.createdAt)}</span>
             </div>
             <button className={s.closeBtn} onClick={onClose}>
               <img src={closeIcon} alt="Закрыть" />
@@ -118,21 +135,18 @@ const PostModal = ({
           <div className={s.actionsRow}>
             <button className={s.actionBtn} onClick={() => onLike(post.id)}>
               <img
-                src={post.liked ? heartFilledIcon : heartIcon}
+                src={post.isLiked ? heartFilledIcon : heartIcon}
                 alt="Лайк"
                 className={s.actionIcon}
               />
-              <span className={post.liked ? s.likedCount : s.actionCount}>
-                {post.likes}
+              <span className={post.isLiked ? s.likedCount : s.actionCount}>
+                {post.likes ?? 0}
               </span>
             </button>
 
-            <button
-              className={s.actionBtn}
-              onClick={() => setBookmarked(!bookmarked)}
-            >
+            <button className={s.actionBtn} onClick={() => onFavorite?.(post.id)}>
               <img
-                src={bookmarked ? bookmarkFilledIcon : bookmarkIcon}
+                src={post.isFavorited ? bookmarkFilledIcon : bookmarkIcon}
                 alt="В избранное"
                 className={s.bookmarkIcon}
               />
@@ -140,7 +154,28 @@ const PostModal = ({
           </div>
 
           <div className={s.textBody}>
-            {post.text && <p className={s.text}>{post.text}</p>}
+            {isEditing ? (
+              <div className={s.editBlock}>
+                <textarea
+                  className={s.editTextarea}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  autoFocus
+                />
+                <div className={s.editActions}>
+                  <button className={s.editSaveBtn} onClick={handleSaveEdit}>
+                    Сохранить
+                  </button>
+                  <button className={s.editCancelBtn} onClick={handleCancelEdit}>
+                    Отмена
+                  </button>
+                </div>
+              </div>
+            ) : (
+              (post.description || post.text) && (
+                <p className={s.text}>{post.description || post.text}</p>
+              )
+            )}
           </div>
 
           <div className={s.footer}>
@@ -160,17 +195,27 @@ const PostModal = ({
                   <div className={s.menu}>
                     <div
                       className={s.menuItem}
-                      onClick={() => handleMenuAction(() => onEdit(post))}
+                      onClick={() =>
+                        handleMenuAction(() => {
+                          setEditDescription(post.description || post.text || "");
+                          setIsEditing(true);
+                        })
+                      }
                     >
                       <img src={editIcon} alt="Редактировать" />
                       <span>Редактировать</span>
                     </div>
                     <div
                       className={s.menuItem}
-                      onClick={() => handleMenuAction(() => onPin(post.id))}
+                      onClick={() =>
+                        handleMenuAction(() => onPin?.(post.id, !post.isPinned))
+                      }
                     >
-                      <img src={pinIcon} alt="Закрепить" />
-                      <span>Закрепить</span>
+                      <img
+                        src={post.isPinned ? unpinIcon : pinIcon}
+                        alt={post.isPinned ? "Открепить" : "Закрепить"}
+                      />
+                      <span>{post.isPinned ? "Открепить" : "Закрепить"}</span>
                     </div>
                     <div
                       className={`${s.menuItem} ${s.menuItemDanger}`}
