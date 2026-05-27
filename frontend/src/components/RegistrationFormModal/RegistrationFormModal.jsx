@@ -96,6 +96,7 @@ const Field = ({ label, children, required }) => (
 );
 
 const RegistrationFormModal = ({ role, vkUser, onClose, onComplete }) => {
+  console.log("[RegForm] vkUser prop received:", JSON.stringify(vkUser));
   const { accessToken } = useAuth();
   const avatarInputRef = useRef(null);
   const [showWarning, setShowWarning] = useState(false);

@@ -178,6 +178,7 @@ export const cancelRegistration = async (req, res) => {
 
 export const loginWithVkSdk = async (req, res) => {
   const { idToken, firstName: clientFirstName, lastName: clientLastName } = req.body;
+  console.log('[VK SDK] loginWithVkSdk called, clientFirstName:', clientFirstName, 'clientLastName:', clientLastName);
   if (!idToken) {
     return res.status(400).json({ status: 'error', message: 'idToken обязателен' });
   }
@@ -189,10 +190,12 @@ export const loginWithVkSdk = async (req, res) => {
     return res.status(400).json({ status: 'error', message: 'Не удалось разобрать id_token от VK ID' });
   }
 
+  console.log('[VK SDK] vkData from id_token:', JSON.stringify(vkData));
   const { userId: vkId, birthDate, gender } = vkData;
   const firstName = vkData.firstName || clientFirstName || '';
   const lastName = vkData.lastName || clientLastName || '';
   const avatarUrl = vkData.avatarUrl || null;
+  console.log('[VK SDK] resolved name:', { firstName, lastName });
 
   try {
     let user = await prisma.user.findUnique({ where: { vkId } });

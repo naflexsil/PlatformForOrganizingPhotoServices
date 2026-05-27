@@ -37,12 +37,15 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
       })
       .on(VKID.OneTapInternalEvents.LOGIN_SUCCESS, async (payload) => {
         setIsLoading(true);
+        console.log("[VK SDK] LOGIN_SUCCESS payload:", JSON.stringify(payload, null, 2));
         try {
           const tokenData = await VKID.Auth.exchangeCode(
             payload.code,
             payload.device_id,
           );
+          console.log("[VK SDK] tokenData after exchangeCode:", JSON.stringify(tokenData, null, 2));
           const sdkUser = payload.user || payload.payload?.user || {};
+          console.log("[VK SDK] sdkUser extracted:", JSON.stringify(sdkUser, null, 2));
           await handleVkTokens(tokenData, sdkUser);
         } catch (err) {
           console.error("[VK SDK] exchange error:", err);
@@ -64,16 +67,23 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
       sdkUser.last_name || sdkUser.lastName ||
       tokenData.user?.last_name || tokenData.user?.lastName || "";
 
+    console.log("[VK SDK] extracted name:", { firstName, lastName });
+
+    const requestBody = {
+      idToken: tokenData.id_token,
+      ...(firstName && { firstName }),
+      ...(lastName && { lastName }),
+    };
+    console.log("[VK SDK] sending to /api/auth/vk-sdk:", JSON.stringify(requestBody));
+
     const res = await fetch("/api/auth/vk-sdk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        idToken: tokenData.id_token,
-        ...(firstName && { firstName }),
-        ...(lastName && { lastName }),
-      }),
+      body: JSON.stringify(requestBody),
     });
     const result = await res.json();
+
+    console.log("[VK SDK] backend response:", JSON.stringify(result, null, 2));
 
     if (result.status === "error") throw new Error(result.message);
 
