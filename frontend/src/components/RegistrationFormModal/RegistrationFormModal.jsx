@@ -117,6 +117,9 @@ const RegistrationFormModal = ({ role, vkUser, onClose, onComplete }) => {
 
   const [avatar] = useState(vkUser?.avatarUrl || null);
 
+  const set = (field) => (e) =>
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+
   const setName = (field) => (e) => {
     const val = e.target.value.replace(NAME_REGEX, "");
     setForm((prev) => ({ ...prev, [field]: val }));
