@@ -58,10 +58,35 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
   }, []);
 
   const handleVkTokens = async (tokenData) => {
+    let firstName = "";
+    let lastName = "";
+    let avatarUrl = null;
+
+    try {
+      const userInfoRes = await fetch("https://id.vk.com/oauth2/user_info", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `access_token=${tokenData.access_token}&client_id=54565351`,
+      });
+      const userInfo = await userInfoRes.json();
+      console.log("[VK SDK] userinfo response:", JSON.stringify(userInfo));
+      const u = userInfo?.user;
+      if (u) {
+        firstName = u.first_name || "";
+        lastName = u.last_name || "";
+        avatarUrl = u.avatar || null;
+      }
+    } catch (err) {
+      console.error("[VK SDK] userinfo fetch error:", err);
+    }
+
     const requestBody = {
       idToken: tokenData.id_token,
-      vkAccessToken: tokenData.access_token,
+      ...(firstName && { firstName }),
+      ...(lastName && { lastName }),
+      ...(avatarUrl && { avatarUrl }),
     };
+    console.log("[VK SDK] resolved name:", { firstName, lastName, avatarUrl });
     console.log("[VK SDK] sending to /api/auth/vk-sdk (keys):", Object.keys(requestBody));
 
     const res = await fetch("/api/auth/vk-sdk", {

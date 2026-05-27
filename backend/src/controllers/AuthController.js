@@ -177,7 +177,7 @@ export const cancelRegistration = async (req, res) => {
 };
 
 export const loginWithVkSdk = async (req, res) => {
-  const { idToken, vkAccessToken } = req.body;
+  const { idToken, firstName: clientFirstName, lastName: clientLastName, avatarUrl: clientAvatarUrl } = req.body;
   if (!idToken) {
     return res.status(400).json({ status: 'error', message: 'idToken обязателен' });
   }
@@ -190,29 +190,9 @@ export const loginWithVkSdk = async (req, res) => {
   }
 
   const { userId: vkId, birthDate, gender } = vkData;
-  let firstName = vkData.firstName || '';
-  let lastName = vkData.lastName || '';
-  let avatarUrl = vkData.avatarUrl || null;
-
-  if (vkAccessToken && (!firstName || !lastName)) {
-    try {
-      const userInfoRes = await fetch('https://id.vk.com/oauth2/user_info', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `access_token=${vkAccessToken}&client_id=54565351`,
-      });
-      const userInfo = await userInfoRes.json();
-      console.log('[VK SDK] userinfo response:', JSON.stringify(userInfo));
-      const u = userInfo?.user;
-      if (u) {
-        if (!firstName && u.first_name) firstName = u.first_name;
-        if (!lastName && u.last_name) lastName = u.last_name;
-        if (!avatarUrl && u.avatar) avatarUrl = u.avatar;
-      }
-    } catch (err) {
-      console.error('[VK SDK] userinfo fetch error:', err.message);
-    }
-  }
+  const firstName = vkData.firstName || clientFirstName || '';
+  const lastName = vkData.lastName || clientLastName || '';
+  const avatarUrl = vkData.avatarUrl || clientAvatarUrl || null;
 
   console.log('[VK SDK] resolved name:', { firstName, lastName, avatarUrl });
 
