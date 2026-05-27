@@ -12,7 +12,7 @@
   background: var(--white);
   border-radius: 30px;
   padding: 36px 40px 40px;
-  width: 580px;
+  width: 640px;
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   animation: slideIn 0.25s ease-out;
@@ -85,16 +85,11 @@
   align-items: center;
   gap: 14px;
   padding: 0;
-  transition: transform 0.25s ease;
-}
-
-.roleCard:hover {
-  transform: translateY(-6px);
 }
 
 .cardImage {
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1 / 1;
   border-radius: 20px;
   background-size: cover;
   background-position: center;
