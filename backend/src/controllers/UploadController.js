@@ -35,6 +35,7 @@ export const uploadPhoto = async (req, res) => {
   }
 
   const { postId, folderId } = req.body;
+  console.log(`[UPLOAD] photo: ${req.file.originalname} (${req.file.size} bytes)`);
 
   try {
     const { originalKey, previewKey, originalUrl, previewUrl } = await s3UploadImage(
@@ -42,6 +43,7 @@ export const uploadPhoto = async (req, res) => {
       req.file.originalname,
       req.file.mimetype,
     );
+    console.log(`[UPLOAD] photo OK → originalUrl="${originalUrl}" previewUrl="${previewUrl}"`);
 
     const photo = await prisma.photo.create({
       data: {
@@ -57,6 +59,7 @@ export const uploadPhoto = async (req, res) => {
       data: { photo, originalKey, previewKey },
     });
   } catch (err) {
+    console.error(`[UPLOAD] photo FAILED: ${err.message}`);
     return res.status(500).json({ status: 'error', message: err.message });
   }
 };
@@ -78,6 +81,7 @@ export const uploadAvatar = async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ status: 'error', message: 'Файл не загружен' });
   }
+  console.log(`[UPLOAD] avatar: ${req.file.originalname} (${req.file.size} bytes)`);
 
   try {
     const currentUser = await prisma.user.findUnique({
@@ -91,6 +95,7 @@ export const uploadAvatar = async (req, res) => {
       req.file.mimetype,
     );
 
+    console.log(`[UPLOAD] avatar OK → previewUrl="${previewUrl}" originalUrl="${originalUrl}"`);
     const user = await prisma.user.update({
       where: { id: req.user.id },
       data: {
