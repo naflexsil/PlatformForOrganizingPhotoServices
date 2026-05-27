@@ -42,7 +42,8 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
             payload.code,
             payload.device_id,
           );
-          await handleVkTokens(tokenData);
+          const sdkUser = payload.user || payload.payload?.user || {};
+          await handleVkTokens(tokenData, sdkUser);
         } catch (err) {
           console.error("[VK SDK] exchange error:", err);
         } finally {
@@ -55,11 +56,22 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
     };
   }, []);
 
-  const handleVkTokens = async (tokenData) => {
+  const handleVkTokens = async (tokenData, sdkUser = {}) => {
+    const firstName =
+      sdkUser.first_name || sdkUser.firstName ||
+      tokenData.user?.first_name || tokenData.user?.firstName || "";
+    const lastName =
+      sdkUser.last_name || sdkUser.lastName ||
+      tokenData.user?.last_name || tokenData.user?.lastName || "";
+
     const res = await fetch("/api/auth/vk-sdk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken: tokenData.id_token }),
+      body: JSON.stringify({
+        idToken: tokenData.id_token,
+        ...(firstName && { firstName }),
+        ...(lastName && { lastName }),
+      }),
     });
     const result = await res.json();
 
