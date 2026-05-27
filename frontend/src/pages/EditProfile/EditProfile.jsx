@@ -282,11 +282,15 @@ const EditProfile = ({
       const jsonHeaders = { "Content-Type": "application/json", ...authHeaders };
 
       // 1. Загрузка аватара (если выбран новый)
+      let newAvatarUrl = null;
+      let newAvatarUrlOriginal = null;
       if (avatarFile) {
         const avatarResult = await uploadFile("/api/upload/avatar", avatarFile, "image", accessToken);
         if (avatarResult.status !== "success") {
           throw new Error("Не удалось загрузить фото профиля: " + avatarResult.message);
         }
+        newAvatarUrl = avatarResult.data?.previewUrl || null;
+        newAvatarUrlOriginal = avatarResult.data?.originalUrl || null;
       }
 
       // 2. Удаление снятых фото поиска
@@ -336,7 +340,12 @@ const EditProfile = ({
         if (phResult.status !== "success") throw new Error(phResult.message);
       }
 
-      onSave?.({ ...form, avatar, searchPhotos });
+      onSave?.({
+        ...form,
+        avatar: newAvatarUrl || avatar,
+        avatarUrlOriginal: newAvatarUrlOriginal,
+        searchPhotos,
+      });
     } catch (err) {
       setSaveError(err.message || "Не удалось сохранить изменения. Попробуйте позже");
     } finally {

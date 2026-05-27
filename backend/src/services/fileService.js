@@ -15,8 +15,6 @@ export const s3Client = new S3Client({
 const BUCKET_ORIGINALS = process.env.S3_BUCKET_ORIGINALS || 'originals';
 const BUCKET_PREVIEWS = process.env.S3_BUCKET_PREVIEWS || 'previews';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
-
 const sanitizeName = (name) =>
   path.basename(name, path.extname(name))
     .replace(/[^a-zA-Z0-9._-]/g, '_')
@@ -27,8 +25,7 @@ const buildKey = (originalName, ext) => {
   return `${Date.now()}-${Math.round(Math.random() * 1e9)}-${base}${ext}`;
 };
 
-export const publicUrl = (bucket, key) =>
-  `${BACKEND_URL}/api/files/${bucket}/${key}`;
+export const publicUrl = (bucket, key) => `/api/files/${bucket}/${key}`;
 
 /**
  * Загружает оригинал и WebP-превью в S3.
