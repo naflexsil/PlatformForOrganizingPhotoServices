@@ -4,6 +4,7 @@ import imagePlaceholderIcon from "../../assets/icons/image_placeholder.svg";
 import arrowLeftIcon from "../../assets/icons/carousel_arrow_left.svg";
 import arrowRightIcon from "../../assets/icons/carousel_arrow_right.svg";
 import closeIcon from "../../assets/icons/carousel_close.svg";
+import { uploadFile, apiFetch } from "../../services/api";
 
 const MAX_PHOTOS = 10;
 const ALLOWED_TYPES = ["image/jpeg", "image/png"];
@@ -86,21 +87,16 @@ const CreatePostModal = ({ onClose, onPublish, accessToken }) => {
     setUploadError("");
     try {
       const photoIds = [];
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append("image", file);
-        const res = await fetch("/api/upload/photo", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${accessToken}` },
-          body: formData,
-        });
-        const result = await res.json();
-        if (result.status !== "success") throw new Error(result.message);
+      for (let i = 0; i < files.length; i++) {
+        const result = await uploadFile("/api/upload/photo", files[i], "image", accessToken);
+        if (result.status !== "success") {
+          throw new Error(`Фото ${i + 1}: ${result.message}`);
+        }
         photoIds.push(result.data.photo.id);
       }
       await onPublish({ photoIds, description: text });
     } catch (err) {
-      setUploadError(err.message || "Ошибка при загрузке фото");
+      setUploadError(err.message || "Не удалось загрузить фото. Попробуйте ещё раз");
     } finally {
       setIsUploading(false);
     }

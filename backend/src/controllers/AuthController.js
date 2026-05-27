@@ -194,10 +194,20 @@ export const loginWithVkSdk = async (req, res) => {
         },
       });
     } else {
-      user = await prisma.user.update({
-        where: { vkId },
-        data: { firstName, lastName, avatarUrl },
-      });
+      const isRegistered = user.tag && !user.tag.startsWith('vk_');
+      const updateData = {};
+      if (!isRegistered) {
+        // До завершения регистрации синхронизируем данные из VK
+        if (firstName) updateData.firstName = firstName;
+        if (lastName) updateData.lastName = lastName;
+      }
+      // Аватар из VK обновляем только если пользователь не загрузил свой
+      if (avatarUrl && !user.avatarUrlOriginal) {
+        updateData.avatarUrl = avatarUrl;
+      }
+      if (Object.keys(updateData).length > 0) {
+        user = await prisma.user.update({ where: { vkId }, data: updateData });
+      }
     }
 
     const registrationComplete = !user.tag.startsWith('vk_');
@@ -233,8 +243,8 @@ export const completeRegistration = async (req, res) => {
     pricePerHour, additionalPriceInfo, experienceYears, experienceMonths, deliveryTime,
   } = req.body;
 
-  if (!firstName || !lastName || !gender || !birthDate || !role || !tag) {
-    return res.status(400).json({ status: 'error', message: 'Обязательные поля: firstName, lastName, gender, birthDate, role, tag' });
+  if (!firstName || !lastName || !role || !tag) {
+    return res.status(400).json({ status: 'error', message: 'Обязательные поля: firstName, lastName, role, tag' });
   }
 
   if (role !== 'USER' && role !== 'PHOTOGRAPHER') {
@@ -265,10 +275,10 @@ export const completeRegistration = async (req, res) => {
         data: {
           firstName,
           lastName,
-          gender,
-          birthDate: new Date(birthDate),
           tag,
           role,
+          ...(gender !== undefined && { gender }),
+          ...(birthDate !== undefined && { birthDate: new Date(birthDate) }),
           ...(city !== undefined && { city }),
           ...(bio !== undefined && { bio }),
         },

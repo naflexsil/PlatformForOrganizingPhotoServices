@@ -49,6 +49,16 @@ app.use('/api/photos', photoRoutes);
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
+// eslint-disable-next-line no-unused-vars
+app.use((err, _req, res, _next) => {
+  console.error('[Express error]', err);
+  if (res.headersSent) return;
+  res.status(err.status || 500).json({
+    status: 'error',
+    message: err.message || 'Внутренняя ошибка сервера',
+  });
+});
+
 connectDB()
   .then(() => {
     console.log('PostgreSQL connected');

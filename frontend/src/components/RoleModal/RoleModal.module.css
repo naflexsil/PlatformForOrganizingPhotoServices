@@ -98,33 +98,14 @@
   border-radius: 20px;
   background-size: cover;
   background-position: center;
-  position: relative;
-  overflow: hidden;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  transition: box-shadow 0.25s ease;
+  filter: grayscale(100%);
+  transition: box-shadow 0.25s ease, filter 0.25s ease;
 }
 
 .roleCard:hover .cardImage {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
-}
-
-.cardOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    transparent 40%,
-    rgba(51, 31, 31, 0.5) 100%
-  );
-  transition: background 0.25s ease;
-}
-
-.roleCard:hover .cardOverlay {
-  background: linear-gradient(
-    to bottom,
-    transparent 20%,
-    rgba(162, 85, 85, 0.45) 100%
-  );
+  filter: none;
 }
 
 .cardLabel {

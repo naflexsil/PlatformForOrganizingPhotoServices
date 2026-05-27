@@ -7,6 +7,9 @@ import imagePlaceholderIcon from "../../assets/icons/image_placeholder.svg";
 import { RUSSIAN_CITIES } from "../../data/russianCities";
 import { useAuth } from "../../context/AuthContext";
 
+const NAME_REGEX = /[^a-zA-Zа-яёА-ЯЁ\s-]/g;
+const TAG_REGEX = /[^a-zA-Z0-9_]/g;
+
 const CitySelect = ({ value, onChange, error }) => {
   const [query, setQuery] = useState(value || "");
   const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +20,18 @@ const CitySelect = ({ value, onChange, error }) => {
           c.toLowerCase().startsWith(query.toLowerCase()),
         )
       : RUSSIAN_CITIES;
+
+  const handleSelect = (city) => {
+    setQuery(city);
+    onChange(city);
+    setIsOpen(false);
+  };
+
+  const handleClear = () => {
+    setQuery("");
+    onChange("");
+    setIsOpen(false);
+  };
 
   return (
     <div className={s.cityWrapper}>
@@ -36,12 +51,21 @@ const CitySelect = ({ value, onChange, error }) => {
           onFocus={() => setIsOpen(true)}
           onBlur={() => setTimeout(() => setIsOpen(false), 150)}
         />
-        <img
-          src={choiceArrowIcon}
-          alt=""
-          className={`${s.cityIcon} ${isOpen ? s.cityIconOpen : ""}`}
-          onClick={() => setIsOpen(!isOpen)}
-        />
+        {value ? (
+          <img
+            src={closeIcon}
+            alt="Очистить"
+            className={s.cityIconSmall}
+            onClick={handleClear}
+          />
+        ) : (
+          <img
+            src={choiceArrowIcon}
+            alt="Выбрать"
+            className={`${s.cityIcon} ${isOpen ? s.cityIconOpen : ""}`}
+            onClick={() => setIsOpen(!isOpen)}
+          />
+        )}
       </div>
       {isOpen && filtered.length > 0 && (
         <div className={s.cityDropdown}>
@@ -49,11 +73,7 @@ const CitySelect = ({ value, onChange, error }) => {
             <div
               key={city}
               className={s.cityOption}
-              onMouseDown={() => {
-                setQuery(city);
-                onChange(city);
-                setIsOpen(false);
-              }}
+              onMouseDown={() => handleSelect(city)}
             >
               {city}
             </div>
@@ -82,22 +102,10 @@ const RegistrationFormModal = ({ role, vkUser, onClose, onComplete }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const formatBirthDate = (dateVal) => {
-    if (!dateVal) return "";
-    try {
-      const d = new Date(dateVal);
-      return d.toISOString().split("T")[0];
-    } catch {
-      return "";
-    }
-  };
-
   const [form, setForm] = useState({
     firstName: vkUser?.firstName || "",
     lastName: vkUser?.lastName || "",
     tag: "",
-    gender: vkUser?.gender || "",
-    birthDate: formatBirthDate(vkUser?.birthDate),
     city: "",
     bio: "",
     hourlyRate: "",
@@ -109,23 +117,28 @@ const RegistrationFormModal = ({ role, vkUser, onClose, onComplete }) => {
 
   const [avatar] = useState(vkUser?.avatarUrl || null);
 
-  const set = (field) => (e) =>
-    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  const setName = (field) => (e) => {
+    const val = e.target.value.replace(NAME_REGEX, "");
+    setForm((prev) => ({ ...prev, [field]: val }));
+  };
+
+  const handleTagChange = (e) => {
+    const val = e.target.value.replace(TAG_REGEX, "");
+    setForm((prev) => ({ ...prev, tag: val }));
+    setErrors((prev) => ({ ...prev, tag: undefined }));
+  };
 
   const setNumeric = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value.replace(/\D/g, "") }));
 
   const validate = () => {
     const errs = {};
-    if (!form.firstName.trim()) errs.firstName = "Обязательное поле";
-    if (!form.lastName.trim()) errs.lastName = "Обязательное поле";
-    if (!form.tag.trim()) errs.tag = "Обязательное поле";
-    if (/\s/.test(form.tag)) errs.tag = "Тег не может содержать пробелы";
-    if (!form.gender) errs.gender = "Выберите пол";
-    if (!form.birthDate) errs.birthDate = "Обязательное поле";
-    if (!form.city) errs.city = "Обязательное поле";
+    if (!form.firstName.trim()) errs.firstName = "Это поле обязательно к заполнению";
+    if (!form.lastName.trim()) errs.lastName = "Это поле обязательно к заполнению";
+    if (!form.tag.trim()) errs.tag = "Это поле обязательно к заполнению";
+    if (!form.city) errs.city = "Это поле обязательно к заполнению";
     if (role === "PHOTOGRAPHER" && !form.hourlyRate)
-      errs.hourlyRate = "Обязательное поле";
+      errs.hourlyRate = "Это поле обязательно к заполнению";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -138,8 +151,6 @@ const RegistrationFormModal = ({ role, vkUser, onClose, onComplete }) => {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         tag: form.tag.trim(),
-        gender: form.gender,
-        birthDate: form.birthDate,
         role,
         city: form.city,
         bio: form.bio.trim(),
@@ -221,7 +232,7 @@ const RegistrationFormModal = ({ role, vkUser, onClose, onComplete }) => {
               <input
                 className={`${s.input} ${errors.firstName ? s.inputError : ""}`}
                 value={form.firstName}
-                onChange={set("firstName")}
+                onChange={setName("firstName")}
                 placeholder="Введите имя"
               />
               {errors.firstName && (
@@ -233,7 +244,7 @@ const RegistrationFormModal = ({ role, vkUser, onClose, onComplete }) => {
               <input
                 className={`${s.input} ${errors.lastName ? s.inputError : ""}`}
                 value={form.lastName}
-                onChange={set("lastName")}
+                onChange={setName("lastName")}
                 placeholder="Введите фамилию"
               />
               {errors.lastName && (
@@ -241,57 +252,15 @@ const RegistrationFormModal = ({ role, vkUser, onClose, onComplete }) => {
               )}
             </Field>
 
-            <Field label="Тег (@)" required>
+            <Field label="Тег" required>
               <input
                 className={`${s.input} ${errors.tag ? s.inputError : ""}`}
                 value={form.tag}
-                onChange={set("tag")}
+                onChange={handleTagChange}
                 placeholder="username"
               />
               {errors.tag && (
                 <span className={s.errorText}>{errors.tag}</span>
-              )}
-            </Field>
-
-            <Field label="Пол" required>
-              <div className={s.genderRow}>
-                <label className={`${s.genderOption} ${form.gender === "male" ? s.genderSelected : ""}`}>
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="male"
-                    checked={form.gender === "male"}
-                    onChange={set("gender")}
-                    className={s.hiddenInput}
-                  />
-                  Мужской
-                </label>
-                <label className={`${s.genderOption} ${form.gender === "female" ? s.genderSelected : ""}`}>
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="female"
-                    checked={form.gender === "female"}
-                    onChange={set("gender")}
-                    className={s.hiddenInput}
-                  />
-                  Женский
-                </label>
-              </div>
-              {errors.gender && (
-                <span className={s.errorText}>{errors.gender}</span>
-              )}
-            </Field>
-
-            <Field label="Дата рождения" required>
-              <input
-                type="date"
-                className={`${s.input} ${errors.birthDate ? s.inputError : ""}`}
-                value={form.birthDate}
-                onChange={set("birthDate")}
-              />
-              {errors.birthDate && (
-                <span className={s.errorText}>{errors.birthDate}</span>
               )}
             </Field>
 
