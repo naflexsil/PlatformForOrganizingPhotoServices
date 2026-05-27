@@ -345,6 +345,21 @@
   transform: rotate(180deg);
 }
 
+.cityIconSmall {
+  width: 14px;
+  height: 14px;
+  margin-right: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0.4;
+  filter: brightness(0);
+  transition: opacity 0.15s ease;
+}
+
+.cityIconSmall:hover {
+  opacity: 0.8;
+}
+
 .cityDropdown {
   position: absolute;
   top: calc(100% + 6px);

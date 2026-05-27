@@ -8,6 +8,7 @@ import imagePlaceholderIcon from "../../assets/icons/image_placeholder.svg";
 import defaultAvatar from "../../assets/images/default_avatar.png";
 import { RUSSIAN_CITIES } from "../../data/russianCities";
 import { useAuth } from "../../context/AuthContext";
+import { apiFetch, uploadFile } from "../../services/api";
 
 const NAME_REGEX = /[^a-zA-Zа-яёА-ЯЁ\s-]/g;
 const TAG_REGEX = /[^a-zA-Z0-9_]/g;
@@ -132,9 +133,21 @@ const EditProfile = ({
   const [avatarFile, setAvatarFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
-  const [searchPhotos, setSearchPhotos] = useState(
+
+  // Существующие фото в поиске (S3 URL), пришедшие с сервера
+  const [existingSearchPhotos, setExistingSearchPhotos] = useState(
     initialData.searchPhotos || [],
   );
+  // Удалённые существующие фото (нужно DELETE на сервере)
+  const [removedSearchPhotos, setRemovedSearchPhotos] = useState([]);
+  // Новые файлы для загрузки
+  const [newSearchPhotoFiles, setNewSearchPhotoFiles] = useState([]);
+  // Превью новых файлов (blob URL)
+  const [newSearchPhotoPreviews, setNewSearchPhotoPreviews] = useState([]);
+
+  // Все отображаемые фото (существующие + новые превью)
+  const searchPhotos = [...existingSearchPhotos, ...newSearchPhotoPreviews];
+
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [errors, setErrors] = useState({});
   const [searchPhotosError, setSearchPhotosError] = useState("");
@@ -183,26 +196,41 @@ const EditProfile = ({
   const handleSearchPhotosChange = (e) => {
     const files = Array.from(e.target.files);
     const total = searchPhotos.length + files.length;
-    if (total > 5) {
-      setSearchPhotosError(
-        "Нельзя добавить больше 5 фотографий для поисковой выдачи",
-      );
-      const allowed = files.slice(0, 5 - searchPhotos.length);
-      setSearchPhotos((prev) => [
-        ...prev,
-        ...allowed.map((f) => URL.createObjectURL(f)),
-      ]);
+    const remaining = 5 - searchPhotos.length;
+    if (remaining <= 0) {
+      setSearchPhotosError("Нельзя добавить больше 5 фотографий для поисковой выдачи");
       return;
     }
-    setSearchPhotosError("");
-    setSearchPhotos((prev) => [
+    const toAdd = files.slice(0, remaining);
+    if (files.length > remaining) {
+      setSearchPhotosError("Нельзя добавить больше 5 фотографий для поисковой выдачи");
+    } else {
+      setSearchPhotosError("");
+    }
+    setNewSearchPhotoFiles((prev) => [...prev, ...toAdd]);
+    setNewSearchPhotoPreviews((prev) => [
       ...prev,
-      ...files.map((f) => URL.createObjectURL(f)),
+      ...toAdd.map((f) => URL.createObjectURL(f)),
     ]);
+    if (total > 5) {
+      // Лишние не добавляем
+    }
   };
 
   const handleRemoveSearchPhoto = () => {
-    setSearchPhotos((prev) => prev.filter((_, i) => i !== currentPhotoIndex));
+    const idx = currentPhotoIndex;
+    const existingCount = existingSearchPhotos.length;
+    if (idx < existingCount) {
+      // Удаляем существующую S3-фотографию
+      const url = existingSearchPhotos[idx];
+      setRemovedSearchPhotos((prev) => [...prev, url]);
+      setExistingSearchPhotos((prev) => prev.filter((_, i) => i !== idx));
+    } else {
+      // Удаляем новую (ещё не загруженную) фотографию
+      const newIdx = idx - existingCount;
+      setNewSearchPhotoFiles((prev) => prev.filter((_, i) => i !== newIdx));
+      setNewSearchPhotoPreviews((prev) => prev.filter((_, i) => i !== newIdx));
+    }
     setCurrentPhotoIndex((prev) => Math.max(0, prev - 1));
     setSearchPhotosError("");
   };
@@ -250,24 +278,38 @@ const EditProfile = ({
     setIsSaving(true);
     setSaveError("");
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      };
+      const authHeaders = { Authorization: `Bearer ${accessToken}` };
+      const jsonHeaders = { "Content-Type": "application/json", ...authHeaders };
 
+      // 1. Загрузка аватара (если выбран новый)
       if (avatarFile) {
-        const fd = new FormData();
-        fd.append("image", avatarFile);
-        await fetch("/api/upload/avatar", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${accessToken}` },
-          body: fd,
+        const avatarResult = await uploadFile("/api/upload/avatar", avatarFile, "image", accessToken);
+        if (avatarResult.status !== "success") {
+          throw new Error("Не удалось загрузить фото профиля: " + avatarResult.message);
+        }
+      }
+
+      // 2. Удаление снятых фото поиска
+      for (const url of removedSearchPhotos) {
+        await apiFetch("/api/upload/search-photo", {
+          method: "DELETE",
+          headers: jsonHeaders,
+          body: JSON.stringify({ url }),
         });
       }
 
-      const userRes = await fetch("/api/users/me", {
+      // 3. Загрузка новых фото поиска
+      for (const file of newSearchPhotoFiles) {
+        const result = await uploadFile("/api/upload/search-photo", file, "image", accessToken);
+        if (result.status !== "success") {
+          throw new Error("Не удалось загрузить фото для поиска: " + result.message);
+        }
+      }
+
+      // 4. Сохранение основных данных профиля
+      const userResult = await apiFetch("/api/users/me", {
         method: "PATCH",
-        headers,
+        headers: jsonHeaders,
         body: JSON.stringify({
           firstName: form.firstName,
           lastName: form.lastName,
@@ -276,13 +318,13 @@ const EditProfile = ({
           city: form.city,
         }),
       });
-      const userResult = await userRes.json();
       if (userResult.status !== "success") throw new Error(userResult.message);
 
+      // 5. Сохранение данных фотографа (если нужно)
       if (isPhotographer) {
-        const phRes = await fetch("/api/users/me/photographer", {
+        const phResult = await apiFetch("/api/users/me/photographer", {
           method: "PATCH",
-          headers,
+          headers: jsonHeaders,
           body: JSON.stringify({
             pricePerHour: form.hourlyRate ? Number(form.hourlyRate) : undefined,
             additionalPriceInfo: form.priceList || undefined,
@@ -291,13 +333,12 @@ const EditProfile = ({
             deliveryTime: form.deliveryDays ? Number(form.deliveryDays) : undefined,
           }),
         });
-        const phResult = await phRes.json();
         if (phResult.status !== "success") throw new Error(phResult.message);
       }
 
       onSave?.({ ...form, avatar, searchPhotos });
     } catch (err) {
-      setSaveError(err.message || "Ошибка при сохранении");
+      setSaveError(err.message || "Не удалось сохранить изменения. Попробуйте позже");
     } finally {
       setIsSaving(false);
     }

@@ -53,6 +53,7 @@ const EMPTY_PROFILE = {
   priceText: "",
   avatarUrl: null,
   avatarUrlOriginal: null,
+  searchPhotos: [],
 };
 
 const normalizePost = (p) => ({
@@ -108,6 +109,7 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
           priceText: ph?.additionalPriceInfo || "",
           avatarUrl: d.avatarUrl || null,
           avatarUrlOriginal: d.avatarUrlOriginal || d.avatarUrl || null,
+          searchPhotos: ph?.searchPhotos || [],
         });
       })
       .finally(() => setIsLoading(false));
@@ -258,6 +260,8 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
           experienceYears: userData.experienceYears,
           experienceMonths: userData.experienceMonths,
           deliveryDays: userData.deliveryDays,
+          avatar: userData.avatarUrl,
+          searchPhotos: userData.searchPhotos,
         }}
         onSave={(data) => {
           setUserData((prev) => ({

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import s from "./RoleModal.module.css";
 import closeIcon from "../../assets/icons/carousel_close.svg";
-import photographerBg from "../../assets/images/feed_preview.png";
-import clientBg from "../../assets/images/picSoulSection.png";
+import photographerBg from "../../assets/images/photographer_registration.png";
+import clientBg from "../../assets/images/client_registration.png";
 
 const RoleModal = ({ onClose, onRoleSelected }) => {
   const [showWarning, setShowWarning] = useState(false);
@@ -34,9 +34,7 @@ const RoleModal = ({ onClose, onRoleSelected }) => {
             <div
               className={s.cardImage}
               style={{ backgroundImage: `url(${photographerBg})` }}
-            >
-              <div className={s.cardOverlay} />
-            </div>
+            />
             <span className={s.cardLabel}>Я фотограф</span>
           </button>
 
@@ -47,9 +45,7 @@ const RoleModal = ({ onClose, onRoleSelected }) => {
             <div
               className={s.cardImage}
               style={{ backgroundImage: `url(${clientBg})` }}
-            >
-              <div className={s.cardOverlay} />
-            </div>
+            />
             <span className={s.cardLabel}>Я клиент</span>
           </button>
         </div>

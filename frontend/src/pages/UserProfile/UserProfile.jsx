@@ -198,6 +198,7 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
           username: userData.username,
           city: userData.city,
           bio: userData.bio,
+          avatar: userData.avatarUrl,
         }}
         onSave={(data) => {
           setUserData((prev) => ({
