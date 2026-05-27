@@ -25,7 +25,11 @@ const buildKey = (originalName, ext) => {
   return `${Date.now()}-${Math.round(Math.random() * 1e9)}-${base}${ext}`;
 };
 
-export const publicUrl = (bucket, key) => `/api/files/${bucket}/${key}`;
+export const publicUrl = (bucket, key) => {
+  const url = `/api/files/${bucket}/${key}`;
+  console.log(`[S3] publicUrl → ${url}`);
+  return url;
+};
 
 /**
  * Загружает оригинал и WebP-превью в S3.
