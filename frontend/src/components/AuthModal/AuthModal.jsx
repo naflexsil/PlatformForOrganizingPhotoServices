@@ -44,9 +44,7 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
             payload.device_id,
           );
           console.log("[VK SDK] tokenData after exchangeCode:", JSON.stringify(tokenData, null, 2));
-          const sdkUser = payload.user || payload.payload?.user || {};
-          console.log("[VK SDK] sdkUser extracted:", JSON.stringify(sdkUser, null, 2));
-          await handleVkTokens(tokenData, sdkUser);
+          await handleVkTokens(tokenData);
         } catch (err) {
           console.error("[VK SDK] exchange error:", err);
         } finally {
@@ -59,22 +57,12 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
     };
   }, []);
 
-  const handleVkTokens = async (tokenData, sdkUser = {}) => {
-    const firstName =
-      sdkUser.first_name || sdkUser.firstName ||
-      tokenData.user?.first_name || tokenData.user?.firstName || "";
-    const lastName =
-      sdkUser.last_name || sdkUser.lastName ||
-      tokenData.user?.last_name || tokenData.user?.lastName || "";
-
-    console.log("[VK SDK] extracted name:", { firstName, lastName });
-
+  const handleVkTokens = async (tokenData) => {
     const requestBody = {
       idToken: tokenData.id_token,
-      ...(firstName && { firstName }),
-      ...(lastName && { lastName }),
+      vkAccessToken: tokenData.access_token,
     };
-    console.log("[VK SDK] sending to /api/auth/vk-sdk:", JSON.stringify(requestBody));
+    console.log("[VK SDK] sending to /api/auth/vk-sdk (keys):", Object.keys(requestBody));
 
     const res = await fetch("/api/auth/vk-sdk", {
       method: "POST",
