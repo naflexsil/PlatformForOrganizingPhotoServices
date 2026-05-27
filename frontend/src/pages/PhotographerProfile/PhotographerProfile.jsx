@@ -276,6 +276,8 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
             experienceYears: data.experienceYears,
             experienceMonths: data.experienceMonths,
             deliveryDays: data.deliveryDays,
+            ...(data.avatar && { avatarUrl: data.avatar }),
+            ...(data.avatarUrlOriginal && { avatarUrlOriginal: data.avatarUrlOriginal }),
           }));
           setIsEditProfileOpen(false);
         }}

@@ -208,6 +208,8 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
             username: "@" + data.tag,
             city: data.city,
             bio: data.bio,
+            ...(data.avatar && { avatarUrl: data.avatar }),
+            ...(data.avatarUrlOriginal && { avatarUrlOriginal: data.avatarUrlOriginal }),
           }));
           setIsEditProfileOpen(false);
         }}
