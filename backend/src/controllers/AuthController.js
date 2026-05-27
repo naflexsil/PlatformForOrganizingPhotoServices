@@ -194,7 +194,6 @@ export const loginWithVkSdk = async (req, res) => {
   const lastName = vkData.lastName || clientLastName || '';
   const avatarUrl = vkData.avatarUrl || clientAvatarUrl || null;
 
-  console.log('[VK SDK] resolved name:', { firstName, lastName, avatarUrl });
 
   try {
     let user = await prisma.user.findUnique({ where: { vkId } });
