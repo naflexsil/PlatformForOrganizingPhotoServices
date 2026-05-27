@@ -37,13 +37,11 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
       })
       .on(VKID.OneTapInternalEvents.LOGIN_SUCCESS, async (payload) => {
         setIsLoading(true);
-        console.log("[VK SDK] LOGIN_SUCCESS payload:", JSON.stringify(payload, null, 2));
         try {
           const tokenData = await VKID.Auth.exchangeCode(
             payload.code,
             payload.device_id,
           );
-          console.log("[VK SDK] tokenData after exchangeCode:", JSON.stringify(tokenData, null, 2));
           await handleVkTokens(tokenData);
         } catch (err) {
           console.error("[VK SDK] exchange error:", err);
@@ -69,12 +67,11 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
         body: `access_token=${tokenData.access_token}&client_id=54565351`,
       });
       const userInfo = await userInfoRes.json();
-      console.log("[VK SDK] userinfo response:", JSON.stringify(userInfo));
       const u = userInfo?.user;
       if (u) {
         firstName = u.first_name || "";
         lastName = u.last_name || "";
-        avatarUrl = u.avatar || null;
+        avatarUrl = u.avatar ? u.avatar.replace(/cs=\d+x\d+/, "cs=400x400") : null;
       }
     } catch (err) {
       console.error("[VK SDK] userinfo fetch error:", err);
@@ -86,8 +83,6 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
       ...(lastName && { lastName }),
       ...(avatarUrl && { avatarUrl }),
     };
-    console.log("[VK SDK] resolved name:", { firstName, lastName, avatarUrl });
-    console.log("[VK SDK] sending to /api/auth/vk-sdk (keys):", Object.keys(requestBody));
 
     const res = await fetch("/api/auth/vk-sdk", {
       method: "POST",
@@ -95,8 +90,6 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
       body: JSON.stringify(requestBody),
     });
     const result = await res.json();
-
-    console.log("[VK SDK] backend response:", JSON.stringify(result, null, 2));
 
     if (result.status === "error") throw new Error(result.message);
 

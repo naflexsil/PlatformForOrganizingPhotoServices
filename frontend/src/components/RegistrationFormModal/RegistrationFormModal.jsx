@@ -1,9 +1,8 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import s from "./RegistrationFormModal.module.css";
 import closeIcon from "../../assets/icons/carousel_close.svg";
 import choiceArrowIcon from "../../assets/icons/choice_arrow_down.svg";
 import defaultAvatar from "../../assets/images/default_avatar.png";
-import imagePlaceholderIcon from "../../assets/icons/image_placeholder.svg";
 import { RUSSIAN_CITIES } from "../../data/russianCities";
 import { useAuth } from "../../context/AuthContext";
 
@@ -96,9 +95,7 @@ const Field = ({ label, children, required }) => (
 );
 
 const RegistrationFormModal = ({ role, vkUser, onClose, onComplete }) => {
-  console.log("[RegForm] vkUser prop received:", JSON.stringify(vkUser));
   const { accessToken } = useAuth();
-  const avatarInputRef = useRef(null);
   const [showWarning, setShowWarning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
@@ -206,26 +203,13 @@ const RegistrationFormModal = ({ role, vkUser, onClose, onComplete }) => {
 
         <div className={s.scrollBody}>
           <div className={s.avatarRow}>
-            <div
-              className={s.avatarWrapper}
-              onClick={() => avatarInputRef.current?.click()}
-            >
+            <div className={s.avatarWrapper}>
               <img
                 src={avatar || defaultAvatar}
                 alt="Аватар"
                 className={s.avatarImg}
               />
-              <div className={s.avatarOverlay}>
-                <img src={imagePlaceholderIcon} alt="" className={s.avatarOverlayIcon} />
-                <span>Изменить</span>
-              </div>
             </div>
-            <input
-              type="file"
-              accept="image/*"
-              ref={avatarInputRef}
-              className={s.hiddenInput}
-            />
             <div className={s.roleTag}>
               {role === "PHOTOGRAPHER" ? "Фотограф" : "Клиент"}
             </div>
