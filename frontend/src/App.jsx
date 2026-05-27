@@ -29,7 +29,7 @@ const MyProfile = () => {
 
 const AppContent = () => {
   const navigate = useNavigate();
-  const { isAuth, login, updateUser } = useAuth();
+  const { isAuth, login, updateUser, logout, accessToken } = useAuth();
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
@@ -58,7 +58,19 @@ const AppContent = () => {
     setShowRegForm(true);
   };
 
-  const handleRoleModalClose = () => {
+  const cancelPendingRegistration = async (tokens) => {
+    if (!tokens) return;
+    try {
+      await fetch("/api/auth/cancel-registration", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${tokens.accessToken}` },
+      });
+    } catch {}
+    logout();
+  };
+
+  const handleRoleModalClose = async () => {
+    await cancelPendingRegistration(pendingTokens);
     setShowRoleModal(false);
     setPendingTokens(null);
     setPendingVkUser(null);
@@ -71,7 +83,8 @@ const AppContent = () => {
     navigate(`/profile`);
   };
 
-  const handleRegFormClose = () => {
+  const handleRegFormClose = async () => {
+    await cancelPendingRegistration(pendingTokens);
     setShowRegForm(false);
     setSelectedRole(null);
   };

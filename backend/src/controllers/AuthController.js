@@ -162,8 +162,22 @@ export const mockLogin = async (req, res) => {
   }
 };
 
+export const cancelRegistration = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) return res.status(404).json({ status: 'error', message: 'Пользователь не найден' });
+    if (user.tag && !user.tag.startsWith('vk_')) {
+      return res.status(400).json({ status: 'error', message: 'Регистрация уже завершена, удаление недоступно' });
+    }
+    await prisma.user.delete({ where: { id: req.user.id } });
+    return res.json({ status: 'success' });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
 export const loginWithVkSdk = async (req, res) => {
-  const { idToken } = req.body;
+  const { idToken, firstName: clientFirstName, lastName: clientLastName } = req.body;
   if (!idToken) {
     return res.status(400).json({ status: 'error', message: 'idToken обязателен' });
   }
@@ -175,7 +189,10 @@ export const loginWithVkSdk = async (req, res) => {
     return res.status(400).json({ status: 'error', message: 'Не удалось разобрать id_token от VK ID' });
   }
 
-  const { userId: vkId, firstName, lastName, avatarUrl, birthDate, gender } = vkData;
+  const { userId: vkId, birthDate, gender } = vkData;
+  const firstName = vkData.firstName || clientFirstName || '';
+  const lastName = vkData.lastName || clientLastName || '';
+  const avatarUrl = vkData.avatarUrl || null;
 
   try {
     let user = await prisma.user.findUnique({ where: { vkId } });
