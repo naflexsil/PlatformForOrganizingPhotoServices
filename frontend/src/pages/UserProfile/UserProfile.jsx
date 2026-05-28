@@ -7,7 +7,9 @@ import heartFilledIcon from "../../assets/icons/heart_filled.svg";
 import defaultAvatar from "../../assets/images/default_avatar.png";
 import editIcon from "../../assets/icons/edit.svg";
 import PostModal from "../../components/PostModal/PostModal";
+import PhotoModal from "../../components/PhotoModal/PhotoModal";
 import CreatePostModal from "../../components/CreatePostModal/CreatePostModal";
+import EditPostModal from "../../components/EditPostModal/EditPostModal";
 import EditProfile from "../EditProfile/EditProfile";
 import { useAuth } from "../../context/AuthContext";
 
@@ -24,8 +26,16 @@ const EMPTY_PROFILE = {
 
 const normalizePost = (p) => ({
   id: p.id,
+  photos: (p.photos || []).map((ph) => ({
+    id: ph.id,
+    urlPreview: ph.urlPreview,
+    urlOriginal: ph.urlOriginal,
+    likesCount: ph._count?.likes ?? 0,
+    favoritesCount: ph._count?.favorites ?? 0,
+    isLiked: ph.isLiked ?? false,
+    isFavorited: ph.isFavorited ?? false,
+  })),
   images: p.photos?.map((ph) => ph.urlPreview) || p.images || [],
-  originalImages: p.photos?.map((ph) => ph.urlOriginal) || p.images || [],
   description: p.description || "",
   likes: p._count?.likes ?? 0,
   isLiked: p.isLiked ?? false,
@@ -41,6 +51,8 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
+  const [editingPost, setEditingPost] = useState(null);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [posts, setPosts] = useState([]);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
@@ -165,20 +177,21 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
     setSelectedPost(updated);
   };
 
-  const handleSaveEdit = async (postId, description) => {
+  const handleEditPost = async (postId, { description, addPhotoIds, removePhotoIds }) => {
     const res = await fetch(`/api/posts/${postId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ description }),
+      body: JSON.stringify({ description, addPhotoIds, removePhotoIds }),
     });
     const result = await res.json();
     if (result.status !== "success") return;
     const updated = normalizePost(result.data);
     setPosts((prev) => prev.map((p) => (p.id === postId ? updated : p)));
     setSelectedPost(updated);
+    setEditingPost(null);
   };
 
   const formatLikes = (n) => {
@@ -353,7 +366,7 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
         />
       )}
 
-      {selectedPost && (
+      {selectedPost && !editingPost && (
         <PostModal
           post={selectedPost}
           onClose={() => setSelectedPost(null)}
@@ -361,8 +374,26 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
           onFavorite={handleFavorite}
           onDelete={handleDelete}
           onPin={handlePin}
-          onSaveEdit={handleSaveEdit}
+          onEdit={(post) => setEditingPost(post)}
+          onPhotoClick={(photo) => setSelectedPhoto(photo)}
           isMyProfile={isMyProfile}
+        />
+      )}
+
+      {selectedPhoto && (
+        <PhotoModal
+          photo={selectedPhoto}
+          onClose={() => setSelectedPhoto(null)}
+          accessToken={accessToken}
+        />
+      )}
+
+      {editingPost && (
+        <EditPostModal
+          post={editingPost}
+          onClose={() => setEditingPost(null)}
+          onSave={handleEditPost}
+          accessToken={accessToken}
         />
       )}
       {isAvatarOpen && (
