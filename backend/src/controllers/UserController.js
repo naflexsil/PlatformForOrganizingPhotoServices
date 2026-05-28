@@ -61,7 +61,7 @@ export const checkTag = async (req, res) => {
 };
 
 export const getUserByTag = async (req, res) => {
-  const { tag } = req.params;
+  const tag = req.params.tag.toLowerCase();
   try {
     const user = await prisma.user.findFirst({
       where: { tag, isDeleted: false },
@@ -79,7 +79,8 @@ export const getUserByTag = async (req, res) => {
 
 export const updateMe = async (req, res) => {
   const { id } = req.user;
-  const { firstName, lastName, bio, tag, gender, birthDate, city } = req.body;
+  const { firstName, lastName, bio, gender, birthDate, city } = req.body;
+  const tag = req.body.tag !== undefined ? req.body.tag.toLowerCase() : undefined;
 
   try {
     if (tag !== undefined) {

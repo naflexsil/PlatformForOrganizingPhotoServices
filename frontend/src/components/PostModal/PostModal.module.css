@@ -225,6 +225,12 @@
   color: var(--accent-red);
 }
 
+.favoritedCount {
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  color: var(--accent-red);
+}
+
 .textBody {
   flex: 1;
   overflow-y: auto;

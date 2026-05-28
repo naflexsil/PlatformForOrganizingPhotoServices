@@ -257,9 +257,10 @@ export const loginWithVkSdk = async (req, res) => {
 
 export const completeRegistration = async (req, res) => {
   const {
-    firstName, lastName, gender, birthDate, role, tag, city, bio,
+    firstName, lastName, gender, birthDate, role, city, bio,
     pricePerHour, additionalPriceInfo, experienceYears, experienceMonths, deliveryTime,
   } = req.body;
+  const tag = req.body.tag ? req.body.tag.toLowerCase() : req.body.tag;
 
   if (!firstName || !lastName || !role || !tag) {
     return res.status(400).json({ status: 'error', message: 'Обязательные поля: firstName, lastName, role, tag' });

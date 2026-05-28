@@ -7,7 +7,7 @@ import { RUSSIAN_CITIES } from "../../data/russianCities";
 import { useAuth } from "../../context/AuthContext";
 
 const NAME_REGEX = /[^a-zA-Zа-яёА-ЯЁ\s-]/g;
-const TAG_REGEX = /[^a-zA-Z0-9_]/g;
+const TAG_REGEX = /[^a-z0-9_]/g;
 
 const CitySelect = ({ value, onChange, error }) => {
   const [query, setQuery] = useState(value || "");
@@ -124,7 +124,7 @@ const RegistrationFormModal = ({ role, vkUser, onClose, onComplete }) => {
   };
 
   const handleTagChange = (e) => {
-    const val = e.target.value.replace(TAG_REGEX, "").slice(0, 20);
+    const val = e.target.value.toLowerCase().replace(TAG_REGEX, "").slice(0, 20);
     setForm((prev) => ({ ...prev, tag: val }));
     setErrors((prev) => ({ ...prev, tag: undefined }));
   };

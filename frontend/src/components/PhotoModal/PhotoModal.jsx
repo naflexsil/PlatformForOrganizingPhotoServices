@@ -87,7 +87,7 @@ const PhotoModal = ({ photo, onClose, accessToken }) => {
               alt="В избранное"
               className={s.bookmarkIcon}
             />
-            <span className={s.actionCount}>{favoritesCount}</span>
+            <span className={isFavorited ? s.favoritedCount : s.actionCount}>{favoritesCount}</span>
           </button>
         </div>
       </div>
