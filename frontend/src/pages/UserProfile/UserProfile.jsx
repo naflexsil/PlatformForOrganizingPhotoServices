@@ -12,6 +12,7 @@ import CreatePostModal from "../../components/CreatePostModal/CreatePostModal";
 import EditPostModal from "../../components/EditPostModal/EditPostModal";
 import EditProfile from "../EditProfile/EditProfile";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 
 const EMPTY_PROFILE = {
   id: null,
@@ -38,6 +39,7 @@ const normalizePost = (p) => ({
   images: p.photos?.map((ph) => ph.urlPreview) || p.images || [],
   description: p.description || "",
   likes: p._count?.likes ?? 0,
+  favoritesCount: p._count?.favorites ?? 0,
   isLiked: p.isLiked ?? false,
   isFavorited: p.isFavorited ?? false,
   isPinned: p.isPinned ?? false,
@@ -48,6 +50,7 @@ const normalizePost = (p) => ({
 
 const UserProfile = ({ isMyProfile = true, profileData = null }) => {
   const { accessToken } = useAuth();
+  const { showToast } = useToast();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -143,9 +146,9 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
     });
     const result = await res.json();
     if (result.status !== "success") return;
-    const { favorited } = result.data;
+    const { favorited, count } = result.data;
     const update = (p) =>
-      p.id === postId ? { ...p, isFavorited: favorited } : p;
+      p.id === postId ? { ...p, isFavorited: favorited, favoritesCount: count } : p;
     setPosts((prev) => prev.map(update));
     setSelectedPost((prev) => (prev?.id === postId ? update(prev) : prev));
   };
@@ -171,10 +174,14 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
       body: JSON.stringify({ isPinned }),
     });
     const result = await res.json();
-    if (result.status !== "success") return;
+    if (result.status !== "success") {
+      showToast("Вы не можете закрепить более 3 постов!", "error");
+      return;
+    }
     const updated = normalizePost(result.data);
     setPosts((prev) => prev.map((p) => (p.id === postId ? updated : p)));
     setSelectedPost(updated);
+    showToast(isPinned ? "Вы закрепили пост" : "Вы открепили пост", "success");
   };
 
   const handleEditPost = async (postId, { description, addPhotoIds, removePhotoIds }) => {

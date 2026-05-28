@@ -147,6 +147,7 @@ const PostModal = ({
                 alt="В избранное"
                 className={s.bookmarkIcon}
               />
+              <span className={s.actionCount}>{post.favoritesCount ?? 0}</span>
             </button>
           </div>
 
