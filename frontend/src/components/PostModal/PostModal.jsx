@@ -21,26 +21,20 @@ const PostModal = ({
   onFavorite,
   onDelete,
   onPin,
-  onSaveEdit,
+  onEdit,
+  onPhotoClick,
   isMyProfile,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editDescription, setEditDescription] = useState(
-    post.description || post.text || "",
-  );
 
   useEffect(() => {
     const handleKey = (e) => {
-      if (e.key === "Escape") {
-        if (isEditing) { setIsEditing(false); return; }
-        onClose();
-      }
+      if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
-  }, [onClose, isEditing]);
+  }, [onClose]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -54,9 +48,21 @@ const PostModal = ({
     }
   };
 
-  const images = post.originalImages || post.images || (post.image ? [post.image] : []);
+  const photos = post.photos || [];
+  const images = photos.length > 0
+    ? photos.map((p) => p.urlPreview)
+    : post.images || [];
+
   const handlePrev = () => setCurrentIndex((p) => p - 1);
   const handleNext = () => setCurrentIndex((p) => p + 1);
+
+  const handlePhotoClick = () => {
+    if (!onPhotoClick) return;
+    const photo = photos[currentIndex];
+    if (photo) {
+      onPhotoClick(photo);
+    }
+  };
 
   const authorName = post.author
     ? `${post.author.firstName} ${post.author.lastName}`
@@ -80,16 +86,6 @@ const PostModal = ({
     action();
   };
 
-  const handleSaveEdit = () => {
-    onSaveEdit?.(post.id, editDescription);
-    setIsEditing(false);
-  };
-
-  const handleCancelEdit = () => {
-    setEditDescription(post.description || post.text || "");
-    setIsEditing(false);
-  };
-
   return (
     <div className={s.overlay} onClick={handleOverlayClick}>
       <div className={s.modal}>
@@ -99,7 +95,8 @@ const PostModal = ({
               <img
                 src={images[currentIndex]}
                 alt={`Фото ${currentIndex + 1}`}
-                className={s.photo}
+                className={`${s.photo} ${photos.length > 0 ? s.photoClickable : ""}`}
+                onClick={photos.length > 0 ? handlePhotoClick : undefined}
               />
               {images.length > 1 && currentIndex > 0 && (
                 <button className={`${s.arrowBtn} ${s.arrowLeft}`} onClick={handlePrev}>
@@ -154,27 +151,8 @@ const PostModal = ({
           </div>
 
           <div className={s.textBody}>
-            {isEditing ? (
-              <div className={s.editBlock}>
-                <textarea
-                  className={s.editTextarea}
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  autoFocus
-                />
-                <div className={s.editActions}>
-                  <button className={s.editSaveBtn} onClick={handleSaveEdit}>
-                    Сохранить
-                  </button>
-                  <button className={s.editCancelBtn} onClick={handleCancelEdit}>
-                    Отмена
-                  </button>
-                </div>
-              </div>
-            ) : (
-              (post.description || post.text) && (
-                <p className={s.text}>{post.description || post.text}</p>
-              )
+            {(post.description || post.text) && (
+              <p className={s.text}>{post.description || post.text}</p>
             )}
           </div>
 
@@ -195,12 +173,7 @@ const PostModal = ({
                   <div className={s.menu}>
                     <div
                       className={s.menuItem}
-                      onClick={() =>
-                        handleMenuAction(() => {
-                          setEditDescription(post.description || post.text || "");
-                          setIsEditing(true);
-                        })
-                      }
+                      onClick={() => handleMenuAction(() => onEdit?.(post))}
                     >
                       <img src={editIcon} alt="Редактировать" />
                       <span>Редактировать</span>
