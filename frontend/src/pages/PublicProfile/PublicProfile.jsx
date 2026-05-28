@@ -28,7 +28,8 @@ const normalizeProfileData = (data) => ({
 });
 
 const PublicProfile = () => {
-  const { tag } = useParams();
+  const { handle } = useParams();
+  const tag = handle?.startsWith("@") ? handle.slice(1) : handle;
   const { user, accessToken } = useAuth();
   const [rawData, setRawData] = useState(null);
   const [status, setStatus] = useState("loading");
