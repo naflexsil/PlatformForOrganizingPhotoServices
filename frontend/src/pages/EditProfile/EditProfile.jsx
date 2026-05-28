@@ -158,7 +158,7 @@ const EditProfile = ({
   };
 
   const handleTagChange = (e) => {
-    const val = e.target.value.replace(TAG_REGEX, "");
+    const val = e.target.value.replace(TAG_REGEX, "").slice(0, 20);
     setForm((prev) => ({ ...prev, tag: val }));
     setErrors((prev) => ({ ...prev, tag: undefined }));
   };
@@ -419,6 +419,7 @@ const EditProfile = ({
                 onChange={handleTagChange}
                 onBlur={handleTagBlur}
                 placeholder="username"
+                maxLength={20}
               />
               {errors.tag && (
                 <span className={s.errorText}>{errors.tag}</span>

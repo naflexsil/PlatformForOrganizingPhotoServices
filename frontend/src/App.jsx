@@ -9,6 +9,7 @@ import AuthModal from "./components/AuthModal/AuthModal";
 import RoleModal from "./components/RoleModal/RoleModal";
 import RegistrationFormModal from "./components/RegistrationFormModal/RegistrationFormModal";
 import DevPanel from "./components/DevPanel/DevPanel";
+import PublicProfile from "./pages/PublicProfile/PublicProfile";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import {
@@ -98,6 +99,7 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/profile" element={<MyProfile />} />
+        <Route path="/@:tag" element={<PublicProfile />} />
 
         {/* Dev test routes — only rendered in dev, no server-side guard needed */}
         <Route

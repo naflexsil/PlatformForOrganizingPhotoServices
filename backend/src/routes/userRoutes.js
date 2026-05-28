@@ -8,6 +8,7 @@ import {
   restoreAccount,
   updateMe,
   updatePhotographerData,
+  getUserByTag,
 } from '../controllers/UserController.js';
 
 const router = Router();
@@ -22,6 +23,7 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/check-tag', optionalAuthMiddleware, checkTag);
+router.get('/by-tag/:tag', optionalAuthMiddleware, getUserByTag);
 router.patch('/me', authMiddleware, updateMe);
 router.patch('/me/photographer', authMiddleware, updatePhotographerData);
 router.delete('/me', authMiddleware, deleteAccount);

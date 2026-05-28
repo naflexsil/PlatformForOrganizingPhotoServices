@@ -60,12 +60,32 @@ export const checkTag = async (req, res) => {
   }
 };
 
+export const getUserByTag = async (req, res) => {
+  const { tag } = req.params;
+  try {
+    const user = await prisma.user.findFirst({
+      where: { tag, isDeleted: false },
+      include: { photographer: true },
+    });
+    if (!user) {
+      return res.status(404).json({ status: 'error', message: 'Пользователь не найден' });
+    }
+    const { vkId, isDeleted, deletedAt, ...publicData } = user;
+    return res.json({ status: 'success', data: publicData });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
 export const updateMe = async (req, res) => {
   const { id } = req.user;
   const { firstName, lastName, bio, tag, gender, birthDate, city } = req.body;
 
   try {
     if (tag !== undefined) {
+      if (tag.length > 20) {
+        return res.status(400).json({ status: 'error', message: 'Тег не должен превышать 20 символов' });
+      }
       const taken = await prisma.user.findFirst({ where: { tag, NOT: { id } } });
       if (taken) {
         return res.status(409).json({ status: 'error', message: 'Тег уже занят' });
