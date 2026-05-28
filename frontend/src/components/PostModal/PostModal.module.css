@@ -411,3 +411,27 @@
 .editCancelBtn:hover {
   opacity: 0.7;
 }
+
+@media (max-width: 768px) {
+  .modal {
+    flex-direction: column;
+    width: calc(100% - 32px);
+    max-width: none;
+    height: 90vh;
+    max-height: none;
+    border-radius: 30px;
+    overflow: hidden;
+  }
+
+  .photoSide {
+    flex: none;
+    height: 50%;
+    border-radius: 0;
+  }
+
+  .contentSide {
+    flex: 1;
+    min-height: 0;
+    border-radius: 0;
+  }
+}

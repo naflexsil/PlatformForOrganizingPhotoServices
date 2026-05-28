@@ -572,3 +572,51 @@
   transform: none;
   box-shadow: none;
 }
+
+@media (max-width: 768px) {
+  .pageWrapper {
+    padding: 24px 16px;
+  }
+
+  .page {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .avatarCard {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .formCard {
+    max-width: none;
+    padding: 20px 16px 24px;
+  }
+
+  .fieldRow {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .fieldLabel {
+    min-width: unset;
+    max-width: unset;
+    padding-top: 0;
+  }
+
+  .searchPhotosBlock {
+    width: 100%;
+  }
+
+  .buttons {
+    flex-direction: column-reverse;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .cancelBtn,
+  .saveBtn {
+    width: 100%;
+    text-align: center;
+  }
+}
