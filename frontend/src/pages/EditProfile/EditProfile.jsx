@@ -11,7 +11,7 @@ import { useAuth } from "../../context/AuthContext";
 import { apiFetch, uploadFile } from "../../services/api";
 
 const NAME_REGEX = /[^a-zA-Zа-яёА-ЯЁ\s-]/g;
-const TAG_REGEX = /[^a-zA-Z0-9_]/g;
+const TAG_REGEX = /[^a-z0-9_]/g;
 
 const CitySelect = ({ value, onChange, onQueryChange, error }) => {
   const [query, setQuery] = useState(value || "");
@@ -158,7 +158,7 @@ const EditProfile = ({
   };
 
   const handleTagChange = (e) => {
-    const val = e.target.value.replace(TAG_REGEX, "").slice(0, 20);
+    const val = e.target.value.toLowerCase().replace(TAG_REGEX, "").slice(0, 20);
     setForm((prev) => ({ ...prev, tag: val }));
     setErrors((prev) => ({ ...prev, tag: undefined }));
   };
