@@ -88,7 +88,7 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
   }, [profileData, accessToken]);
 
   useEffect(() => {
-    if (!userData.id || profileData) return;
+    if (!userData.id) return;
     const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
     fetch(`/api/posts?authorId=${userData.id}`, { headers })
       .then((r) => r.json())
@@ -97,7 +97,7 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
           setPosts(result.data.map(normalizePost));
         }
       });
-  }, [userData.id, accessToken, profileData]);
+  }, [userData.id, accessToken]);
 
   useEffect(() => {
     if (!isSettingsOpen) return;

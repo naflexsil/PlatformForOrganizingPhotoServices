@@ -269,6 +269,10 @@ export const completeRegistration = async (req, res) => {
     return res.status(400).json({ status: 'error', message: 'Роль должна быть USER или PHOTOGRAPHER' });
   }
 
+  if (tag.length > 20) {
+    return res.status(400).json({ status: 'error', message: 'Тег не должен превышать 20 символов' });
+  }
+
   try {
     const currentUser = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!currentUser) {
