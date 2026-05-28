@@ -5,7 +5,7 @@ const Toast = ({ message, type = "error", onClose }) => {
   const [exiting, setExiting] = useState(false);
 
   useEffect(() => {
-    const exitTimer = setTimeout(() => setExiting(true), 4500);
+    const exitTimer = setTimeout(() => setExiting(true), 2650);
     return () => clearTimeout(exitTimer);
   }, []);
 

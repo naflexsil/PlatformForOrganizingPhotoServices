@@ -18,6 +18,11 @@ const PhotoModal = ({ photo, onClose, accessToken }) => {
     return () => document.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
   const handleLike = async () => {
     if (!accessToken) return;
     const res = await fetch(`/api/photos/${photo.id}/like`, {
@@ -52,20 +57,21 @@ const PhotoModal = ({ photo, onClose, accessToken }) => {
 
   return (
     <div className={s.overlay} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className={s.container}>
-        <button className={s.closeBtn} onClick={onClose}>
-          <img src={closeIcon} alt="Закрыть" />
-        </button>
+      <div className={s.card}>
+        <div className={s.photoSide}>
+          <img
+            src={photo.urlPreview}
+            alt="Фото"
+            className={s.photo}
+            onClick={handlePhotoClick}
+            title="Нажмите для просмотра в полном качестве"
+          />
+          <button className={s.closeBtn} onClick={onClose}>
+            <img src={closeIcon} alt="Закрыть" />
+          </button>
+        </div>
 
-        <img
-          src={photo.urlPreview}
-          alt="Фото"
-          className={s.photo}
-          onClick={handlePhotoClick}
-          title="Нажмите для просмотра в полном качестве"
-        />
-
-        <div className={s.panel}>
+        <div className={s.actionsRow}>
           <button className={s.actionBtn} onClick={handleLike} disabled={!accessToken}>
             <img
               src={isLiked ? heartFilledIcon : heartIcon}
