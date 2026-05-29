@@ -201,6 +201,15 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
     setEditingPost(null);
   };
 
+  const handleCopyTag = async () => {
+    try {
+      await navigator.clipboard.writeText(userData.username);
+      showToast("Тег скопирован", "success");
+    } catch {
+      showToast("Не удалось скопировать", "error");
+    }
+  };
+
   const formatLikes = (n) => {
     if (n >= 1000) return (n / 1000).toFixed(1).replace(".", ",") + "к";
     return String(n);
@@ -255,7 +264,11 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
             <div className={s.leftCol}>
               <div className={s.nameBlock}>
                 <h1>{userData.firstName} {userData.lastName}</h1>
-                <p className={s.username}>{userData.username}</p>
+                <p
+                  className={s.username}
+                  onClick={handleCopyTag}
+                  title="Нажмите, чтобы скопировать"
+                >{userData.username}</p>
               </div>
               <div className={s.stats}>
                 <p><span className={s.clickableStat}>Подписчики</span> 0</p>
