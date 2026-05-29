@@ -4,7 +4,6 @@ import {
   handleVkCallback,
   loginWithVk,
   loginWithVkSdk,
-  mockLogin,
   getMe,
   completeRegistration,
   cancelRegistration,
@@ -18,7 +17,6 @@ router.get('/callback', handleVkCallback);
 router.post('/vk', loginWithVk);
 router.post('/vk-sdk', loginWithVkSdk);
 
-router.get('/mock-login', mockLogin);
 router.get('/me', authMiddleware, getMe);
 router.post('/complete-registration', authMiddleware, completeRegistration);
 router.delete('/cancel-registration', authMiddleware, cancelRegistration);
