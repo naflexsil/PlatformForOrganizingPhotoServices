@@ -34,10 +34,26 @@ export const uploadPhoto = async (req, res) => {
     return res.status(400).json({ status: 'error', message: 'Файл не загружен' });
   }
 
-  const { postId, folderId } = req.body;
+  const { postId, folderId, description } = req.body;
+  const userId = req.user?.id;
   console.log(`[UPLOAD] photo: ${req.file.originalname} (${req.file.size} bytes)`);
 
   try {
+    // Лимиты для портфолио
+    if (userId && !postId) {
+      if (folderId) {
+        const folderCount = await prisma.photo.count({ where: { folderId } });
+        if (folderCount >= 40) {
+          return res.status(400).json({ status: 'error', message: 'В папке не может быть более 40 фотографий' });
+        }
+      } else {
+        const standaloneCount = await prisma.photo.count({ where: { userId, folderId: null } });
+        if (standaloneCount >= 100) {
+          return res.status(400).json({ status: 'error', message: 'В портфолио не может быть более 100 фотографий' });
+        }
+      }
+    }
+
     const { originalKey, previewKey, originalUrl, previewUrl } = await s3UploadImage(
       req.file.buffer,
       req.file.originalname,
@@ -49,6 +65,8 @@ export const uploadPhoto = async (req, res) => {
       data: {
         urlOriginal: originalUrl,
         urlPreview: previewUrl,
+        ...(userId && !postId && { userId }),
+        ...(description?.trim() && { description: description.trim() }),
         ...(postId && { postId }),
         ...(folderId && { folderId }),
       },

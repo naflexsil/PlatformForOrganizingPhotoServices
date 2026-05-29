@@ -1,0 +1,215 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--white);
+  border-radius: 30px;
+  padding: 28px 32px 32px;
+  width: 520px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.25s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-family: "Farabee", serif;
+  font-size: 20px;
+  color: var(--dark-text);
+  margin: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  display: flex;
+}
+
+.closeBtn:hover { opacity: 1; }
+
+.closeBtn img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0);
+}
+
+.dropZone {
+  border: 2px dashed #e0d5d5;
+  border-radius: 16px;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.dropZone:hover,
+.dragging {
+  border-color: var(--accent-red);
+  background: var(--light-pink);
+}
+
+.dropIcon {
+  width: 48px;
+  height: 48px;
+  opacity: 0.4;
+}
+
+.dropText {
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  color: var(--dark-text);
+  margin: 0;
+  text-align: center;
+}
+
+.dropHint {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+.hiddenInput { display: none; }
+
+.previewWrapper {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  max-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray);
+}
+
+.previewImg {
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  display: block;
+  border-radius: 16px;
+}
+
+.changeBtn {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--white);
+  border: none;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.changeBtn:hover { background: rgba(0, 0, 0, 0.7); }
+
+.errorText {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: var(--error-red);
+  margin: 0;
+}
+
+.descriptionWrapper {
+  position: relative;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #e0d5d5;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: "Inter", sans-serif;
+  color: var(--dark-text);
+  background: var(--white);
+  outline: none;
+  resize: none;
+  line-height: 1.6;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.textarea:focus { border-color: var(--accent-red); }
+
+.charCount {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 11px;
+  color: var(--dark-text);
+  opacity: 0.4;
+  font-family: "Inter", sans-serif;
+  pointer-events: none;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cancelBtn {
+  background: var(--white);
+  color: var(--dark-text);
+  border: 1.5px solid #e0d5d5;
+  border-radius: 12px;
+  padding: 10px 24px;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.cancelBtn:hover { background: var(--gray); }
+
+.cancelBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.uploadBtn {
+  background: var(--accent-red);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  padding: 10px 24px;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.uploadBtn:hover { opacity: 0.88; }
+
+.uploadBtn:disabled { opacity: 0.5; cursor: not-allowed; }

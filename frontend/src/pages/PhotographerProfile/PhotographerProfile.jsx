@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import s from "./PhotographerProfile.module.css";
 import settingsIcon from "../../assets/icons/settings.svg";
 import starIcon from "../../assets/icons/star.svg";
@@ -85,6 +86,7 @@ const normalizePost = (p) => ({
 const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
   const { accessToken } = useAuth();
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -383,7 +385,10 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
           <div className={s.priceBlock}>
             <div className={s.blockHeader}>
               <h2>Прайс</h2>
-              <button className={s.portfolioBtn}>Портфолио</button>
+              <button
+                className={s.portfolioBtn}
+                onClick={() => navigate(`/@${userData.username.replace(/^@/, "")}/portfolio`)}
+              >Портфолио</button>
             </div>
             <div className={s.priceContent}>
               <p className={s.priceText}>{pricePreview}</p>

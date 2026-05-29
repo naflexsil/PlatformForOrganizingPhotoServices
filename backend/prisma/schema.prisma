@@ -31,6 +31,7 @@ model User {
   likes         Like[]
   favorites     Favorite[]
   portfolios    PortfolioFolder[]
+  portfolioPhotos Photo[]        @relation("PortfolioPhotos")
   subscriptions  Subscription[]   @relation("Subscriber")
   subscribers    Subscription[]   @relation("Subscribed")
   photoLikes     PhotoLike[]
@@ -91,10 +92,14 @@ model PortfolioFolder {
 
 model Photo {
   id          String           @id @default(uuid())
+  userId      String?
+  user        User?            @relation("PortfolioPhotos", fields: [userId], references: [id], onDelete: SetNull)
   urlOriginal String
   urlPreview  String
+  description String?
+  position    Int              @default(0)
   folderId    String?
-  folder      PortfolioFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  folder      PortfolioFolder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
   posts       Post[]
   likes       PhotoLike[]
   favorites   PhotoFavorite[]
