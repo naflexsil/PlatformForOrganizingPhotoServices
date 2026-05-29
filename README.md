@@ -120,10 +120,14 @@ npm run dev             # http://localhost:3001
 | :------- | :----------------------------------- | :------------------------------------------------------------------------------------------------------------------- |
 | `GET`    | `/api/auth/login`                    | Редирект на VK ID (?role=USER\|PHOTOGRAPHER)                                                                         |
 | `GET`    | `/api/auth/callback`                 | Callback от VK после авторизации                                                                                     |
-| `POST`   | `/api/auth/vk`                       | Вход через VK токен (code + codeVerifier в теле)                                                                     |
+| `POST`   | `/api/auth/vk`                       | Вход через VK PKCE (code + codeVerifier в теле)                                                                      |
+| `POST`   | `/api/auth/vk-sdk`                   | Вход через VK SDK. Body: `{ idToken, firstName?, lastName?, avatarUrl? }`                                            |
 | `GET`    | `/api/auth/mock-login`               | Быстрый вход для тестов (?role=PHOTOGRAPHER\|USER&id=1)                                                              |
 | `GET`    | `/api/auth/me` 🔒                    | Профиль пользователя. Фотограф получает `avatarUrl` (превью) и `avatarUrlOriginal`                                   |
 | `POST`   | `/api/auth/complete-registration` 🔒 | Завершение регистрации. Body: `firstName, lastName, tag, role, gender, birthDate`                                    |
+| `DELETE` | `/api/auth/cancel-registration` 🔒   | Удаление незавершённого аккаунта (тег ещё начинается с `vk_`)                                                        |
+| `GET`    | `/api/users/check-tag?tag=` 🔓       | Проверить доступность тега. Ответ: `{ available: bool }`                                                             |
+| `GET`    | `/api/users/by-tag/:tag` 🔓          | Получить публичный профиль по @тегу                                                                                  |
 | `PATCH`  | `/api/users/me` 🔒                   | Редактирование личных данных: `firstName, lastName, bio, tag, gender, birthDate, city`                               |
 | `PATCH`  | `/api/users/me/photographer` 🔒      | Данные фотографа: `pricePerHour, additionalPriceInfo, experienceYears, experienceMonths, deliveryTime, searchPhotos` |
 | `DELETE` | `/api/users/me` 🔒                   | Мягкое удаление аккаунта                                                                                             |
@@ -151,10 +155,13 @@ npm run dev             # http://localhost:3001
 
 ### Фотографии
 
-| Метод  | Путь                          | Описание                                                                |
-| :----- | :---------------------------- | :---------------------------------------------------------------------- |
-| `POST` | `/api/photos/:id/like` 🔒     | Лайк/дизлайк конкретного фото. Ответ: `{ liked: bool, count: number }`  |
-| `POST` | `/api/photos/:id/favorite` 🔒 | Избранное конкретного фото. Ответ: `{ favorited: bool, count: number }` |
+| Метод    | Путь                          | Описание                                                                |
+| :------- | :---------------------------- | :---------------------------------------------------------------------- |
+| `GET`    | `/api/photos` 🔓              | Список фотографий (фильтрация по folderId и др.)                        |
+| `PATCH`  | `/api/photos/:id` 🔒          | Обновить метаданные фото                                                |
+| `DELETE` | `/api/photos/:id` 🔒          | Удалить фото из портфолио и S3                                          |
+| `POST`   | `/api/photos/:id/like` 🔒     | Лайк/дизлайк конкретного фото. Ответ: `{ liked: bool, count: number }`  |
+| `POST`   | `/api/photos/:id/favorite` 🔒 | Избранное конкретного фото. Ответ: `{ favorited: bool, count: number }` |
 
 ### Лента вдохновения
 

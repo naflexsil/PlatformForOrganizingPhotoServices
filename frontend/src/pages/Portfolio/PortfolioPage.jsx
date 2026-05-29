@@ -7,6 +7,8 @@ import PortfolioPhotoModal from "../../components/PortfolioPhotoModal/PortfolioP
 import AddPhotoModal from "../../components/AddPhotoModal/AddPhotoModal";
 import CreateFolderModal from "../../components/CreateFolderModal/CreateFolderModal";
 import defaultAvatar from "../../assets/images/default_avatar.png";
+import editIcon from "../../assets/icons/edit.svg";
+import deleteIcon from "../../assets/icons/delete.svg";
 import s from "./PortfolioPage.module.css";
 
 const PortfolioPage = () => {
@@ -154,10 +156,10 @@ const PortfolioPage = () => {
           {isOwner && (
             <div className={s.ownerActions}>
               <button className={s.actionBtn} onClick={() => setShowAddPhoto(true)}>
-                + Добавить фото
+                Добавить фото
               </button>
               <button className={s.actionBtn} onClick={() => { setFolderToEdit(undefined); setShowCreateFolder(true); }}>
-                + Создать папку
+                Создать папку
               </button>
             </div>
           )}
@@ -181,12 +183,12 @@ const PortfolioPage = () => {
                       className={s.folderMenuBtn}
                       onClick={() => { setFolderToEdit(folder); setShowCreateFolder(true); }}
                       title="Переименовать"
-                    >✎</button>
+                    ><img src={editIcon} alt="Переименовать" /></button>
                     <button
                       className={`${s.folderMenuBtn} ${s.folderMenuBtnDanger}`}
                       onClick={() => setFolderToDelete(folder)}
                       title="Удалить"
-                    >✕</button>
+                    ><img src={deleteIcon} alt="Удалить" /></button>
                   </div>
                 )}
               </div>
