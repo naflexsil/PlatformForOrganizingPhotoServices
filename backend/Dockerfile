@@ -16,6 +16,8 @@ RUN npm ci --omit=dev
 
 # Prisma: копируем схему и генерируем клиент
 COPY prisma/ ./prisma/
+COPY migrate.sh ./
+RUN chmod +x ./migrate.sh
 RUN npx prisma generate
 
 # Копируем остальной исходный код
