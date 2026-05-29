@@ -124,7 +124,7 @@ const PortfolioFolderPage = () => {
 
           {isOwner && (
             <button className={s.actionBtn} onClick={() => setShowAddPhoto(true)}>
-              + Добавить фото
+              Добавить фото
             </button>
           )}
         </div>
