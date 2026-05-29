@@ -17,6 +17,7 @@ import subscriptionRoutes from './routes/subscriptionRoutes.js';
 import fileRoutes from './routes/fileRoutes.js';
 import feedRoutes from './routes/feedRoutes.js';
 import photoRoutes from './routes/photoRoutes.js';
+import inspirationRoutes from './routes/inspirationRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,6 +47,7 @@ app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/photos', photoRoutes);
+app.use('/api/inspiration', inspirationRoutes);
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 

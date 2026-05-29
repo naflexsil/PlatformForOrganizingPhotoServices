@@ -11,6 +11,7 @@ import RegistrationFormModal from "./components/RegistrationFormModal/Registrati
 import PublicProfile from "./pages/PublicProfile/PublicProfile";
 import PortfolioPage from "./pages/Portfolio/PortfolioPage";
 import PortfolioFolderPage from "./pages/Portfolio/PortfolioFolderPage";
+import InspirationPage from "./pages/InspirationPage/InspirationPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 
@@ -93,6 +94,7 @@ const AppContent = () => {
       />
       <Routes>
         <Route path="/" element={<MainPage />} />
+        <Route path="/feed" element={<InspirationPage />} />
         <Route path="/profile" element={<MyProfile />} />
         <Route path="/:tag/portfolio/:folderId" element={<PortfolioFolderPage />} />
         <Route path="/:tag/portfolio" element={<PortfolioPage />} />

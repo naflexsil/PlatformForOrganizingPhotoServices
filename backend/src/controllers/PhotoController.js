@@ -112,6 +112,12 @@ export const togglePhotoLike = async (req, res) => {
     }
 
     const count = await prisma.photoLike.count({ where: { photoId } });
+
+    await prisma.photo.update({
+      where: { id: photoId },
+      data: { likesCount: count },
+    });
+
     return res.json({ status: 'success', data: { liked: !existing, count } });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: err.message });

@@ -1,0 +1,142 @@
+.pageWrapper {
+  background-color: var(--white);
+  min-height: 100vh;
+  padding: 48px var(--side-padding) 80px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.title {
+  font-family: "Farabee", serif;
+  font-size: 28px;
+  color: var(--dark-text);
+  margin: 0;
+}
+
+.subtitle {
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  color: var(--dark-text);
+  opacity: 0.5;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Скелетон загрузки */
+.skeletonGrid {
+  columns: 4;
+  column-gap: 12px;
+}
+
+.skeletonItem {
+  break-inside: avoid;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  background: linear-gradient(
+    90deg,
+    var(--gray) 25%,
+    var(--light-pink) 50%,
+    var(--gray) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  height: 220px;
+}
+
+.skeletonItem:nth-child(2n) { height: 280px; }
+.skeletonItem:nth-child(3n) { height: 180px; }
+.skeletonItem:nth-child(4n) { height: 320px; }
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Пустое состояние */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  gap: 8px;
+}
+
+.empty p {
+  font-family: "Farabee", serif;
+  font-size: 22px;
+  color: var(--dark-text);
+  margin: 0;
+}
+
+.empty span {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: var(--dark-text);
+  opacity: 0.5;
+  font-weight: 500;
+}
+
+/* Infinite scroll */
+.sentinel {
+  height: 1px;
+  margin-top: 12px;
+}
+
+.loadingMore {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--light-pink);
+  border-top-color: var(--accent-red);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.endMessage {
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: var(--dark-text);
+  opacity: 0.4;
+  padding: 12px 0 0;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Адаптив */
+@media (max-width: 900px) {
+  .skeletonGrid { columns: 3; }
+}
+
+@media (max-width: 600px) {
+  .pageWrapper { padding: 24px 16px 60px; }
+  .title { font-size: 22px; }
+  .skeletonGrid { columns: 2; }
+}
+
+@media (max-width: 380px) {
+  .skeletonGrid { columns: 1; }
+}
