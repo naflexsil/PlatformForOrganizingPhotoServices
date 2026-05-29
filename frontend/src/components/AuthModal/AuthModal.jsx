@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import s from "./AuthModal.module.css";
 import closeIcon from "../../assets/icons/carousel_close.svg";
-import { SHOW_DEV_PANEL } from "../../devConfig";
-
 let vkConfigInitialized = false;
 
 const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
@@ -103,26 +101,6 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
     }
   };
 
-  const handleMockLogin = async (role, id = "1") => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/auth/mock-login?role=${role}&id=${id}`);
-      const result = await res.json();
-      if (result.status === "error") throw new Error(result.message);
-      const { accessToken, refreshToken, user } = result.data;
-      const isComplete = user.tag && !user.tag.startsWith("vk_");
-      if (isComplete) {
-        onLoginSuccess({ accessToken, refreshToken }, user);
-      } else {
-        onNeedRegistration({ accessToken, refreshToken }, user);
-      }
-    } catch (err) {
-      console.error("[Mock] login error:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div
       className={s.overlay}
@@ -146,41 +124,6 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
           </div>
         )}
 
-        {SHOW_DEV_PANEL && (
-          <div className={s.devSection}>
-            <p className={s.devLabel}>Dev-режим (mock login)</p>
-            <p className={s.devHint}>Существующий аккаунт (id=1)</p>
-            <div className={s.devButtons}>
-              <button
-                className={s.devBtn}
-                onClick={() => handleMockLogin("USER", "1")}
-              >
-                Клиент
-              </button>
-              <button
-                className={s.devBtn}
-                onClick={() => handleMockLogin("PHOTOGRAPHER", "1")}
-              >
-                Фотограф
-              </button>
-            </div>
-            <p className={s.devHint}>Новый аккаунт (покажет форму регистрации)</p>
-            <div className={s.devButtons}>
-              <button
-                className={s.devBtn}
-                onClick={() => handleMockLogin("USER", String(Date.now()))}
-              >
-                Новый Клиент
-              </button>
-              <button
-                className={s.devBtn}
-                onClick={() => handleMockLogin("PHOTOGRAPHER", String(Date.now()))}
-              >
-                Новый Фотограф
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
