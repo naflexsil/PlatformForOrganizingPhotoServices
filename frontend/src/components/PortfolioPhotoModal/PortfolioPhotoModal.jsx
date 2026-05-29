@@ -26,6 +26,7 @@ const PortfolioPhotoModal = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(photo.description || "");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const handleKey = (e) => { if (e.key === "Escape") onClose(); };
@@ -175,7 +176,7 @@ const PortfolioPhotoModal = ({
                     </div>
                     <div
                       className={`${s.menuItem} ${s.menuItemDanger}`}
-                      onClick={() => { setIsMenuOpen(false); onDelete(photo.id); }}
+                      onClick={() => { setIsMenuOpen(false); setShowDeleteConfirm(true); }}
                     >
                       <img src={deleteIcon} alt="Удалить" />
                       <span>Удалить фото</span>
@@ -187,6 +188,18 @@ const PortfolioPhotoModal = ({
           </div>
         </div>
       </div>
+    {showDeleteConfirm && (
+      <div className={s.confirmOverlay} onClick={() => setShowDeleteConfirm(false)}>
+        <div className={s.confirmModal} onClick={(e) => e.stopPropagation()}>
+          <h3 className={s.confirmTitle}>Удалить фото?</h3>
+          <p className={s.confirmText}>Фото будет удалено безвозвратно.</p>
+          <div className={s.confirmActions}>
+            <button className={s.confirmCancel} onClick={() => setShowDeleteConfirm(false)}>Отмена</button>
+            <button className={s.confirmDelete} onClick={() => { setShowDeleteConfirm(false); onDelete(photo.id); }}>Удалить</button>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   );
 };
