@@ -139,29 +139,6 @@ export const loginWithVk = async (req, res) => {
   }
 };
 
-export const mockLogin = async (req, res) => {
-  const { role = 'USER', id = '1' } = req.query;
-  const vkId = `mock_${id}`;
-
-  try {
-    const data = await buildUserAndTokens(
-      {
-        vkId,
-        firstName: 'Test',
-        lastName: `User${id}`,
-        avatarUrl: null,
-        tag: `vk_${vkId}`,
-        birthDate: null,
-        gender: null,
-      },
-      role,
-    );
-    return res.status(200).json({ status: 'success', data });
-  } catch (err) {
-    return res.status(500).json({ status: 'error', message: err.message });
-  }
-};
-
 export const cancelRegistration = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
