@@ -10,7 +10,8 @@ import defaultAvatar from "../../assets/images/default_avatar.png";
 import s from "./PortfolioPage.module.css";
 
 const PortfolioPage = () => {
-  const { tag } = useParams();
+  const { tag: rawTag } = useParams();
+  const tag = rawTag?.replace(/^@/, "") ?? "";
   const { user, accessToken } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();

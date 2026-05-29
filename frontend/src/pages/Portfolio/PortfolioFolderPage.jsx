@@ -10,7 +10,8 @@ import arrowLeftIcon from "../../assets/icons/carousel_arrow_left.svg";
 import s from "./PortfolioFolderPage.module.css";
 
 const PortfolioFolderPage = () => {
-  const { tag, folderId } = useParams();
+  const { tag: rawTag, folderId } = useParams();
+  const tag = rawTag?.replace(/^@/, "") ?? "";
   const { user, accessToken } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();

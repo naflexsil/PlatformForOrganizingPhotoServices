@@ -101,8 +101,8 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/profile" element={<MyProfile />} />
-        <Route path="/@:tag/portfolio/:folderId" element={<PortfolioFolderPage />} />
-        <Route path="/@:tag/portfolio" element={<PortfolioPage />} />
+        <Route path="/:tag/portfolio/:folderId" element={<PortfolioFolderPage />} />
+        <Route path="/:tag/portfolio" element={<PortfolioPage />} />
         <Route path="/:handle" element={<PublicProfile />} />
 
         {/* Dev test routes — only rendered in dev, no server-side guard needed */}
