@@ -80,53 +80,6 @@
   flex-shrink: 0;
 }
 
-.devSection {
-  width: 100%;
-  border-top: 1.5px dashed var(--gray);
-  padding-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.devLabel {
-  font-size: 11px;
-  color: var(--dark-text);
-  opacity: 0.4;
-  font-family: "Inter", sans-serif;
-  text-align: center;
-}
-
-.devHint {
-  font-size: 10px;
-  color: var(--dark-text);
-  opacity: 0.35;
-  font-family: "Inter", sans-serif;
-  text-align: center;
-  margin-top: 4px;
-}
-
-.devButtons {
-  display: flex;
-  gap: 8px;
-}
-
-.devBtn {
-  flex: 1;
-  padding: 8px 12px;
-  font-size: 13px;
-  font-family: "Inter", sans-serif;
-  background: var(--gray);
-  border: none;
-  border-radius: 10px;
-  color: var(--dark-text);
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.devBtn:hover {
-  background: var(--light-pink);
-}
 
 @keyframes slideIn {
   from {
