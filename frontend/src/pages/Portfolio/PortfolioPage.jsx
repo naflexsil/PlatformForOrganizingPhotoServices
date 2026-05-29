@@ -27,6 +27,7 @@ const PortfolioPage = () => {
 
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [showAddPhoto, setShowAddPhoto] = useState(false);
+  const [photoToDelete, setPhotoToDelete] = useState(null);
   const [folderToEdit, setFolderToEdit] = useState(undefined);
   const [folderToDelete, setFolderToDelete] = useState(null);
   const [showCreateFolder, setShowCreateFolder] = useState(false);
@@ -73,6 +74,7 @@ const PortfolioPage = () => {
     if (result.status === "success") {
       setPhotos((prev) => prev.filter((p) => p.id !== photoId));
       setSelectedPhoto(null);
+      setPhotoToDelete(null);
       showToast("Фото удалено", "success");
     } else {
       showToast("Не удалось удалить фото", "error");
@@ -202,7 +204,7 @@ const PortfolioPage = () => {
             photos={photos}
             isOwner={isOwner}
             onPhotoClick={setSelectedPhoto}
-            onDeletePhoto={(photo) => handleDeletePhoto(photo.id)}
+            onDeletePhoto={(photo) => setPhotoToDelete(photo)}
           />
         ) : (
           <div className={s.emptyPhotos}>
@@ -242,6 +244,20 @@ const PortfolioPage = () => {
           onClose={() => { setShowCreateFolder(false); setFolderToEdit(undefined); }}
           onSaved={handleFolderSaved}
         />
+      )}
+
+      {/* Подтверждение удаления фото */}
+      {photoToDelete && (
+        <div className={s.confirmOverlay} onClick={() => setPhotoToDelete(null)}>
+          <div className={s.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <h3 className={s.confirmTitle}>Удалить фото?</h3>
+            <p className={s.confirmText}>Фото будет удалено безвозвратно.</p>
+            <div className={s.confirmActions}>
+              <button className={s.confirmCancel} onClick={() => setPhotoToDelete(null)}>Отмена</button>
+              <button className={s.confirmDelete} onClick={() => handleDeletePhoto(photoToDelete.id)}>Удалить</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Подтверждение удаления папки */}

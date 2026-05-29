@@ -25,6 +25,7 @@ const PortfolioFolderPage = () => {
 
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [showAddPhoto, setShowAddPhoto] = useState(false);
+  const [photoToDelete, setPhotoToDelete] = useState(null);
 
   useEffect(() => {
     setStatus("loading");
@@ -70,6 +71,7 @@ const PortfolioFolderPage = () => {
     if (result.status === "success") {
       setPhotos((prev) => prev.filter((p) => p.id !== photoId));
       setSelectedPhoto(null);
+      setPhotoToDelete(null);
       showToast("Фото удалено", "success");
     } else {
       showToast("Не удалось удалить фото", "error");
@@ -135,12 +137,12 @@ const PortfolioFolderPage = () => {
             photos={photos}
             isOwner={isOwner}
             onPhotoClick={setSelectedPhoto}
-            onDeletePhoto={(photo) => handleDeletePhoto(photo.id)}
+            onDeletePhoto={(photo) => setPhotoToDelete(photo)}
           />
         ) : (
           <div className={s.emptyPhotos}>
             {isOwner
-              ? <><p>Папка пустая — добавьте первое фото</p><button className={s.actionBtn} onClick={() => setShowAddPhoto(true)}>Добавить фото</button></>
+              ? <><p>Папка пуста. Давайте добавим первое фото!</p><button className={s.actionBtn} onClick={() => setShowAddPhoto(true)}>Добавить фото</button></>
               : <p>В этой папке пока нет фотографий</p>
             }
           </div>
@@ -166,6 +168,19 @@ const PortfolioFolderPage = () => {
           onClose={() => setShowAddPhoto(false)}
           onUploaded={handlePhotoUploaded}
         />
+      )}
+
+      {photoToDelete && (
+        <div className={s.confirmOverlay} onClick={() => setPhotoToDelete(null)}>
+          <div className={s.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <h3 className={s.confirmTitle}>Удалить фото?</h3>
+            <p className={s.confirmText}>Фото будет удалено безвозвратно.</p>
+            <div className={s.confirmActions}>
+              <button className={s.confirmCancel} onClick={() => setPhotoToDelete(null)}>Отмена</button>
+              <button className={s.confirmDelete} onClick={() => handleDeletePhoto(photoToDelete.id)}>Удалить</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
