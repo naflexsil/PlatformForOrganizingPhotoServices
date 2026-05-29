@@ -18,6 +18,7 @@ const PortfolioPhotoModal = ({
   onClose,
   onDelete,
   onDescriptionUpdate,
+  onAuthorClick,
 }) => {
   const [isLiked, setIsLiked] = useState(photo.isLiked ?? false);
   const [likesCount, setLikesCount] = useState(photo.likesCount ?? 0);
@@ -109,10 +110,16 @@ const PortfolioPhotoModal = ({
 
         <div className={s.contentSide}>
           <div className={s.header}>
-            <img src={author?.avatarUrl || defaultAvatar} alt="Avatar" className={s.avatar} />
-            <div className={s.authorInfo}>
-              <span className={s.authorName}>{author?.firstName} {author?.lastName}</span>
-              <span className={s.date}>{formatDate(photo.createdAt)}</span>
+            <div
+              className={onAuthorClick ? s.authorClickable : s.authorStatic}
+              onClick={onAuthorClick ? () => onAuthorClick(author) : undefined}
+              title={onAuthorClick ? `Перейти на страницу ${author?.firstName}` : undefined}
+            >
+              <img src={author?.avatarUrl || defaultAvatar} alt="Avatar" className={s.avatar} />
+              <div className={s.authorInfo}>
+                <span className={s.authorName}>{author?.firstName} {author?.lastName}</span>
+                <span className={s.date}>{formatDate(photo.createdAt)}</span>
+              </div>
             </div>
             <button className={s.closeBtn} onClick={onClose}>
               <img src={closeIcon} alt="Закрыть" />
