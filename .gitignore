@@ -40,3 +40,11 @@ claude.md
 garage_data/data
 garage_data/meta
 garage.toml
+
+ai-service/train/data/
+ai-service/weights/*.pt
+ai-service/weights/*.pth
+ai-service/weights/*.bin
+ai-service/__pycache__/
+ai-service/**/__pycache__/
+ai-service/.venv/

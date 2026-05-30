@@ -37,17 +37,33 @@ services:
     env_file:
       - ./backend/.env   # читает все переменные из .env
     environment:
-      # Переопределяем переменные, специфичные для Docker-сети:
-      # внутри сети сервисы доступны по именам (postgres, garage), а не localhost
       HOST: "0.0.0.0"
       DB_HOST: "postgres"
       DB_PORT: "5432"
-      # Если изменишь пароль в postgres.POSTGRES_PASSWORD — обнови и здесь
       DATABASE_URL: "postgresql://postgres:MoeL1obimoe96ivotnoe-Din0@postgres:5432/photoservices_db"
       S3_ENDPOINT: "http://garage:3900"
+      AI_SERVICE_URL: "http://ai-service:8001"
+      BACKEND_INTERNAL_URL: "http://backend:3000"
     depends_on:
       - postgres
       - garage
+      - ai-service
+
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: photoservices_ai
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8001:8001"
+    volumes:
+      - ./ai-service/weights:/app/weights
+      - huggingface_cache:/root/.cache/huggingface
+    environment:
+      CLIP_MODEL_NAME: "openai/clip-vit-base-patch32"
+      CLIP_WEIGHTS_PATH: "weights/clip_finetuned.pt"
 
 volumes:
   postgres_data:
+  huggingface_cache:
