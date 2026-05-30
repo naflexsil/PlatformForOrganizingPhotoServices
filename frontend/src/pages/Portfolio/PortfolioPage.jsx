@@ -14,7 +14,7 @@ import s from "./PortfolioPage.module.css";
 const PortfolioPage = () => {
   const { tag: rawTag } = useParams();
   const tag = rawTag?.replace(/^@/, "") ?? "";
-  const { user, accessToken } = useAuth();
+  const { user, accessToken, isAuth } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -84,6 +84,71 @@ const PortfolioPage = () => {
   const handleDescriptionUpdate = (photoId, description) => {
     setPhotos((prev) => prev.map((p) => p.id === photoId ? { ...p, description } : p));
     setSelectedPhoto((prev) => prev?.id === photoId ? { ...prev, description } : prev);
+  };
+
+  const applyPhotoUpdate = (updater) => {
+    setPhotos((prev) => prev.map(updater));
+    setSelectedPhoto((prev) => (prev ? updater(prev) : prev));
+  };
+
+  const handleLike = async (photo) => {
+    if (!isAuth) { showToast("Войдите, чтобы лайкать фото", "error"); return; }
+    const wasLiked = photo.isLiked;
+    const optimisticCount = wasLiked ? photo.likesCount - 1 : photo.likesCount + 1;
+    applyPhotoUpdate((p) =>
+      p.id === photo.id ? { ...p, isLiked: !wasLiked, likesCount: optimisticCount } : p
+    );
+    try {
+      const res = await fetch(`/api/photos/${photo.id}/like`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const result = await res.json();
+      if (result.status === "success") {
+        applyPhotoUpdate((p) =>
+          p.id === photo.id ? { ...p, isLiked: result.data.liked, likesCount: result.data.count } : p
+        );
+      } else {
+        applyPhotoUpdate((p) =>
+          p.id === photo.id ? { ...p, isLiked: wasLiked, likesCount: photo.likesCount } : p
+        );
+      }
+    } catch {
+      applyPhotoUpdate((p) =>
+        p.id === photo.id ? { ...p, isLiked: wasLiked, likesCount: photo.likesCount } : p
+      );
+    }
+  };
+
+  const handleFavorite = async (photo) => {
+    if (!isAuth) { showToast("Войдите, чтобы добавить в избранное", "error"); return; }
+    const wasFavorited = photo.isFavorited;
+    const optimisticCount = wasFavorited
+      ? Math.max(0, (photo.favoritesCount ?? 0) - 1)
+      : (photo.favoritesCount ?? 0) + 1;
+    applyPhotoUpdate((p) =>
+      p.id === photo.id ? { ...p, isFavorited: !wasFavorited, favoritesCount: optimisticCount } : p
+    );
+    try {
+      const res = await fetch(`/api/photos/${photo.id}/favorite`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const result = await res.json();
+      if (result.status === "success") {
+        applyPhotoUpdate((p) =>
+          p.id === photo.id ? { ...p, isFavorited: result.data.favorited, favoritesCount: result.data.count } : p
+        );
+      } else {
+        applyPhotoUpdate((p) =>
+          p.id === photo.id ? { ...p, isFavorited: wasFavorited, favoritesCount: photo.favoritesCount ?? 0 } : p
+        );
+      }
+    } catch {
+      applyPhotoUpdate((p) =>
+        p.id === photo.id ? { ...p, isFavorited: wasFavorited, favoritesCount: photo.favoritesCount ?? 0 } : p
+      );
+    }
   };
 
   const handleFolderSaved = (folder) => {
@@ -205,6 +270,10 @@ const PortfolioPage = () => {
             isOwner={isOwner}
             onPhotoClick={setSelectedPhoto}
             onDeletePhoto={(photo) => setPhotoToDelete(photo)}
+            showLike={true}
+            onLike={handleLike}
+            showFavorite={true}
+            onFavorite={handleFavorite}
           />
         ) : (
           <div className={s.emptyPhotos}>
