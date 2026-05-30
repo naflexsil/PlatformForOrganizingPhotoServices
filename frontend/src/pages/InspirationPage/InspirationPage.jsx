@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
@@ -8,22 +8,51 @@ import s from "./InspirationPage.module.css";
 
 const LIMIT = 20;
 
+const getNumCols = () => {
+  if (typeof window === "undefined") return 3;
+  if (window.innerWidth <= 480) return 1;
+  if (window.innerWidth <= 900) return 2;
+  return 3;
+};
+
+// Reorders sorted array so CSS columns layout displays items left-to-right by rank
+// e.g. [9,8,7,6,5,4] with 3 cols → visual rows: [9,8,7], [6,5,4]
+const reorderForColumns = (arr, numCols) => {
+  if (numCols <= 1 || arr.length === 0) return arr;
+  const n = arr.length;
+  const r = Math.ceil(n / numCols);
+  const result = new Array(n).fill(null);
+  arr.forEach((item, i) => {
+    const col = i % numCols;
+    const row = Math.floor(i / numCols);
+    const newIdx = col * r + row;
+    if (newIdx < n) result[newIdx] = item;
+  });
+  return result.filter(Boolean);
+};
+
 const InspirationPage = () => {
   const { accessToken, isAuth } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
   const [photos, setPhotos] = useState([]);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [initialLoaded, setInitialLoaded] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [numCols, setNumCols] = useState(() => getNumCols());
 
   const sentinelRef = useRef(null);
   const loadingRef = useRef(false);
   const pageRef = useRef(1);
   const hasMoreRef = useRef(true);
+
+  useEffect(() => {
+    const handleResize = () => setNumCols(getNumCols());
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const loadPage = useCallback(async (pageNum) => {
     if (loadingRef.current || !hasMoreRef.current) return;
@@ -40,7 +69,6 @@ const InspirationPage = () => {
         hasMoreRef.current = result.pagination.hasMore;
         setHasMore(result.pagination.hasMore);
         pageRef.current = pageNum + 1;
-        setPage(pageNum + 1);
       }
     } catch {
       showToast("Не удалось загрузить ленту", "error");
@@ -69,6 +97,11 @@ const InspirationPage = () => {
     return () => observer.disconnect();
   }, [loadPage]);
 
+  const applyPhotoUpdate = (updater) => {
+    setPhotos((prev) => prev.map(updater));
+    setSelectedPhoto((prev) => (prev ? updater(prev) : prev));
+  };
+
   const handleLike = async (photo) => {
     if (!isAuth) {
       showToast("Войдите, чтобы лайкать фото", "error");
@@ -78,15 +111,9 @@ const InspirationPage = () => {
     const wasLiked = photo.isLiked;
     const optimisticCount = wasLiked ? photo.likesCount - 1 : photo.likesCount + 1;
 
-    const applyUpdate = (p) =>
-      p.id === photo.id
-        ? { ...p, isLiked: !wasLiked, likesCount: optimisticCount }
-        : p;
-
-    setPhotos((prev) => prev.map(applyUpdate));
-    if (selectedPhoto?.id === photo.id) {
-      setSelectedPhoto((prev) => applyUpdate(prev));
-    }
+    applyPhotoUpdate((p) =>
+      p.id === photo.id ? { ...p, isLiked: !wasLiked, likesCount: optimisticCount } : p
+    );
 
     try {
       const res = await fetch(`/api/photos/${photo.id}/like`, {
@@ -96,26 +123,66 @@ const InspirationPage = () => {
       const result = await res.json();
 
       if (result.status === "success") {
-        const syncUpdate = (p) =>
+        applyPhotoUpdate((p) =>
           p.id === photo.id
             ? { ...p, isLiked: result.data.liked, likesCount: result.data.count }
-            : p;
-        setPhotos((prev) => prev.map(syncUpdate));
-        if (selectedPhoto?.id === photo.id) {
-          setSelectedPhoto((prev) => syncUpdate(prev));
-        }
+            : p
+        );
       } else {
-        const rollback = (p) =>
-          p.id === photo.id ? { ...p, isLiked: wasLiked, likesCount: photo.likesCount } : p;
-        setPhotos((prev) => prev.map(rollback));
-        if (selectedPhoto?.id === photo.id) {
-          setSelectedPhoto((prev) => rollback(prev));
-        }
+        applyPhotoUpdate((p) =>
+          p.id === photo.id ? { ...p, isLiked: wasLiked, likesCount: photo.likesCount } : p
+        );
       }
     } catch {
-      const rollback = (p) =>
-        p.id === photo.id ? { ...p, isLiked: wasLiked, likesCount: photo.likesCount } : p;
-      setPhotos((prev) => prev.map(rollback));
+      applyPhotoUpdate((p) =>
+        p.id === photo.id ? { ...p, isLiked: wasLiked, likesCount: photo.likesCount } : p
+      );
+    }
+  };
+
+  const handleFavorite = async (photo) => {
+    if (!isAuth) {
+      showToast("Войдите, чтобы добавить в избранное", "error");
+      return;
+    }
+
+    const wasFavorited = photo.isFavorited;
+    const optimisticCount = wasFavorited
+      ? Math.max(0, (photo.favoritesCount ?? 0) - 1)
+      : (photo.favoritesCount ?? 0) + 1;
+
+    applyPhotoUpdate((p) =>
+      p.id === photo.id
+        ? { ...p, isFavorited: !wasFavorited, favoritesCount: optimisticCount }
+        : p
+    );
+
+    try {
+      const res = await fetch(`/api/photos/${photo.id}/favorite`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const result = await res.json();
+
+      if (result.status === "success") {
+        applyPhotoUpdate((p) =>
+          p.id === photo.id
+            ? { ...p, isFavorited: result.data.favorited, favoritesCount: result.data.count }
+            : p
+        );
+      } else {
+        applyPhotoUpdate((p) =>
+          p.id === photo.id
+            ? { ...p, isFavorited: wasFavorited, favoritesCount: photo.favoritesCount ?? 0 }
+            : p
+        );
+      }
+    } catch {
+      applyPhotoUpdate((p) =>
+        p.id === photo.id
+          ? { ...p, isFavorited: wasFavorited, favoritesCount: photo.favoritesCount ?? 0 }
+          : p
+      );
     }
   };
 
@@ -124,18 +191,14 @@ const InspirationPage = () => {
     navigate(`/@${author.tag}`);
   };
 
-  const handlePhotoClick = (photo) => {
-    setSelectedPhoto(photo);
+  const handleDescriptionUpdate = (photoId, description) => {
+    applyPhotoUpdate((p) => (p.id === photoId ? { ...p, description } : p));
   };
 
-  const handleDescriptionUpdate = (photoId, description) => {
-    setPhotos((prev) =>
-      prev.map((p) => (p.id === photoId ? { ...p, description } : p))
-    );
-    setSelectedPhoto((prev) =>
-      prev?.id === photoId ? { ...prev, description } : prev
-    );
-  };
+  const displayedPhotos = useMemo(
+    () => reorderForColumns(photos, numCols),
+    [photos, numCols]
+  );
 
   return (
     <div className={s.pageWrapper}>
@@ -162,11 +225,13 @@ const InspirationPage = () => {
 
         {photos.length > 0 && (
           <MasonryGrid
-            photos={photos}
+            photos={displayedPhotos}
             isOwner={false}
-            onPhotoClick={handlePhotoClick}
+            onPhotoClick={(photo) => setSelectedPhoto(photo)}
             showLike={true}
             onLike={handleLike}
+            showFavorite={true}
+            onFavorite={handleFavorite}
           />
         )}
 

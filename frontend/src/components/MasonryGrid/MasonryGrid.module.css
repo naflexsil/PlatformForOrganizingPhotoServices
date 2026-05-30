@@ -108,6 +108,55 @@
   line-height: 1;
 }
 
+.favoriteBtn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.92);
+  border: none;
+  border-radius: 20px;
+  padding: 5px 10px 5px 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 5;
+}
+
+.item:hover .favoriteBtn {
+  opacity: 1;
+}
+
+.favoriteIcon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  filter: brightness(0);
+}
+
+.favoriteIconFilled {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.favoriteCount {
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+  line-height: 1;
+}
+
+.favoriteCountActive {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-red);
+  line-height: 1;
+}
+
 @media (max-width: 900px) {
   .grid {
     columns: 2;

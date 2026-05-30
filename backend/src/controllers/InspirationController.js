@@ -7,7 +7,6 @@ export const getInspirationFeed = async (req, res) => {
 
   try {
     const where = {
-      folderId: { not: null },
       userId: { not: null },
     };
 
@@ -29,6 +28,7 @@ export const getInspirationFeed = async (req, res) => {
               avatarUrl: true,
             },
           },
+          _count: { select: { favorites: true } },
           ...(userId && {
             likes: { where: { userId }, select: { userId: true } },
             favorites: { where: { userId }, select: { userId: true } },
@@ -44,6 +44,7 @@ export const getInspirationFeed = async (req, res) => {
       urlOriginal: p.urlOriginal,
       description: p.description || '',
       likesCount: p.likesCount,
+      favoritesCount: p._count.favorites,
       createdAt: p.createdAt,
       isLiked: userId ? p.likes?.length > 0 : false,
       isFavorited: userId ? p.favorites?.length > 0 : false,
