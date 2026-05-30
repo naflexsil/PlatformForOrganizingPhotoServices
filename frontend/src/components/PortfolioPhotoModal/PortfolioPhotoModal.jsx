@@ -19,6 +19,7 @@ const PortfolioPhotoModal = ({
   onDelete,
   onDescriptionUpdate,
   onAuthorClick,
+  onPhotoUpdate,
 }) => {
   const [isLiked, setIsLiked] = useState(photo.isLiked ?? false);
   const [likesCount, setLikesCount] = useState(photo.likesCount ?? 0);
@@ -50,6 +51,7 @@ const PortfolioPhotoModal = ({
     if (result.status === "success") {
       setIsLiked(result.data.liked);
       setLikesCount(result.data.count);
+      onPhotoUpdate?.({ isLiked: result.data.liked, likesCount: result.data.count });
     }
   };
 
@@ -63,6 +65,7 @@ const PortfolioPhotoModal = ({
     if (result.status === "success") {
       setIsFavorited(result.data.favorited);
       setFavoritesCount(result.data.count);
+      onPhotoUpdate?.({ isFavorited: result.data.favorited, favoritesCount: result.data.count });
     }
   };
 

@@ -227,6 +227,9 @@ const PortfolioFolderPage = () => {
           onClose={() => setSelectedPhoto(null)}
           onDelete={(id) => handleDeletePhoto(id)}
           onDescriptionUpdate={handleDescriptionUpdate}
+          onPhotoUpdate={(updates) =>
+            applyPhotoUpdate((p) => p.id === selectedPhoto.id ? { ...p, ...updates } : p)
+          }
         />
       )}
 

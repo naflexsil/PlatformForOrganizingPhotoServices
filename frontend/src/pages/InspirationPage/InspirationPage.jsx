@@ -258,6 +258,9 @@ const InspirationPage = () => {
           onDelete={() => {}}
           onDescriptionUpdate={handleDescriptionUpdate}
           onAuthorClick={handleAuthorClick}
+          onPhotoUpdate={(updates) =>
+            applyPhotoUpdate((p) => p.id === selectedPhoto.id ? { ...p, ...updates } : p)
+          }
         />
       )}
     </div>

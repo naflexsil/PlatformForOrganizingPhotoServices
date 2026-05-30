@@ -103,8 +103,9 @@ model Photo {
   posts       Post[]
   likes       PhotoLike[]
   favorites   PhotoFavorite[]
-  likesCount  Int              @default(0)
-  createdAt   DateTime         @default(now())
+  likesCount      Int              @default(0)
+  embeddingVector Float[]          @default([])
+  createdAt       DateTime         @default(now())
 
   @@map("photos")
 }

@@ -3,6 +3,30 @@ import path from 'path';
 import prisma from '../config/db.js';
 import { uploadImage as s3UploadImage, deleteFile } from '../services/fileService.js';
 
+const AI_SERVICE_URL    = process.env.AI_SERVICE_URL;
+const BACKEND_INTERNAL  = process.env.BACKEND_INTERNAL_URL || 'http://localhost:3000';
+
+async function scheduleEmbedding(photoId, previewUrl) {
+  if (!AI_SERVICE_URL) return;
+  try {
+    const fullUrl = previewUrl.startsWith('http') ? previewUrl : `${BACKEND_INTERNAL}${previewUrl}`;
+    const res  = await fetch(`${AI_SERVICE_URL}/embed`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ url: fullUrl }),
+    });
+    const data = await res.json();
+    if (data.embedding) {
+      await prisma.photo.update({
+        where: { id: photoId },
+        data:  { embeddingVector: data.embedding },
+      });
+    }
+  } catch (err) {
+    console.error(`[EMBED] failed for photo ${photoId}:`, err.message);
+  }
+}
+
 
 const fileFilter = (_req, file, cb) => {
   const allowed = /jpeg|jpg|png|gif|webp/;
@@ -71,6 +95,9 @@ export const uploadPhoto = async (req, res) => {
         ...(folderId && { folderId }),
       },
     });
+
+    // fire-and-forget: не блокируем ответ пользователю
+    scheduleEmbedding(photo.id, previewUrl);
 
     return res.status(201).json({
       status: 'success',
