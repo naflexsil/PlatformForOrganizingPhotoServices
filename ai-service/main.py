@@ -6,7 +6,12 @@ from src.api.routes import router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    model_manager.load()
+    try:
+        model_manager.load()
+    except Exception as e:
+        import traceback
+        print(f"[AI] WARNING: model failed to load: {e}", flush=True)
+        traceback.print_exc()
     yield
 
 

@@ -177,9 +177,9 @@ def train():
         for a, p, n in tqdm(loader, desc=f"Epoch {epoch}/{EPOCHS}"):
             a, p, n = a.to(DEVICE), p.to(DEVICE), n.to(DEVICE)
 
-            a_emb = model.get_image_features(pixel_values=a)
-            p_emb = model.get_image_features(pixel_values=p)
-            n_emb = model.get_image_features(pixel_values=n)
+            a_emb = model.visual_projection(model.vision_model(pixel_values=a).pooler_output)
+            p_emb = model.visual_projection(model.vision_model(pixel_values=p).pooler_output)
+            n_emb = model.visual_projection(model.vision_model(pixel_values=n).pooler_output)
 
             loss = criterion(a_emb, p_emb, n_emb)
 
