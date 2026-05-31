@@ -58,9 +58,9 @@ services:
       - "127.0.0.1:8001:8001"
     volumes:
       - ./ai-service/weights:/app/weights
-      - huggingface_cache:/root/.cache/huggingface
+      - ./ai-service/model_cache:/app/model_cache
     environment:
-      CLIP_MODEL_NAME: "openai/clip-vit-base-patch32"
+      CLIP_MODEL_NAME: "/app/model_cache"
       CLIP_WEIGHTS_PATH: "weights/clip_finetuned.pt"
       HF_HUB_OFFLINE: "1"
 

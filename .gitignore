@@ -42,6 +42,7 @@ garage_data/meta
 garage.toml
 
 ai-service/train/data/
+ai-service/model_cache/
 ai-service/weights/*.pt
 ai-service/weights/*.pth
 ai-service/weights/*.bin
