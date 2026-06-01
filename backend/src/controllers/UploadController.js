@@ -1,7 +1,7 @@
 import multer from 'multer';
 import path from 'path';
 import prisma from '../config/db.js';
-import { uploadImage as s3UploadImage, deleteFile } from '../services/fileService.js';
+import { uploadImage as s3UploadImage, deleteFile, uploadChatImage, uploadChatFile } from '../services/fileService.js';
 
 const AI_SERVICE_URL    = process.env.AI_SERVICE_URL;
 const BACKEND_INTERNAL  = process.env.BACKEND_INTERNAL_URL || 'http://localhost:3000';
@@ -205,6 +205,119 @@ export const uploadSearchPhoto = async (req, res) => {
 
     return res.json({ status: 'success', data: { url: previewUrl, searchPhotos: updated.searchPhotos } });
   } catch (err) {
+    return res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
+// ── Chat attachment upload ────────────────────────────────────────────────────
+
+const ALLOWED_ARCHIVE_EXTS = ['.zip', '.rar'];
+const ALLOWED_ARCHIVE_MIMES = [
+  'application/zip',
+  'application/x-zip-compressed',
+  'application/x-rar-compressed',
+  'application/x-rar',
+  'application/vnd.rar',
+  'application/octet-stream',
+];
+const ALLOWED_IMAGE_EXTS = /\.(jpeg|jpg|png|gif|webp)$/i;
+const MAX_IMAGE_SIZE = 20 * 1024 * 1024;  // 20 МБ
+const MAX_ARCHIVE_SIZE = 100 * 1024 * 1024; // 100 МБ
+
+const chatFileFilter = (_req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+  const isImage = ALLOWED_IMAGE_EXTS.test(ext);
+  const isArchive = ALLOWED_ARCHIVE_EXTS.includes(ext);
+  if (isImage || isArchive) return cb(null, true);
+  cb(new Error('Разрешены изображения (jpeg, jpg, png, gif, webp) и архивы (.zip, .rar)'));
+};
+
+const chatUpload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: chatFileFilter,
+  limits: { fileSize: MAX_ARCHIVE_SIZE },
+});
+
+export const chatAttachmentMiddleware = (req, res, next) => {
+  chatUpload.single('file')(req, res, (err) => {
+    if (err) return res.status(400).json({ status: 'error', message: err.message });
+    next();
+  });
+};
+
+export const uploadChatAttachment = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ status: 'error', message: 'Файл не загружен' });
+  }
+
+  const { chatId } = req.body;
+  if (!chatId) {
+    return res.status(400).json({ status: 'error', message: 'chatId обязателен' });
+  }
+
+  const userId = req.user.id;
+
+  try {
+    const chat = await prisma.chat.findFirst({
+      where: {
+        id: chatId,
+        OR: [{ user1Id: userId }, { user2Id: userId }],
+      },
+    });
+    if (!chat) {
+      return res.status(403).json({ status: 'error', message: 'Нет доступа к этому чату' });
+    }
+
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    const isImage = ALLOWED_IMAGE_EXTS.test(ext);
+
+    if (isImage) {
+      if (req.file.size > MAX_IMAGE_SIZE) {
+        return res.status(400).json({ status: 'error', message: 'Изображение не может быть больше 20 МБ' });
+      }
+      const { originalUrl, previewUrl } = await uploadChatImage(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype,
+        chatId,
+      );
+      console.log(`[UPLOAD] chat image OK chatId="${chatId}"`);
+      return res.status(201).json({
+        status: 'success',
+        data: {
+          attachmentUrl: originalUrl,
+          previewUrl,
+          attachmentType: 'IMAGE',
+          fileName: req.file.originalname,
+          fileSize: req.file.size,
+        },
+      });
+    }
+
+    // Archive
+    const isArchive = ALLOWED_ARCHIVE_EXTS.includes(ext);
+    if (!isArchive) {
+      return res.status(400).json({ status: 'error', message: 'Разрешены только .zip и .rar архивы' });
+    }
+
+    const { url, fileName, fileSize } = await uploadChatFile(
+      req.file.buffer,
+      req.file.originalname,
+      req.file.mimetype,
+      chatId,
+    );
+    console.log(`[UPLOAD] chat file OK chatId="${chatId}" fileName="${req.file.originalname}"`);
+    return res.status(201).json({
+      status: 'success',
+      data: {
+        attachmentUrl: url,
+        attachmentType: 'FILE',
+        fileName,
+        fileSize,
+      },
+    });
+  } catch (err) {
+    console.error(`[UPLOAD] chat attachment FAILED: ${err.message}`);
     return res.status(500).json({ status: 'error', message: err.message });
   }
 };
