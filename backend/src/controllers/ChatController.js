@@ -7,6 +7,8 @@ const userSelect = {
   tag: true,
   avatarUrl: true,
   role: true,
+  isOnline: true,
+  lastSeenAt: true,
 };
 
 const getOrderedUserIds = (currentUserId, companionId) => {
@@ -34,6 +36,7 @@ export const getMyChats = async (req, res, next) => {
     const chats = await prisma.chat.findMany({
       where: {
         OR: [{ user1Id: userId }, { user2Id: userId }],
+        messages: { some: {} },
       },
       include: {
         user1: { select: userSelect },

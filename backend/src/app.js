@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { createServer } from "http";
 import express from "express";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
@@ -7,6 +8,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { connectDB } from "./config/db.js";
+import { initSocket } from "./socket/index.js";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
@@ -24,6 +26,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || "127.0.0.1";
 
@@ -68,7 +71,8 @@ app.use((err, _req, res, _next) => {
 connectDB()
   .then(() => {
     console.log("PostgreSQL connected");
-    app.listen(PORT, HOST, () => {
+    initSocket(httpServer);
+    httpServer.listen(PORT, HOST, () => {
       console.log(`Server running on http://${HOST}:${PORT}`);
     });
   })
