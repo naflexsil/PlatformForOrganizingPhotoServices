@@ -38,6 +38,8 @@ model User {
   photoFavorites PhotoFavorite[]
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+  isOnline    Boolean   @default(false)
+  lastSeenAt  DateTime?
   chatsAsUser1 Chat[] @relation("ChatUser1")
   chatsAsUser2 Chat[] @relation("ChatUser2")
   messages Message[] @relation("MessageSender")
