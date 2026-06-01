@@ -1,0 +1,98 @@
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  border-radius: 0;
+}
+
+.item:hover {
+  background-color: #f9f0f0;
+}
+
+.active {
+  background-color: var(--light-pink) !important;
+}
+
+.avatarWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Online dot: fill --light-pink, white stroke */
+.onlineDot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--light-pink);
+  border: 2px solid #ffffff;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.name {
+  font-family: "Farabee", serif;
+  font-size: 15px;
+  color: var(--dark-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+.date {
+  font-size: 12px;
+  color: var(--dark-text);
+  opacity: 0.45;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.bottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preview {
+  font-size: 13px;
+  color: var(--dark-text);
+  opacity: 0.55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 190px;
+}
+
+/* Unread dot: --accent-red */
+.unreadDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-red);
+  flex-shrink: 0;
+  margin-left: 8px;
+}

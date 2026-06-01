@@ -1,0 +1,173 @@
+.root {
+  flex-shrink: 0;
+  background: var(--white);
+  border-top: 1px solid #f0e6e6;
+  padding: 8px 16px;
+}
+
+/* ── Pending photos strip ── */
+.pendingPhotos {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0 6px;
+  flex-wrap: wrap;
+}
+
+.pendingThumb {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.thumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.removeThumb {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.addMoreBtn {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  border: 2px dashed #ddd;
+  background: none;
+  font-size: 22px;
+  color: var(--dark-text);
+  opacity: 0.4;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.addMoreBtn:hover { opacity: 0.7; }
+
+/* ── Pending file ── */
+.pendingFile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f5efef;
+  border-radius: 10px;
+  margin-bottom: 6px;
+}
+
+.pendingFileIcon { font-size: 18px; }
+
+.pendingFileName {
+  font-size: 13px;
+  color: var(--dark-text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.removePendingFile {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--dark-text);
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* ── Input row ── */
+.inputRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.attachBtn,
+.sendBtn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s;
+  padding: 8px;
+}
+
+.attachBtn:hover { background: #f5efef; }
+
+.sendBtn {
+  background: var(--accent-red);
+}
+.sendBtn:hover { opacity: 0.85; }
+.sendBtn:disabled {
+  background: #ddd;
+  cursor: default;
+  opacity: 1;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.sendBtn .icon {
+  filter: brightness(0) invert(1);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.textarea {
+  flex: 1;
+  resize: none;
+  border: 1px solid #e8dada;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dark-text);
+  background: #fdf8f8;
+  outline: none;
+  line-height: 1.5;
+  min-height: 40px;
+  max-height: 120px;
+  overflow-y: auto;
+  transition: border-color 0.15s;
+}
+
+.textarea:focus {
+  border-color: var(--accent-red);
+}
+
+.textarea::placeholder {
+  color: var(--dark-text);
+  opacity: 0.35;
+}

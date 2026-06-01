@@ -1,0 +1,203 @@
+.wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.firstInGroup {
+  margin-top: 10px;
+}
+
+/* Outgoing (me) */
+.own {
+  flex-direction: row-reverse;
+}
+
+/* Incoming */
+.theirs {
+  flex-direction: row;
+}
+
+/* ── Avatar slot ── */
+.avatarSlot {
+  flex-shrink: 0;
+  width: 32px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.avatarSpacer {
+  width: 32px;
+}
+
+/* ── Bubble wrap ── */
+.bubbleWrap {
+  display: flex;
+  flex-direction: column;
+  max-width: 60%;
+}
+
+.own .bubbleWrap {
+  align-items: flex-end;
+}
+
+.theirs .bubbleWrap {
+  align-items: flex-start;
+}
+
+.senderName {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-red);
+  margin-bottom: 3px;
+  padding-left: 2px;
+}
+
+/* ── Bubble itself ── */
+.bubble {
+  padding: 10px 14px;
+  border-radius: 16px;
+  position: relative;
+  word-break: break-word;
+}
+
+.own .bubble {
+  background: var(--light-pink);
+  border-bottom-right-radius: 4px;
+}
+
+.theirs .bubble {
+  background: var(--white);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Text ── */
+.text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--dark-text);
+  line-height: 1.5;
+}
+
+.caption {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--dark-text);
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+/* ── Time ── */
+.time {
+  display: block;
+  text-align: right;
+  font-size: 11px;
+  color: var(--dark-text);
+  opacity: 0.4;
+  margin-top: 4px;
+}
+
+/* ── Content wrap (images / files) ── */
+.contentWrap {
+  min-width: 0;
+}
+
+/* ── Photo grids ── */
+.gridImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  display: block;
+  transition: opacity 0.15s;
+}
+.gridImg:hover { opacity: 0.9; }
+
+.grid1 { max-width: 240px; }
+.singleImg { max-height: 240px; object-fit: cover; border-radius: 10px; width: auto; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 240px; }
+.grid2 .gridImg { height: 120px; }
+
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; width: 240px; }
+.grid3 .gridImg { height: 80px; }
+
+.grid4 { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 240px; }
+.grid4 .gridImg { height: 120px; }
+
+.grid5 { display: flex; gap: 3px; width: 240px; }
+.grid5Left { flex: 1.4; }
+.grid5Right { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.grid5Main { height: 160px; width: 100%; }
+.grid5Side { height: 78px; width: 100%; }
+
+.grid6plus { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; width: 240px; }
+.grid6plus .gridImg { height: 80px; }
+
+/* ── Preview overlay (single click) ── */
+.previewOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.previewImg {
+  max-width: 90vw;
+  max-height: 85vh;
+  border-radius: 12px;
+  object-fit: contain;
+  cursor: default;
+}
+
+.previewHint {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── File card ── */
+.fileCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.fileIcon {
+  font-size: 22px;
+}
+
+.fileMeta {
+  display: flex;
+  flex-direction: column;
+}
+
+.fileName {
+  font-size: 13px;
+  color: var(--dark-text);
+  word-break: break-all;
+}
+
+.fileSize {
+  font-size: 11px;
+  color: var(--dark-text);
+  opacity: 0.5;
+  margin-top: 2px;
+}

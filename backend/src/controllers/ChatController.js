@@ -18,13 +18,14 @@ const getOrderedUserIds = (currentUserId, companionId) => {
     : { user1Id: companionId, user2Id: currentUserId };
 };
 
-const formatChat = (chat, currentUserId) => {
+const formatChat = (chat, currentUserId, unreadMap = {}) => {
   const companion = chat.user1Id === currentUserId ? chat.user2 : chat.user1;
 
   return {
     id: chat.id,
     companion,
     lastMessage: chat.messages?.[0] || null,
+    unreadCount: unreadMap[chat.id] || 0,
     createdAt: chat.createdAt,
     updatedAt: chat.updatedAt,
   };
@@ -60,9 +61,18 @@ export const getMyChats = async (req, res, next) => {
       orderBy: { updatedAt: "desc" },
     });
 
+    // Batch-query unread counts for all chats
+    const chatIds = chats.map((c) => c.id);
+    const unreadRows = await prisma.message.groupBy({
+      by: ["chatId"],
+      where: { chatId: { in: chatIds }, senderId: { not: userId }, isRead: false },
+      _count: { id: true },
+    });
+    const unreadMap = Object.fromEntries(unreadRows.map((r) => [r.chatId, r._count.id]));
+
     return res.json({
       status: "success",
-      data: chats.map((chat) => formatChat(chat, userId)),
+      data: chats.map((chat) => formatChat(chat, userId, unreadMap)),
     });
   } catch (err) {
     return next(err);
