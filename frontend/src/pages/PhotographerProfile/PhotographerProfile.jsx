@@ -97,9 +97,22 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(!profileData);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscribeLoading, setSubscribeLoading] = useState(false);
   const settingsRef = useRef(null);
 
   const [userData, setUserData] = useState(profileData ?? EMPTY_PROFILE);
+
+  // Load subscription status when viewing another photographer's profile
+  useEffect(() => {
+    if (isMyProfile || !accessToken || !userData.id) return;
+    fetch(`/api/subscriptions/${userData.id}/check`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((r) => r.json())
+      .then((data) => { if (data.status === "success") setIsSubscribed(data.subscribed); })
+      .catch(() => {});
+  }, [isMyProfile, accessToken, userData.id]);
 
   useEffect(() => {
     if (profileData || !accessToken) return;
@@ -260,6 +273,50 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
     setEditingPost(null);
   };
 
+  const handleSubscribe = async () => {
+    if (!accessToken) {
+      showToast("Войдите в аккаунт, чтобы подписаться", "error");
+      return;
+    }
+    setSubscribeLoading(true);
+    try {
+      const r = await fetch(`/api/subscriptions/${userData.id}/toggle`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await r.json();
+      if (data.status === "success") {
+        setIsSubscribed(data.subscribed);
+        showToast(data.subscribed ? "Вы подписались" : "Вы отписались", "success");
+      }
+    } finally {
+      setSubscribeLoading(false);
+    }
+  };
+
+  const handleMessage = async () => {
+    if (!accessToken) {
+      showToast("Войдите в аккаунт, чтобы написать сообщение", "error");
+      return;
+    }
+    try {
+      const r = await fetch("/api/chats/start", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ companionId: userData.id }),
+      });
+      const data = await r.json();
+      if (data.status === "success") {
+        navigate(`/chats/${data.data.id}`);
+      }
+    } catch {
+      showToast("Не удалось открыть чат", "error");
+    }
+  };
+
   const handleCopyTag = async () => {
     try {
       await navigator.clipboard.writeText(userData.username);
@@ -350,7 +407,13 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
                 <p><span className={s.clickableStat}>Подписки</span> 0</p>
               </div>
               {!isMyProfile && (
-                <button className={s.subscribeBtn}>Подписаться</button>
+                <button
+                  className={s.subscribeBtn}
+                  onClick={handleSubscribe}
+                  disabled={subscribeLoading}
+                >
+                  {isSubscribed ? "Отписаться" : "Подписаться"}
+                </button>
               )}
             </div>
 
@@ -388,7 +451,7 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
               </div>
               <p className={s.bioText}>{userData.bio}</p>
               {!isMyProfile && (
-                <button className={s.messageBtn}>Написать</button>
+                <button className={s.messageBtn} onClick={handleMessage}>Написать</button>
               )}
             </div>
           </div>

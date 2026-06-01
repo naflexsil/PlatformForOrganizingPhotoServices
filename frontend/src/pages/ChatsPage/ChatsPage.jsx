@@ -5,6 +5,7 @@ import ChatList from "../../components/ChatList/ChatList";
 import ChatWindow from "../../components/ChatWindow/ChatWindow";
 import NewChatModal from "../../components/NewChatModal/NewChatModal";
 import chatIcon from "../../assets/icons/chat.svg";
+import addIcon from "../../assets/icons/add.svg";
 
 const EmptyState = () => (
   <div className={s.emptyState}>
@@ -24,7 +25,7 @@ const ChatsPage = () => {
         <div className={s.leftHeader}>
           <span className={s.title}>Чаты</span>
           <button className={s.newChatBtn} onClick={() => setShowNewChatModal(true)} title="Новый чат">
-            +
+            <img src={addIcon} alt="Новый чат" className={s.newChatIcon} />
           </button>
         </div>
 
