@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import s from "./UserProfile.module.css";
 import settingsIcon from "../../assets/icons/settings.svg";
 import locIcon from "../../assets/icons/location.svg";
@@ -51,6 +52,7 @@ const normalizePost = (p) => ({
 const UserProfile = ({ isMyProfile = true, profileData = null }) => {
   const { accessToken } = useAuth();
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAvatarOpen, setIsAvatarOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -60,9 +62,21 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(!profileData);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscribeLoading, setSubscribeLoading] = useState(false);
   const settingsRef = useRef(null);
 
   const [userData, setUserData] = useState(profileData ?? EMPTY_PROFILE);
+
+  useEffect(() => {
+    if (isMyProfile || !accessToken || !userData.id) return;
+    fetch(`/api/subscriptions/${userData.id}/check`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((r) => r.json())
+      .then((data) => { if (data.status === "success") setIsSubscribed(data.subscribed); })
+      .catch(() => {});
+  }, [isMyProfile, accessToken, userData.id]);
 
   useEffect(() => {
     if (profileData || !accessToken) return;
@@ -201,6 +215,50 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
     setEditingPost(null);
   };
 
+  const handleSubscribe = async () => {
+    if (!accessToken) {
+      showToast("Войдите в аккаунт, чтобы подписаться", "error");
+      return;
+    }
+    setSubscribeLoading(true);
+    try {
+      const r = await fetch(`/api/subscriptions/${userData.id}/toggle`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await r.json();
+      if (data.status === "success") {
+        setIsSubscribed(data.subscribed);
+        showToast(data.subscribed ? "Вы подписались" : "Вы отписались", "success");
+      }
+    } finally {
+      setSubscribeLoading(false);
+    }
+  };
+
+  const handleMessage = async () => {
+    if (!accessToken) {
+      showToast("Войдите в аккаунт, чтобы написать сообщение", "error");
+      return;
+    }
+    try {
+      const r = await fetch("/api/chats/start", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ companionId: userData.id }),
+      });
+      const data = await r.json();
+      if (data.status === "success") {
+        navigate(`/chats/${data.data.id}`);
+      }
+    } catch {
+      showToast("Не удалось открыть чат", "error");
+    }
+  };
+
   const handleCopyTag = async () => {
     try {
       await navigator.clipboard.writeText(userData.username);
@@ -281,7 +339,13 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
                 )}
               </div>
               {!isMyProfile && (
-                <button className={s.subscribeBtn}>Подписаться</button>
+                <button
+                  className={s.subscribeBtn}
+                  onClick={handleSubscribe}
+                  disabled={subscribeLoading}
+                >
+                  {isSubscribed ? "Отписаться" : "Подписаться"}
+                </button>
               )}
             </div>
 
@@ -315,7 +379,7 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
               </div>
               <p className={s.bioText}>{userData.bio}</p>
               {!isMyProfile && (
-                <button className={s.messageBtn}>Написать</button>
+                <button className={s.messageBtn} onClick={handleMessage}>Написать</button>
               )}
             </div>
           </div>

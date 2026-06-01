@@ -12,10 +12,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 20px;
+  padding: 20px 24px;
   border-bottom: 1px solid #f0e6e6;
   background: var(--white);
   flex-shrink: 0;
+  border-radius: 40px 40px 0 0;
 }
 
 .closeBtn {
