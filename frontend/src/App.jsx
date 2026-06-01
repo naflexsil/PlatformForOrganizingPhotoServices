@@ -12,8 +12,10 @@ import PublicProfile from "./pages/PublicProfile/PublicProfile";
 import PortfolioPage from "./pages/Portfolio/PortfolioPage";
 import PortfolioFolderPage from "./pages/Portfolio/PortfolioFolderPage";
 import InspirationPage from "./pages/InspirationPage/InspirationPage";
+import ChatsPage from "./pages/ChatsPage/ChatsPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
+import { SocketProvider } from "./context/SocketContext";
 
 const MyProfile = () => {
   const { user } = useAuth();
@@ -95,6 +97,8 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/feed" element={<InspirationPage />} />
+        <Route path="/chats" element={<ChatsPage />} />
+        <Route path="/chats/:chatId" element={<ChatsPage />} />
         <Route path="/profile" element={<MyProfile />} />
         <Route path="/:tag/portfolio/:folderId" element={<PortfolioFolderPage />} />
         <Route path="/:tag/portfolio" element={<PortfolioPage />} />
@@ -134,7 +138,9 @@ function App() {
     <AuthProvider>
       <ToastProvider>
         <Router>
-          <AppContent />
+          <SocketProvider>
+            <AppContent />
+          </SocketProvider>
         </Router>
       </ToastProvider>
     </AuthProvider>

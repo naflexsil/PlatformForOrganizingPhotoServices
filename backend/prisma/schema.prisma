@@ -202,8 +202,8 @@ model Message {
   chatId    String
   senderId  String
 
-  text      String?
-  attachmentUrl  String?
+  text           String?
+  attachments    Json?
   attachmentType MessageType @default(TEXT)
 
   isRead    Boolean @default(false)

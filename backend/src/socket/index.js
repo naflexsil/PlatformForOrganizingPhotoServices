@@ -99,13 +99,14 @@ export function initSocket(httpServer) {
     }
 
     // ── send-message ────────────────────────────────────────────────────
-    socket.on("send-message", async ({ chatId, text, attachmentUrl, attachmentType }, callback) => {
+    // attachments: [{previewUrl, originalUrl}] for IMAGE, [{url, fileName, fileSize}] for FILE
+    socket.on("send-message", async ({ chatId, text, attachments, attachmentType }, callback) => {
       if (!checkRateLimit(socket.id)) {
         return callback?.({ error: "Слишком много сообщений, подождите немного" });
       }
 
       if (!chatId) return callback?.({ error: "chatId обязателен" });
-      if (!text && !attachmentUrl) return callback?.({ error: "Пустое сообщение" });
+      if (!text?.trim() && !attachments?.length) return callback?.({ error: "Пустое сообщение" });
 
       // Verify sender is a participant
       const chat = await prisma.chat.findFirst({
@@ -120,9 +121,9 @@ export function initSocket(httpServer) {
         data: {
           chatId,
           senderId: userId,
-          text: text || null,
-          attachmentUrl: attachmentUrl || null,
-          attachmentType: attachmentType || "TEXT",
+          text: text?.trim() || null,
+          attachments: attachments?.length ? attachments : null,
+          attachmentType: attachments?.length ? (attachmentType || "IMAGE") : "TEXT",
         },
         include: { sender: { select: userSelect } },
       });
