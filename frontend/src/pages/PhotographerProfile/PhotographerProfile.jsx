@@ -408,7 +408,7 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
               </div>
               {!isMyProfile && (
                 <button
-                  className={s.subscribeBtn}
+                  className={isSubscribed ? s.unsubscribeBtn : s.subscribeBtn}
                   onClick={handleSubscribe}
                   disabled={subscribeLoading}
                 >

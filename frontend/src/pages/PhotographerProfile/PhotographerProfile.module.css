@@ -319,7 +319,7 @@
 .createBtn {
   background-color: var(--accent-red);
   color: var(--white);
-  border: 4px solid transparent;
+  border: 2px solid transparent;
   border-radius: 12px;
   padding: 12px 30px;
   cursor: pointer;
@@ -328,6 +328,26 @@
   transition: all 0.3s ease;
   align-self: flex-start;
   width: fit-content;
+}
+
+.unsubscribeBtn {
+  background: transparent;
+  color: var(--accent-red);
+  border: 2px solid var(--accent-red);
+  border-radius: 12px;
+  padding: 12px 30px;
+  cursor: pointer;
+  font-family: "Farabee", serif !important;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  width: fit-content;
+}
+
+.unsubscribeBtn:hover {
+  background: var(--accent-red);
+  color: var(--white);
+  transform: translateY(-2px);
 }
 
 .messageBtn {
@@ -518,8 +538,6 @@
   transform: translateY(-3px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
-
-/* ─── Responsive ─────────────────────────────────────────────────── */
 
 @media (max-width: 1024px) {
   .infoGrid {
