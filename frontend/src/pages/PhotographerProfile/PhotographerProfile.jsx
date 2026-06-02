@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import s from "./PhotographerProfile.module.css";
 import settingsIcon from "../../assets/icons/settings.svg";
 import starIcon from "../../assets/icons/star.svg";
@@ -13,6 +13,7 @@ import editIcon from "../../assets/icons/edit.svg";
 import CreatePostModal from "../../components/CreatePostModal/CreatePostModal";
 import PostModal from "../../components/PostModal/PostModal";
 import EditProfile from "../EditProfile/EditProfile";
+import { useAuth } from "../../context/AuthContext";
 
 const PRICE_PREVIEW_LIMIT = 80;
 
@@ -43,14 +44,59 @@ const PriceModal = ({ text, onClose }) => {
   );
 };
 
-const PhotographerProfile = ({ isMyProfile = true }) => {
+const EMPTY_PROFILE = {
+  firstName: "",
+  lastName: "",
+  username: "",
+  bio: "",
+  rating: "—",
+  city: "—",
+  experienceYears: "",
+  experienceMonths: "",
+  deliveryDays: "",
+  hourlyRate: "",
+  priceText: "",
+};
+
+const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
+  const { accessToken } = useAuth();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(!profileData);
   const settingsRef = useRef(null);
+
+  const [userData, setUserData] = useState(profileData ?? EMPTY_PROFILE);
+
+  useEffect(() => {
+    if (profileData || !accessToken) return;
+    fetch("/api/auth/me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((r) => r.json())
+      .then((result) => {
+        if (result.status !== "success") return;
+        const d = result.data;
+        const ph = d.photographer;
+        setUserData({
+          firstName: d.firstName || "",
+          lastName: d.lastName || "",
+          username: "@" + (d.tag || ""),
+          bio: d.bio || "",
+          rating: ph?.rating != null ? String(ph.rating).replace(".", ",") : "—",
+          city: d.city || "—",
+          experienceYears: ph?.experienceYears != null ? String(ph.experienceYears) : "",
+          experienceMonths: ph?.experienceMonths != null ? String(ph.experienceMonths) : "",
+          deliveryDays: ph?.deliveryTime != null ? String(ph.deliveryTime) : "",
+          hourlyRate: ph?.pricePerHour != null ? String(ph.pricePerHour) : "",
+          priceText: ph?.additionalPriceInfo || "",
+        });
+      })
+      .finally(() => setIsLoading(false));
+  }, [profileData, accessToken]);
 
   useEffect(() => {
     if (!isSettingsOpen) return;
@@ -62,21 +108,6 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isSettingsOpen]);
-
-  const [userData, setUserData] = useState({
-    firstName: "Алина",
-    lastName: "Старикова",
-    username: "@flexsana",
-    bio: "Обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне обо мне...",
-    rating: "4,56",
-    city: "Кемерово",
-    experienceYears: "",
-    experienceMonths: "11",
-    deliveryDays: "3",
-    hourlyRate: "4500",
-    priceText:
-      "Час от 4500 руб. Свадебная съемка от 4500 руб. Парная съемка от 4500 руб.",
-  });
 
   const formatExperience = (years, months) => {
     const y = Number(years);
@@ -91,6 +122,10 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
     const d = Number(days);
     return d > 0 ? `от ${d} дней` : "—";
   };
+
+  if (isLoading) {
+    return <div className={s.pageWrapper} />;
+  }
 
   if (isEditProfileOpen) {
     return (
@@ -219,9 +254,6 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
                   <span className={s.clickableStat}>Подписки</span> 0
                 </p>
               </div>
-              <div className={s.rating}>
-                <img src={starIcon} alt="Rating" /> {userData.rating}
-              </div>
             </div>
 
             <div className={s.rightCol}>
@@ -286,11 +318,20 @@ const PhotographerProfile = ({ isMyProfile = true }) => {
           </div>
 
           <div className={s.detailsBlock}>
-            <div className={s.detailItem}>
-              <span className={s.detailLabel}>Оказываю услуги в</span>
-              <div className={s.detailValueLine}>
-                <img src={locIcon} alt="Location" />
-                <strong>{userData.city}</strong>
+            <div className={s.detailRow}>
+              <div className={s.detailItem}>
+                <span className={s.detailLabel}>Оказываю услуги в</span>
+                <div className={s.detailValueLine}>
+                  <img src={locIcon} alt="Location" />
+                  <strong>{userData.city}</strong>
+                </div>
+              </div>
+              <div className={s.detailItem}>
+                <span className={s.detailLabel}>Рейтинг</span>
+                <div className={s.detailValueLine}>
+                  <img src={starIcon} alt="Rating" />
+                  <strong>{userData.rating}</strong>
+                </div>
               </div>
             </div>
             <div className={s.detailRow}>
