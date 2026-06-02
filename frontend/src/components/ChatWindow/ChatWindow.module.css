@@ -82,7 +82,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  background: var(--gray);
+  background: var(--white);
 }
 
 .messages::-webkit-scrollbar {
