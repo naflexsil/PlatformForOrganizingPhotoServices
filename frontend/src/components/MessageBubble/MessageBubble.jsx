@@ -2,7 +2,6 @@ import { useState } from "react";
 import attachIcon from "../../assets/icons/attach.svg";
 import arrowLeft from "../../assets/icons/carousel_arrow_left.svg";
 import arrowRight from "../../assets/icons/carousel_arrow_right.svg";
-import ChatImage from "../ChatImage/ChatImage";
 import s from "./MessageBubble.module.css";
 
 function formatTime(dateStr) {
@@ -35,7 +34,7 @@ const Gallery = ({ photos, startIndex, onClose }) => {
         </button>
       )}
       {/* previewUrl shown; click opens originalUrl in new tab */}
-      <ChatImage
+      <img
         src={photos[index].previewUrl}
         alt=""
         className={s.galleryImg}
@@ -59,7 +58,7 @@ const PhotoGrid = ({ photos, onOpen }) => {
   const count = photos.length;
 
   const img = (photo, i, cls = "") => (
-    <ChatImage
+    <img
       key={i}
       src={photo.previewUrl}
       alt=""

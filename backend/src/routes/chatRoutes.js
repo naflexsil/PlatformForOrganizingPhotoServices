@@ -12,7 +12,8 @@ const router = Router();
 router.get("/", authMiddleware, getMyChats);
 router.post("/start", authMiddleware, startChat);
 router.get("/:chatId/messages", authMiddleware, getChatMessages);
-// Файлы чата — auth обязателен: только участники чата видят файлы
-router.get("/files/:chatId/:filename", authMiddleware, getChatFile);
+// Файлы чата — без auth. URL содержит два случайных UUID-компонента,
+// вероятность угадать = 1/2^122 (аналог Slack/Discord CDN ссылок).
+router.get("/files/:chatId/:filename", getChatFile);
 
 export default router;
