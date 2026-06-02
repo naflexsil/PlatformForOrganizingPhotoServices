@@ -1,0 +1,111 @@
+.card {
+  background: #fdf5f5;
+  border: 1.5px solid #f0dede;
+  border-radius: 16px;
+  padding: 14px 20px;
+  margin: 0 40px 12px;
+  flex-shrink: 0;
+}
+
+.cardTerminal {
+  opacity: 0.75;
+}
+
+.topRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: "Farabee", serif;
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+.badge_PENDING            { background: #fff3cd; color: #7a5c00; }
+.badge_AWAITING_PAYMENT   { background: #d1ecf1; color: #0c5460; }
+.badge_IN_PROGRESS        { background: #d4edda; color: #155724; }
+.badge_AWAITING_REVIEW    { background: #fff3cd; color: #7a5c00; }
+.badge_REVISION           { background: #fde8d8; color: #7a3c00; }
+.badge_COMPLETED          { background: #d4edda; color: #155724; }
+.badge_REJECTED           { background: #f8d7da; color: #721c24; }
+
+.paymentStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  text-align: right;
+}
+.confirmed { color: #155724; }
+.pending   { color: var(--dark-text); opacity: 0.55; }
+
+.conditions {
+  font-size: 14px;
+  color: var(--dark-text);
+  line-height: 1.55;
+  margin: 0 0 10px;
+  white-space: pre-wrap;
+}
+
+.revisionReason {
+  font-size: 13px;
+  color: #7a3c00;
+  background: #fde8d8;
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: 0 0 10px;
+}
+
+.ratingRow {
+  font-size: 16px;
+  color: #c0a000;
+  margin-bottom: 10px;
+}
+.ratingComment {
+  font-size: 13px;
+  color: var(--dark-text);
+  opacity: 0.7;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.primary, .outline, .danger {
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-family: "Farabee", serif;
+  font-size: 15px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+.primary:disabled, .outline:disabled, .danger:disabled {
+  opacity: 0.5; cursor: default;
+}
+
+.primary {
+  background: var(--accent-red); color: var(--white); border: 2px solid transparent;
+}
+.primary:hover:not(:disabled) { opacity: 0.88; }
+
+.outline {
+  background: transparent; color: var(--accent-red); border: 2px solid var(--accent-red);
+}
+.outline:hover:not(:disabled) { background: var(--accent-red); color: var(--white); }
+
+.danger {
+  background: transparent; color: var(--error-red); border: 2px solid var(--error-red);
+}
+.danger:hover:not(:disabled) { background: var(--error-red); color: var(--white); }

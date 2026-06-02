@@ -4,6 +4,10 @@ import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import MessageBubble from "../MessageBubble/MessageBubble";
 import MessageInput from "../MessageInput/MessageInput";
+import DealCard from "../DealCard/DealCard";
+import DealProposalModal from "../DealProposalModal/DealProposalModal";
+import RevisionModal from "../RevisionModal/RevisionModal";
+import RatingModal from "../RatingModal/RatingModal";
 import closeIcon from "../../assets/icons/carousel_close.svg";
 import s from "./ChatWindow.module.css";
 
@@ -24,6 +28,8 @@ function formatLastSeen(companion) {
   return `Был(а) в сети ${seen.toLocaleDateString("ru", { day: "numeric", month: "long" })}`;
 }
 
+const ACTIVE_DEAL_STATUSES = ["PENDING", "AWAITING_PAYMENT", "IN_PROGRESS", "AWAITING_REVIEW", "REVISION"];
+
 const ChatWindow = ({ chatId }) => {
   const { accessToken, user } = useAuth();
   const { socket, isConnected, setActiveChatId, refreshUnread } = useSocket();
@@ -33,17 +39,20 @@ const ChatWindow = ({ chatId }) => {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [typingVisible, setTypingVisible] = useState(false);
+
+  const [activeDeal, setActiveDeal] = useState(null);
+  const [showProposalModal, setShowProposalModal] = useState(false);
+  const [revisionDeal, setRevisionDeal] = useState(null);
+  const [ratingDeal, setRatingDeal] = useState(null);
   const typingTimerRef = useRef(null);
   const containerRef = useRef(null);
   const initialScrollDoneRef = useRef(false);
 
-  // Register this chat as active (suppresses unread increment)
   useEffect(() => {
     setActiveChatId(chatId);
     return () => setActiveChatId(null);
   }, [chatId, setActiveChatId]);
 
-  // Load messages
   const loadMessages = useCallback(async () => {
     if (!accessToken || !chatId) return;
     setIsLoading(true);
@@ -55,7 +64,6 @@ const ChatWindow = ({ chatId }) => {
       const data = await r.json();
       if (data.status === "success") {
         setMessages(data.data);
-        // Identify companion from first message or we need chat info
         const other = data.data.find((m) => m.senderId !== user?.id);
         if (other?.sender) setCompanion(other.sender);
       }
@@ -65,7 +73,6 @@ const ChatWindow = ({ chatId }) => {
     }
   }, [accessToken, chatId, user?.id]);
 
-  // Load chat info (for companion when there are no messages yet)
   const loadChatInfo = useCallback(async () => {
     if (!accessToken) return;
     try {
@@ -85,14 +92,24 @@ const ChatWindow = ({ chatId }) => {
     loadChatInfo();
   }, [loadMessages, loadChatInfo]);
 
-  // Mark messages as read
+  useEffect(() => {
+    if (!accessToken || !chatId) return;
+    fetch(`/api/deals?chatId=${chatId}`, { headers: { Authorization: `Bearer ${accessToken}` } })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.status === "success" && data.data.length > 0) {
+          setActiveDeal(data.data[0]);
+        }
+      })
+      .catch(() => {});
+  }, [accessToken, chatId]);
+
   useEffect(() => {
     if (!socket || !chatId) return;
     socket.emit("mark-read", { chatId });
     refreshUnread();
   }, [socket, chatId, messages.length, refreshUnread]);
 
-  // Scroll container to bottom (never touches document scroll)
   const scrollToBottom = (smooth = false) => {
     const c = containerRef.current;
     if (!c) return;
@@ -103,14 +120,12 @@ const ChatWindow = ({ chatId }) => {
     }
   };
 
-  // Scroll to bottom on initial load
   useEffect(() => {
     if (isLoading || initialScrollDoneRef.current) return;
     initialScrollDoneRef.current = true;
     scrollToBottom(false);
   }, [isLoading]);
 
-  // Auto-scroll when new message arrives (smooth, only if near bottom or own message)
   useEffect(() => {
     if (!initialScrollDoneRef.current || messages.length === 0) return;
     const c = containerRef.current;
@@ -123,7 +138,6 @@ const ChatWindow = ({ chatId }) => {
     }
   }, [messages.length]);
 
-  // Socket: receive new messages + typing + online status
   useEffect(() => {
     if (!socket) return;
 
@@ -156,11 +170,20 @@ const ChatWindow = ({ chatId }) => {
       );
     };
 
+    const handleDealUpdated = ({ deal }) => {
+      if (deal.chatId !== chatId) return;
+      setActiveDeal(deal);
+      if (deal.status === "COMPLETED" && deal.clientId === user?.id && deal.rating === null) {
+        setRatingDeal(deal);
+      }
+    };
+
     socket.on("new-message", handleNewMessage);
     socket.on("user-typing", handleTyping);
     socket.on("user-stop-typing", handleStopTyping);
     socket.on("user-online", handleOnline);
     socket.on("user-offline", handleOffline);
+    socket.on("deal-updated", handleDealUpdated);
 
     return () => {
       socket.off("new-message", handleNewMessage);
@@ -168,11 +191,11 @@ const ChatWindow = ({ chatId }) => {
       socket.off("user-stop-typing", handleStopTyping);
       socket.off("user-online", handleOnline);
       socket.off("user-offline", handleOffline);
+      socket.off("deal-updated", handleDealUpdated);
       clearTimeout(typingTimerRef.current);
     };
   }, [socket, chatId, user?.id]);
 
-  // Group consecutive messages by sender
   const groupedMessages = useMemo(
     () =>
       messages.map((msg, i) => ({
@@ -202,7 +225,24 @@ const ChatWindow = ({ chatId }) => {
             </span>
           </div>
         </div>
+
+        {/* Deal button — shown when no active deal */}
+        {companion && !ACTIVE_DEAL_STATUSES.includes(activeDeal?.status) && (
+          <button className={s.dealBtn} onClick={() => setShowProposalModal(true)}>
+            {user?.role === "USER" ? "Заказать" : "Предложить съёмку"}
+          </button>
+        )}
       </div>
+
+      {/* Active deal card */}
+      {activeDeal && (
+        <DealCard
+          deal={activeDeal}
+          onDealUpdated={(updated) => setActiveDeal(updated)}
+          onRevision={(d) => setRevisionDeal(d)}
+          onRate={(d) => setRatingDeal(d)}
+        />
+      )}
 
       {/* Messages */}
       <div className={s.messages} ref={containerRef}>
@@ -234,6 +274,30 @@ const ChatWindow = ({ chatId }) => {
 
       {/* Input */}
       <MessageInput chatId={chatId} socketReady={isConnected} />
+
+      {/* Deal modals */}
+      {showProposalModal && (
+        <DealProposalModal
+          chatId={chatId}
+          onClose={() => setShowProposalModal(false)}
+          onCreated={(deal) => setActiveDeal(deal)}
+        />
+      )}
+      {revisionDeal && (
+        <RevisionModal
+          deal={revisionDeal}
+          onClose={() => setRevisionDeal(null)}
+          onRevisionSent={(updated) => { setActiveDeal(updated); setRevisionDeal(null); }}
+        />
+      )}
+      {ratingDeal && (
+        <RatingModal
+          deal={ratingDeal}
+          companionName={companion ? `${companion.firstName} ${companion.lastName}` : ""}
+          onClose={() => setRatingDeal(null)}
+          onRated={(updated) => { setActiveDeal(updated); setRatingDeal(null); }}
+        />
+      )}
     </div>
   );
 };

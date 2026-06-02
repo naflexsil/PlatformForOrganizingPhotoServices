@@ -11,10 +11,8 @@ const userSelect = {
   role: true,
 };
 
-// userId → Set<socketId>  (multiple tabs / devices per user)
 const onlineUsers = new Map();
 
-// socketId → { count, resetAt }
 const msgRateLimits = new Map();
 
 function checkRateLimit(socketId) {
@@ -40,6 +38,9 @@ async function getCompanionIds(userId) {
   return chats.map((c) => (c.user1Id === userId ? c.user2Id : c.user1Id));
 }
 
+let _io = null;
+export const getIO = () => _io;
+
 export function initSocket(httpServer) {
   const io = new Server(httpServer, {
     cors: {
@@ -48,7 +49,6 @@ export function initSocket(httpServer) {
     },
   });
 
-  // JWT auth middleware for every socket connection
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error("Unauthorized"));
@@ -61,14 +61,14 @@ export function initSocket(httpServer) {
     }
   });
 
+  _io = io;
+
   io.on("connection", async (socket) => {
     const userId = socket.data.userId;
 
-    // Track online sessions
     if (!onlineUsers.has(userId)) onlineUsers.set(userId, new Set());
     onlineUsers.get(userId).add(socket.id);
 
-    // Mark online in DB (only on first session)
     if (onlineUsers.get(userId).size === 1) {
       await prisma.user.update({
         where: { id: userId },
@@ -76,10 +76,8 @@ export function initSocket(httpServer) {
       });
     }
 
-    // Join personal room (for notifications / online status)
     socket.join(`user:${userId}`);
 
-    // Auto-join all existing chat rooms
     const chats = await prisma.chat.findMany({
       where: {
         OR: [{ user1Id: userId }, { user2Id: userId }],
@@ -90,7 +88,6 @@ export function initSocket(httpServer) {
       socket.join(`chat:${chat.id}`);
     }
 
-    // Notify contacts that user is online
     const companionIds = await getCompanionIds(userId);
     for (const companionId of companionIds) {
       if (onlineUsers.has(companionId)) {
@@ -98,8 +95,6 @@ export function initSocket(httpServer) {
       }
     }
 
-    // ── send-message ────────────────────────────────────────────────────
-    // attachments: [{previewUrl, originalUrl}] for IMAGE, [{url, fileName, fileSize}] for FILE
     socket.on("send-message", async ({ chatId, text, attachments, attachmentType }, callback) => {
       if (!checkRateLimit(socket.id)) {
         return callback?.({ error: "Слишком много сообщений, подождите немного" });
@@ -108,7 +103,6 @@ export function initSocket(httpServer) {
       if (!chatId) return callback?.({ error: "chatId обязателен" });
       if (!text?.trim() && !attachments?.length) return callback?.({ error: "Пустое сообщение" });
 
-      // Verify sender is a participant
       const chat = await prisma.chat.findFirst({
         where: {
           id: chatId,
@@ -133,11 +127,8 @@ export function initSocket(httpServer) {
         data: { updatedAt: new Date() },
       });
 
-      // Ensure sender socket is in the room (handles chats created after connect)
       socket.join(`chat:${chatId}`);
 
-      // If companion is online, make their sockets join the room too
-      // (needed when chat was created while companion was already connected)
       const companionId = chat.user1Id === userId ? chat.user2Id : chat.user1Id;
       const companionSockets = onlineUsers.get(companionId);
       if (companionSockets) {
@@ -150,7 +141,6 @@ export function initSocket(httpServer) {
       callback?.({ success: true, message });
     });
 
-    // ── typing ──────────────────────────────────────────────────────────
     socket.on("typing", async ({ chatId }) => {
       if (!chatId) return;
       const isMember = await prisma.chat.findFirst({
@@ -164,13 +154,11 @@ export function initSocket(httpServer) {
       socket.to(`chat:${chatId}`).emit("user-typing", { chatId, userId });
     });
 
-    // ── stop-typing ─────────────────────────────────────────────────────
     socket.on("stop-typing", async ({ chatId }) => {
       if (!chatId) return;
       socket.to(`chat:${chatId}`).emit("user-stop-typing", { chatId, userId });
     });
 
-    // ── mark-read ────────────────────────────────────────────────────────
     socket.on("mark-read", async ({ chatId }) => {
       if (!chatId) return;
 
@@ -194,7 +182,6 @@ export function initSocket(httpServer) {
       socket.to(`chat:${chatId}`).emit("messages-read", { chatId, userId });
     });
 
-    // ── disconnect ───────────────────────────────────────────────────────
     socket.on("disconnect", async () => {
       msgRateLimits.delete(socket.id);
 

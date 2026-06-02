@@ -4,6 +4,7 @@ import s from "./ChatsPage.module.css";
 import ChatList from "../../components/ChatList/ChatList";
 import ChatWindow from "../../components/ChatWindow/ChatWindow";
 import NewChatModal from "../../components/NewChatModal/NewChatModal";
+import DealsTab from "./DealsTab";
 import chatIcon from "../../assets/icons/chat.svg";
 import addIcon from "../../assets/icons/add.svg";
 
@@ -46,7 +47,7 @@ const ChatsPage = () => {
         {activeTab === "chats" ? (
           <ChatList activeChatId={chatId} />
         ) : (
-          <div className={s.dealsPlaceholder}>Сделки появятся здесь</div>
+          <DealsTab />
         )}
       </div>
 
