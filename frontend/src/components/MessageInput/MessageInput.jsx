@@ -3,6 +3,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import attachIcon from "../../assets/icons/attach.svg";
 import sendIcon from "../../assets/icons/send_message.svg";
+import closeIcon from "../../assets/icons/carousel_close.svg";
+import addIcon from "../../assets/icons/add.svg";
 import s from "./MessageInput.module.css";
 
 const MAX_PHOTOS = 10;
@@ -11,8 +13,8 @@ const MessageInput = ({ chatId }) => {
   const { accessToken } = useAuth();
   const { socket } = useSocket();
   const [text, setText] = useState("");
-  const [pendingPhotos, setPendingPhotos] = useState([]); // { previewUrl, originalUrl }
-  const [pendingFile, setPendingFile] = useState(null);   // { url, fileName, fileSize }
+  const [pendingPhotos, setPendingPhotos] = useState([]);
+  const [pendingFile, setPendingFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
   const typingTimerRef = useRef(null);
@@ -22,19 +24,19 @@ const MessageInput = ({ chatId }) => {
     if (!socket || !chatId) return;
     socket.emit("typing", { chatId });
     clearTimeout(typingTimerRef.current);
-    typingTimerRef.current = setTimeout(() => {
-      socket.emit("stop-typing", { chatId });
-    }, 2000);
+    typingTimerRef.current = setTimeout(() => socket.emit("stop-typing", { chatId }), 2000);
   }, [socket, chatId]);
 
   const handleTextChange = (e) => {
     setText(e.target.value);
     emitTyping();
-    // Auto-resize textarea
     const ta = textareaRef.current;
     if (ta) {
       ta.style.height = "auto";
-      ta.style.height = `${Math.min(ta.scrollHeight, 120)}px`;
+      const newH = Math.min(ta.scrollHeight, 120);
+      ta.style.height = `${newH}px`;
+      // Only show scrollbar when text doesn't fit within max height
+      ta.style.overflowY = ta.scrollHeight > 120 ? "auto" : "hidden";
     }
   };
 
@@ -66,15 +68,10 @@ const MessageInput = ({ chatId }) => {
         });
         const data = await r.json();
         if (data.status === "success") {
-          setPendingFile({
-            url: data.data.attachmentUrl,
-            fileName: data.data.fileName,
-            fileSize: data.data.fileSize,
-          });
+          setPendingFile({ url: data.data.attachmentUrl, fileName: data.data.fileName, fileSize: data.data.fileSize });
           setPendingPhotos([]);
         }
       } else {
-        // Image(s) — up to MAX_PHOTOS total
         const toUpload = files.slice(0, MAX_PHOTOS - pendingPhotos.length);
         const results = await Promise.all(
           toUpload.map(async (file) => {
@@ -104,8 +101,12 @@ const MessageInput = ({ chatId }) => {
     }
   };
 
-  const removePhoto = (idx) => {
-    setPendingPhotos((prev) => prev.filter((_, i) => i !== idx));
+  const removePhoto = (idx) => setPendingPhotos((prev) => prev.filter((_, i) => i !== idx));
+
+  const resetTextarea = () => {
+    setText("");
+    const ta = textareaRef.current;
+    if (ta) { ta.style.height = "auto"; ta.style.overflowY = "hidden"; }
   };
 
   const handleSend = () => {
@@ -113,35 +114,20 @@ const MessageInput = ({ chatId }) => {
     const trimmed = text.trim();
 
     if (pendingPhotos.length > 0) {
-      socket.emit("send-message", {
-        chatId,
-        text: trimmed || undefined,
-        attachments: pendingPhotos,
-        attachmentType: "IMAGE",
-      });
+      socket.emit("send-message", { chatId, text: trimmed || undefined, attachments: pendingPhotos, attachmentType: "IMAGE" });
       setPendingPhotos([]);
-      setText("");
-      if (textareaRef.current) textareaRef.current.style.height = "auto";
+      resetTextarea();
       return;
     }
-
     if (pendingFile) {
-      socket.emit("send-message", {
-        chatId,
-        text: trimmed || undefined,
-        attachments: [pendingFile],
-        attachmentType: "FILE",
-      });
+      socket.emit("send-message", { chatId, text: trimmed || undefined, attachments: [pendingFile], attachmentType: "FILE" });
       setPendingFile(null);
-      setText("");
-      if (textareaRef.current) textareaRef.current.style.height = "auto";
+      resetTextarea();
       return;
     }
-
     if (trimmed) {
       socket.emit("send-message", { chatId, text: trimmed });
-      setText("");
-      if (textareaRef.current) textareaRef.current.style.height = "auto";
+      resetTextarea();
       clearTimeout(typingTimerRef.current);
       socket.emit("stop-typing", { chatId });
     }
@@ -151,43 +137,48 @@ const MessageInput = ({ chatId }) => {
 
   return (
     <div className={s.root}>
-      {/* Pending photos preview */}
+      {/* Upload progress */}
+      {isUploading && (
+        <div className={s.uploadingBar}>
+          <div className={s.uploadSpinner} />
+          <span>Загружаем...</span>
+        </div>
+      )}
+
+      {/* Pending photos strip */}
       {pendingPhotos.length > 0 && (
         <div className={s.pendingPhotos}>
           {pendingPhotos.map((p, i) => (
             <div key={i} className={s.pendingThumb}>
               <img src={p.previewUrl} alt="" className={s.thumbImg} />
-              <button className={s.removeThumb} onClick={() => removePhoto(i)}>×</button>
+              <button className={s.removeThumb} onClick={() => removePhoto(i)}>
+                <img src={closeIcon} alt="×" />
+              </button>
             </div>
           ))}
           {pendingPhotos.length < MAX_PHOTOS && (
-            <button
-              className={s.addMoreBtn}
-              onClick={() => fileInputRef.current?.click()}
-              title="Добавить ещё"
-            >+</button>
+            <button className={s.addMoreBtn} onClick={() => fileInputRef.current?.click()} title="Добавить ещё">
+              <img src={addIcon} alt="+" className={s.addMoreIcon} />
+            </button>
           )}
         </div>
       )}
 
-      {/* Pending file preview */}
+      {/* Pending file */}
       {pendingFile && (
         <div className={s.pendingFile}>
-          <span className={s.pendingFileIcon}>📎</span>
+          <img src={attachIcon} alt="" className={s.pendingFileIcon} />
           <span className={s.pendingFileName}>{pendingFile.fileName}</span>
-          <button className={s.removePendingFile} onClick={() => setPendingFile(null)}>×</button>
+          <button className={s.removePendingFile} onClick={() => setPendingFile(null)}>
+            <img src={closeIcon} alt="×" className={s.removePendingFileIcon} />
+          </button>
         </div>
       )}
 
       {/* Input row */}
       <div className={s.inputRow}>
-        <button
-          className={s.attachBtn}
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
-          title="Прикрепить файл"
-        >
-          <img src={attachIcon} alt="Прикрепить" className={s.icon} />
+        <button className={s.attachBtn} onClick={() => fileInputRef.current?.click()} disabled={isUploading} title="Прикрепить файл">
+          <img src={attachIcon} alt="Прикрепить" className={s.attachIcon} />
         </button>
 
         <input
@@ -209,13 +200,8 @@ const MessageInput = ({ chatId }) => {
           rows={1}
         />
 
-        <button
-          className={s.sendBtn}
-          onClick={handleSend}
-          disabled={!canSend}
-          title="Отправить"
-        >
-          <img src={sendIcon} alt="Отправить" className={s.icon} />
+        <button className={`${s.sendBtn} ${canSend ? s.sendBtnActive : ""}`} onClick={handleSend} disabled={!canSend} title="Отправить">
+          <img src={sendIcon} alt="Отправить" className={s.sendIcon} />
         </button>
       </div>
     </div>

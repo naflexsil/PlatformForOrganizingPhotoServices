@@ -2,8 +2,31 @@
   flex-shrink: 0;
   background: var(--white);
   border-top: 1px solid #f0e6e6;
-  padding: 8px 16px;
+  padding: 8px 40px;
 }
+
+/* ── Upload progress bar ── */
+.uploadingBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0 4px;
+  font-size: 13px;
+  color: var(--dark-text);
+  opacity: 0.6;
+}
+
+.uploadSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e0d0d0;
+  border-top-color: var(--accent-red);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Pending photos strip ── */
 .pendingPhotos {
@@ -33,19 +56,22 @@
   position: absolute;
   top: 2px;
   right: 2px;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
   border: none;
-  font-size: 14px;
-  line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 3px;
+}
+
+.removeThumb img {
+  width: 12px;
+  height: 12px;
+  filter: brightness(0) invert(1);
 }
 
 .addMoreBtn {
@@ -54,13 +80,19 @@
   border-radius: 10px;
   border: 2px dashed #ddd;
   background: none;
-  font-size: 22px;
-  color: var(--dark-text);
-  opacity: 0.4;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: opacity 0.2s;
 }
 .addMoreBtn:hover { opacity: 0.7; }
+
+.addMoreIcon {
+  width: 28px;
+  height: 28px;
+  opacity: 0.45;
+}
 
 /* ── Pending file ── */
 .pendingFile {
@@ -73,7 +105,12 @@
   margin-bottom: 6px;
 }
 
-.pendingFileIcon { font-size: 18px; }
+.pendingFileIcon {
+  width: 22px;
+  height: 22px;
+  opacity: 0.65;
+  flex-shrink: 0;
+}
 
 .pendingFileName {
   font-size: 13px;
@@ -87,12 +124,16 @@
 .removePendingFile {
   background: none;
   border: none;
-  font-size: 18px;
-  color: var(--dark-text);
-  opacity: 0.5;
   cursor: pointer;
-  padding: 0;
-  line-height: 1;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.removePendingFileIcon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
 }
 
 /* ── Input row ── */
@@ -100,14 +141,15 @@
   display: flex;
   align-items: flex-end;
   gap: 8px;
+  padding: 4px 0;
 }
 
-.attachBtn,
-.sendBtn {
+/* Attach button: 50x50, icon 36x36 */
+.attachBtn {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
   background: none;
   border: none;
   cursor: pointer;
@@ -115,41 +157,58 @@
   align-items: center;
   justify-content: center;
   transition: background-color 0.15s;
-  padding: 8px;
 }
-
 .attachBtn:hover { background: #f5efef; }
+.attachBtn:disabled { opacity: 0.4; cursor: default; }
 
-.sendBtn {
-  background: var(--accent-red);
-}
-.sendBtn:hover { opacity: 0.85; }
-.sendBtn:disabled {
-  background: #ddd;
-  cursor: default;
-  opacity: 1;
-}
-
-.icon {
-  width: 20px;
-  height: 20px;
+.attachIcon {
+  width: 36px;
+  height: 36px;
   display: block;
 }
 
-.sendBtn .icon {
+/* Send button: 50x50, icon fills it naturally */
+.sendBtn {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: #ddd;
+  border: none;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  padding: 0;
+}
+
+.sendBtnActive {
+  background: var(--accent-red);
+  cursor: pointer;
+}
+.sendBtnActive:hover { opacity: 0.88; }
+
+.sendIcon {
+  width: 36px;
+  height: 36px;
+  display: block;
+}
+
+/* Invert icon only when button is red (active) */
+.sendBtnActive .sendIcon {
   filter: brightness(0) invert(1);
 }
 
-.hiddenInput {
-  display: none;
-}
+.hiddenInput { display: none; }
 
+/* Textarea: grows first, scrolls only at max height */
 .textarea {
   flex: 1;
   resize: none;
   border: 1px solid #e8dada;
   border-radius: 14px;
-  padding: 10px 14px;
+  padding: 13px 16px;
   font-family: "Inter", sans-serif;
   font-size: 14px;
   font-weight: 600;
@@ -157,17 +216,17 @@
   background: #fdf8f8;
   outline: none;
   line-height: 1.5;
-  min-height: 40px;
+  min-height: 50px;
   max-height: 120px;
-  overflow-y: auto;
+  overflow-y: hidden;
   transition: border-color 0.15s;
+  box-sizing: border-box;
 }
 
-.textarea:focus {
-  border-color: var(--accent-red);
-}
+.textarea:focus { border-color: var(--accent-red); }
+.textarea::placeholder { color: var(--dark-text); opacity: 0.35; }
 
-.textarea::placeholder {
-  color: var(--dark-text);
-  opacity: 0.35;
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .root { padding: 8px 16px; }
 }

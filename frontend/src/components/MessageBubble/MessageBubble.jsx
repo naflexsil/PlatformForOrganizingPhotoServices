@@ -1,4 +1,7 @@
 import { useState } from "react";
+import attachIcon from "../../assets/icons/attach.svg";
+import arrowLeft from "../../assets/icons/carousel_arrow_left.svg";
+import arrowRight from "../../assets/icons/carousel_arrow_right.svg";
 import s from "./MessageBubble.module.css";
 
 function formatTime(dateStr) {
@@ -12,72 +15,87 @@ function formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
 }
 
-// Photo grid layouts depending on count
-const PhotoGrid = ({ photos }) => {
-  const [previewUrl, setPreviewUrl] = useState(null);
+// Gallery overlay component
+const Gallery = ({ photos, startIndex, onClose }) => {
+  const [index, setIndex] = useState(startIndex);
+
+  const prev = (e) => { e.stopPropagation(); setIndex((i) => i - 1); };
+  const next = (e) => { e.stopPropagation(); setIndex((i) => i + 1); };
+
+  return (
+    <div className={s.galleryOverlay} onClick={onClose}>
+      {index > 0 && (
+        <button className={`${s.galleryArrow} ${s.galleryArrowLeft}`} onClick={prev}>
+          <img src={arrowLeft} alt="←" />
+        </button>
+      )}
+      <img
+        className={s.galleryImg}
+        src={photos[index].originalUrl}
+        alt=""
+        onClick={(e) => e.stopPropagation()}
+      />
+      {index < photos.length - 1 && (
+        <button className={`${s.galleryArrow} ${s.galleryArrowRight}`} onClick={next}>
+          <img src={arrowRight} alt="→" />
+        </button>
+      )}
+      <span className={s.galleryCounter}>{index + 1} / {photos.length}</span>
+    </div>
+  );
+};
+
+// Telegram-style photo grid
+const PhotoGrid = ({ photos, onOpen }) => {
   const count = photos.length;
 
-  const openOriginal = (url) => window.open(url, "_blank");
-
-  const imgEl = (photo, i, cls) => (
+  const img = (photo, i, cls = "") => (
     <img
       key={i}
       src={photo.previewUrl}
       alt=""
-      className={`${s.gridImg} ${cls || ""}`}
-      onClick={() => setPreviewUrl(previewUrl === photo.previewUrl ? null : photo.previewUrl)}
-      onDoubleClick={() => openOriginal(photo.originalUrl)}
+      className={`${s.gridImg} ${cls}`}
+      onClick={() => onOpen(i)}
     />
   );
 
-  let grid;
   if (count === 1) {
-    grid = <div className={s.grid1}>{imgEl(photos[0], 0, s.singleImg)}</div>;
-  } else if (count === 2) {
-    grid = <div className={s.grid2}>{photos.map((p, i) => imgEl(p, i))}</div>;
-  } else if (count === 3) {
-    grid = <div className={s.grid3}>{photos.map((p, i) => imgEl(p, i))}</div>;
-  } else if (count === 4) {
-    grid = <div className={s.grid4}>{photos.map((p, i) => imgEl(p, i))}</div>;
-  } else if (count === 5) {
-    grid = (
-      <div className={s.grid5}>
-        <div className={s.grid5Left}>{imgEl(photos[0], 0, s.grid5Main)}</div>
-        <div className={s.grid5Right}>
-          {photos.slice(1).map((p, i) => imgEl(p, i + 1, s.grid5Side))}
-        </div>
-      </div>
-    );
-  } else {
-    // 6+: 3 columns
-    grid = (
-      <div className={s.grid6plus}>
-        {photos.map((p, i) => imgEl(p, i))}
-      </div>
-    );
+    return <div className={s.gridSolo}>{img(photos[0], 0, s.gridImgSolo)}</div>;
+  }
+
+  if (count === 2) {
+    return <div className={s.grid2}>{photos.map((p, i) => img(p, i))}</div>;
+  }
+
+  // 3+: first photo full-width, rest in rows of 3
+  const restRows = [];
+  for (let i = 1; i < count; i += 3) {
+    restRows.push(photos.slice(i, i + 3));
   }
 
   return (
-    <>
-      {grid}
-      {previewUrl && (
-        <div className={s.previewOverlay} onClick={() => setPreviewUrl(null)}>
-          <img src={previewUrl} className={s.previewImg} alt="" onClick={(e) => e.stopPropagation()} />
-          <span className={s.previewHint}>Двойной клик → оригинал в новой вкладке</span>
+    <div className={s.gridStack}>
+      <div className={s.gridTopRow}>{img(photos[0], 0, s.gridImgTop)}</div>
+      {restRows.map((row, ri) => (
+        <div key={ri} className={s.gridBottomRow}>
+          {row.map((p, pi) => img(p, 1 + ri * 3 + pi))}
         </div>
-      )}
-    </>
+      ))}
+    </div>
   );
 };
 
 const MessageBubble = ({ message, isOwn, isFirstInGroup, companion }) => {
   const { text, attachments, attachmentType, createdAt } = message;
+  const [gallery, setGallery] = useState(null); // { photos, index }
+
+  const openGallery = (index) => setGallery({ photos: attachments, index });
 
   const renderContent = () => {
     if (attachmentType === "IMAGE" && attachments?.length) {
       return (
         <div className={s.contentWrap}>
-          <PhotoGrid photos={attachments} />
+          <PhotoGrid photos={attachments} onOpen={openGallery} />
           {text && <p className={s.caption}>{text}</p>}
         </div>
       );
@@ -87,13 +105,8 @@ const MessageBubble = ({ message, isOwn, isFirstInGroup, companion }) => {
       const file = attachments[0];
       return (
         <div className={s.contentWrap}>
-          <a
-            href={file.url}
-            download={file.fileName}
-            className={s.fileCard}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className={s.fileIcon}>📎</span>
+          <a href={file.url} download={file.fileName} className={s.fileCard} onClick={(e) => e.stopPropagation()}>
+            <img src={attachIcon} alt="" className={s.fileAttachIcon} />
             <div className={s.fileMeta}>
               <span className={s.fileName}>{file.fileName}</span>
               <span className={s.fileSize}>{formatFileSize(file.fileSize)}</span>
@@ -108,30 +121,40 @@ const MessageBubble = ({ message, isOwn, isFirstInGroup, companion }) => {
   };
 
   return (
-    <div
-      id={`msg-${message.id}`}
-      className={`${s.wrapper} ${isOwn ? s.own : s.theirs} ${isFirstInGroup ? s.firstInGroup : ""}`}
-    >
-      {!isOwn && (
-        <div className={s.avatarSlot}>
-          {isFirstInGroup && companion?.avatarUrl ? (
-            <img src={companion.avatarUrl} className={s.avatar} alt="" />
-          ) : (
-            <div className={s.avatarSpacer} />
-          )}
-        </div>
-      )}
-
-      <div className={s.bubbleWrap}>
-        {!isOwn && isFirstInGroup && companion && (
-          <span className={s.senderName}>{companion.firstName}</span>
+    <>
+      <div
+        id={`msg-${message.id}`}
+        className={`${s.wrapper} ${isOwn ? s.own : s.theirs} ${isFirstInGroup ? s.firstInGroup : ""}`}
+      >
+        {!isOwn && (
+          <div className={s.avatarSlot}>
+            {isFirstInGroup && companion?.avatarUrl ? (
+              <img src={companion.avatarUrl} className={s.avatar} alt="" />
+            ) : (
+              <div className={s.avatarSpacer} />
+            )}
+          </div>
         )}
-        <div className={s.bubble}>
-          {renderContent()}
-          <span className={s.time}>{formatTime(createdAt)}</span>
+
+        <div className={s.bubbleWrap}>
+          {!isOwn && isFirstInGroup && companion && (
+            <span className={s.senderName}>{companion.firstName}</span>
+          )}
+          <div className={s.bubble}>
+            {renderContent()}
+            <span className={s.time}>{formatTime(createdAt)}</span>
+          </div>
         </div>
       </div>
-    </div>
+
+      {gallery && (
+        <Gallery
+          photos={gallery.photos}
+          startIndex={gallery.index}
+          onClose={() => setGallery(null)}
+        />
+      )}
+    </>
   );
 };
 

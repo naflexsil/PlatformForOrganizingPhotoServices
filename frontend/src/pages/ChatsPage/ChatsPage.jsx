@@ -22,25 +22,24 @@ const ChatsPage = () => {
   return (
     <div className={s.page}>
       <div className={s.leftPanel}>
+        {/* Tabs act as the title row */}
         <div className={s.leftHeader}>
-          <span className={s.title}>Чаты</span>
+          <div className={s.tabs}>
+            <button
+              className={activeTab === "chats" ? s.tabActive : s.tab}
+              onClick={() => setActiveTab("chats")}
+            >
+              Чаты
+            </button>
+            <button
+              className={activeTab === "deals" ? s.tabActive : s.tab}
+              onClick={() => setActiveTab("deals")}
+            >
+              Сделки
+            </button>
+          </div>
           <button className={s.newChatBtn} onClick={() => setShowNewChatModal(true)} title="Новый чат">
             <img src={addIcon} alt="Новый чат" className={s.newChatIcon} />
-          </button>
-        </div>
-
-        <div className={s.tabs}>
-          <button
-            className={activeTab === "chats" ? s.tabActive : s.tab}
-            onClick={() => setActiveTab("chats")}
-          >
-            Чаты
-          </button>
-          <button
-            className={activeTab === "deals" ? s.tabActive : s.tab}
-            onClick={() => setActiveTab("deals")}
-          >
-            Сделки
           </button>
         </div>
 
@@ -51,7 +50,7 @@ const ChatsPage = () => {
         )}
       </div>
 
-      <div className={s.rightPanel}>
+      <div className={`${s.rightPanel} ${chatId ? s.rightPanelOpen : ""}`}>
         {chatId ? (
           <ChatWindow key={chatId} chatId={chatId} />
         ) : (

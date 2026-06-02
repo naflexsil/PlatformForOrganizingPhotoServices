@@ -4,20 +4,24 @@ import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import MessageBubble from "../MessageBubble/MessageBubble";
 import MessageInput from "../MessageInput/MessageInput";
+import closeIcon from "../../assets/icons/carousel_close.svg";
 import s from "./ChatWindow.module.css";
 
 function formatLastSeen(companion) {
   if (!companion) return "";
   if (companion.isOnline) return "В сети";
   if (!companion.lastSeenAt) return "Не в сети";
-  const diff = Date.now() - new Date(companion.lastSeenAt);
-  if (diff < 60_000) return "Был(а) только что";
-  if (diff < 3_600_000) return `Был(а) ${Math.floor(diff / 60_000)} мин. назад`;
-  if (diff < 86_400_000) {
-    const t = new Date(companion.lastSeenAt).toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit" });
-    return `Был(а) в ${t}`;
-  }
-  return `Был(а) ${new Date(companion.lastSeenAt).toLocaleDateString("ru")}`;
+
+  const seen = new Date(companion.lastSeenAt);
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterdayStart = new Date(todayStart.getTime() - 86_400_000);
+  const seenDay = new Date(seen.getFullYear(), seen.getMonth(), seen.getDate());
+  const timeStr = seen.toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit" });
+
+  if (seenDay >= todayStart) return `Был(а) в сети в ${timeStr}`;
+  if (seenDay >= yesterdayStart) return `Был(а) в сети вчера в ${timeStr}`;
+  return `Был(а) в сети ${seen.toLocaleDateString("ru", { day: "numeric", month: "long" })}`;
 }
 
 const ChatWindow = ({ chatId }) => {
@@ -89,20 +93,12 @@ const ChatWindow = ({ chatId }) => {
     refreshUnread();
   }, [socket, chatId, messages.length, refreshUnread]);
 
-  // Scroll logic: on initial load → first unread or bottom
+  // Scroll to bottom on initial load
   useEffect(() => {
     if (isLoading || initialScrollDoneRef.current) return;
     initialScrollDoneRef.current = true;
-
-    const firstUnread = messages.find(
-      (m) => !m.isRead && m.senderId !== user?.id
-    );
-    if (firstUnread) {
-      document.getElementById(`msg-${firstUnread.id}`)?.scrollIntoView({ block: "center" });
-    } else {
-      messagesEndRef.current?.scrollIntoView();
-    }
-  }, [isLoading, messages, user?.id]);
+    messagesEndRef.current?.scrollIntoView();
+  }, [isLoading]);
 
   // Auto-scroll on new message if near bottom or sender is me
   useEffect(() => {
@@ -181,7 +177,7 @@ const ChatWindow = ({ chatId }) => {
       {/* Header */}
       <div className={s.header}>
         <button className={s.closeBtn} onClick={() => navigate("/chats")} title="Закрыть">
-          ✕
+          <img src={closeIcon} alt="Закрыть" className={s.closeBtnIcon} />
         </button>
         <div className={s.companionInfo}>
           {companion?.avatarUrl && (
@@ -191,7 +187,7 @@ const ChatWindow = ({ chatId }) => {
             <span className={s.companionName}>
               {companion?.firstName} {companion?.lastName}
             </span>
-            <span className={`${s.status} ${companion?.isOnline ? s.statusOnline : ""}`}>
+            <span className={`${s.status} ${companion?.isOnline ? s.statusOnline : s.statusOffline}`}>
               {formatLastSeen(companion)}
             </span>
           </div>

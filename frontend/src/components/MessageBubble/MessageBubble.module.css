@@ -9,75 +9,49 @@
   margin-top: 10px;
 }
 
-/* Outgoing (me) */
-.own {
-  flex-direction: row-reverse;
-}
+.own { flex-direction: row-reverse; }
+.theirs { flex-direction: row; }
 
-/* Incoming */
-.theirs {
-  flex-direction: row;
-}
-
-/* ── Avatar slot ── */
-.avatarSlot {
-  flex-shrink: 0;
-  width: 32px;
-}
-
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.avatarSpacer {
-  width: 32px;
-}
+/* ── Avatar ── */
+.avatarSlot { flex-shrink: 0; width: 34px; }
+.avatar { width: 34px; height: 34px; border-radius: 10px; object-fit: cover; }
+.avatarSpacer { width: 34px; }
 
 /* ── Bubble wrap ── */
 .bubbleWrap {
   display: flex;
   flex-direction: column;
-  max-width: 60%;
+  max-width: 62%;
 }
+.own .bubbleWrap { align-items: flex-end; }
+.theirs .bubbleWrap { align-items: flex-start; }
 
-.own .bubbleWrap {
-  align-items: flex-end;
-}
-
-.theirs .bubbleWrap {
-  align-items: flex-start;
-}
-
+/* Sender name */
 .senderName {
-  font-size: 12px;
-  font-weight: 700;
+  font-family: "Farabee", serif;
+  font-size: 20px;
   color: var(--accent-red);
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   padding-left: 2px;
+  line-height: 1.2;
 }
 
-/* ── Bubble itself ── */
+/* ── Bubble ── */
 .bubble {
   padding: 10px 14px;
   border-radius: 16px;
   position: relative;
   word-break: break-word;
 }
-
 .own .bubble {
   background: var(--light-pink);
   border-bottom-right-radius: 4px;
 }
-
 .theirs .bubble {
   background: var(--gray);
   border-bottom-left-radius: 4px;
 }
 
-/* ── Text ── */
 .text {
   margin: 0;
   font-size: 14px;
@@ -93,7 +67,6 @@
   line-height: 1.4;
 }
 
-/* ── Time ── */
 .time {
   display: block;
   text-align: right;
@@ -103,69 +76,88 @@
   margin-top: 4px;
 }
 
-/* ── Content wrap (images / files) ── */
-.contentWrap {
-  min-width: 0;
-}
+.contentWrap { min-width: 0; }
 
 /* ── Photo grids ── */
 .gridImg {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
-  border-radius: 8px;
   cursor: pointer;
   display: block;
+  border-radius: 6px;
   transition: opacity 0.15s;
+  width: 100%;
+  height: 100%;
 }
-.gridImg:hover { opacity: 0.9; }
+.gridImg:hover { opacity: 0.88; }
 
-.grid1 { max-width: 240px; }
-.singleImg { max-height: 240px; object-fit: cover; border-radius: 10px; width: auto; }
+/* Single photo */
+.gridSolo { max-width: 260px; }
+.gridImgSolo { max-width: 260px; max-height: 240px; width: auto; height: auto; border-radius: 10px; }
 
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 240px; }
-.grid2 .gridImg { height: 120px; }
+/* 2 photos */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 260px; }
+.grid2 .gridImg { height: 130px; }
 
-.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; width: 240px; }
-.grid3 .gridImg { height: 80px; }
+/* 3+ photos: Telegram-style */
+.gridStack { display: flex; flex-direction: column; gap: 3px; width: 280px; }
+.gridTopRow { height: 170px; overflow: hidden; border-radius: 8px 8px 0 0; }
+.gridImgTop { width: 100%; height: 170px; border-radius: 8px 8px 0 0; }
+.gridBottomRow { display: flex; gap: 3px; height: 90px; }
+.gridBottomRow .gridImg { flex: 1; border-radius: 0; }
+.gridBottomRow:last-child .gridImg:first-child { border-bottom-left-radius: 8px; }
+.gridBottomRow:last-child .gridImg:last-child { border-bottom-right-radius: 8px; }
 
-.grid4 { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 240px; }
-.grid4 .gridImg { height: 120px; }
-
-.grid5 { display: flex; gap: 3px; width: 240px; }
-.grid5Left { flex: 1.4; }
-.grid5Right { flex: 1; display: flex; flex-direction: column; gap: 3px; }
-.grid5Main { height: 160px; width: 100%; }
-.grid5Side { height: 78px; width: 100%; }
-
-.grid6plus { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; width: 240px; }
-.grid6plus .gridImg { height: 80px; }
-
-/* ── Preview overlay (single click) ── */
-.previewOverlay {
+/* ── Gallery overlay ── */
+.galleryOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.85);
   z-index: 1000;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
   cursor: pointer;
 }
 
-.previewImg {
-  max-width: 90vw;
-  max-height: 85vh;
-  border-radius: 12px;
+.galleryImg {
+  max-width: 88vw;
+  max-height: 88vh;
+  border-radius: 10px;
   object-fit: contain;
   cursor: default;
 }
 
-.previewHint {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+.galleryArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  z-index: 1001;
+}
+.galleryArrow:hover { background: rgba(255, 255, 255, 0.28); }
+.galleryArrow img { width: 28px; height: 28px; filter: brightness(0) invert(1); }
+.galleryArrowLeft { left: 20px; }
+.galleryArrowRight { right: 20px; }
+
+.galleryCounter {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px 12px;
+  border-radius: 20px;
 }
 
 /* ── File card ── */
@@ -174,29 +166,17 @@
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 10px;
   padding: 10px 12px;
+  min-width: 180px;
 }
-
-.fileIcon {
-  font-size: 22px;
+.fileAttachIcon {
+  width: 24px;
+  height: 24px;
+  opacity: 0.65;
+  flex-shrink: 0;
 }
-
-.fileMeta {
-  display: flex;
-  flex-direction: column;
-}
-
-.fileName {
-  font-size: 13px;
-  color: var(--dark-text);
-  word-break: break-all;
-}
-
-.fileSize {
-  font-size: 11px;
-  color: var(--dark-text);
-  opacity: 0.5;
-  margin-top: 2px;
-}
+.fileMeta { display: flex; flex-direction: column; }
+.fileName { font-size: 13px; color: var(--dark-text); word-break: break-all; }
+.fileSize { font-size: 11px; color: var(--dark-text); opacity: 0.5; margin-top: 2px; }

@@ -28,13 +28,13 @@
   display: block;
 }
 
-/* Online dot: fill --light-pink, white stroke */
+/* Online dot: fill --light-pink, white stroke, flush to avatar corner */
 .onlineDot {
   position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 12px;
-  height: 12px;
+  bottom: 0;
+  right: 0;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   background: var(--light-pink);
   border: 2px solid #ffffff;
