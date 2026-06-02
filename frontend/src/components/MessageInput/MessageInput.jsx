@@ -5,6 +5,7 @@ import attachIcon from "../../assets/icons/attach.svg";
 import sendIcon from "../../assets/icons/send_message.svg";
 import closeIcon from "../../assets/icons/carousel_close.svg";
 import addIcon from "../../assets/icons/add.svg";
+import ChatImage from "../ChatImage/ChatImage";
 import s from "./MessageInput.module.css";
 
 const MAX_PHOTOS = 10;
@@ -150,7 +151,7 @@ const MessageInput = ({ chatId, socketReady = true }) => {
         <div className={s.pendingPhotos}>
           {pendingPhotos.map((p, i) => (
             <div key={i} className={s.pendingThumb}>
-              <img src={p.previewUrl} alt="" className={s.thumbImg} />
+              <ChatImage src={p.previewUrl} alt="" className={s.thumbImg} />
               <button className={s.removeThumb} onClick={() => removePhoto(i)}>
                 <img src={closeIcon} alt="×" />
               </button>

@@ -158,12 +158,21 @@ export const startChat = async (req, res, next) => {
 
 export const getChatFile = async (req, res, next) => {
   try {
+    const userId = req.user.id;
     const { chatId, filename } = req.params;
+
+    const chat = await prisma.chat.findFirst({
+      where: { id: chatId, OR: [{ user1Id: userId }, { user2Id: userId }] },
+      select: { id: true },
+    });
+    if (!chat) {
+      return res.status(403).json({ status: "error", message: "Нет доступа" });
+    }
 
     const s3Response = await getChatFileStream(chatId, filename);
 
     res.setHeader("Content-Type", s3Response.ContentType || "application/octet-stream");
-    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.setHeader("Cache-Control", "private, max-age=3600");
 
     if (
       s3Response.ContentType &&
