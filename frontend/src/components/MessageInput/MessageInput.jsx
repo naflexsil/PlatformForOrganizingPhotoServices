@@ -110,7 +110,7 @@ const MessageInput = ({ chatId }) => {
   };
 
   const handleSend = () => {
-    if (!socket) return;
+    if (!socket || !canSend) return;
     const trimmed = text.trim();
 
     if (pendingPhotos.length > 0) {
@@ -177,7 +177,7 @@ const MessageInput = ({ chatId }) => {
 
       {/* Input row */}
       <div className={s.inputRow}>
-        <button className={s.attachBtn} onClick={() => fileInputRef.current?.click()} disabled={isUploading} title="Прикрепить файл">
+        <button className={`${s.attachBtn} ${isUploading ? s.attachBtnDisabled : ""}`} onClick={() => !isUploading && fileInputRef.current?.click()} title="Прикрепить файл">
           <img src={attachIcon} alt="Прикрепить" className={s.attachIcon} />
         </button>
 
@@ -200,7 +200,8 @@ const MessageInput = ({ chatId }) => {
           rows={1}
         />
 
-        <button className={`${s.sendBtn} ${canSend ? s.sendBtnActive : ""}`} onClick={handleSend} disabled={!canSend} title="Отправить">
+        {/* No disabled attr — prevents iOS touch issues; guard inside handleSend */}
+        <button className={`${s.sendBtn} ${canSend ? s.sendBtnActive : ""}`} onClick={handleSend} title="Отправить">
           <img src={sendIcon} alt="Отправить" className={s.sendIcon} />
         </button>
       </div>

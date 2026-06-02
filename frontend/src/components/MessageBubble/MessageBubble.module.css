@@ -21,7 +21,8 @@
 .bubbleWrap {
   display: flex;
   flex-direction: column;
-  max-width: 62%;
+  max-width: 68%;
+  min-width: 0;
 }
 .own .bubbleWrap { align-items: flex-end; }
 .theirs .bubbleWrap { align-items: flex-start; }
@@ -76,7 +77,11 @@
   margin-top: 4px;
 }
 
-.contentWrap { min-width: 0; }
+.contentWrap {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
 
 /* ── Photo grids ── */
 .gridImg {
@@ -90,20 +95,58 @@
 }
 .gridImg:hover { opacity: 0.88; }
 
-/* Single photo */
-.gridSolo { max-width: 260px; }
-.gridImgSolo { max-width: 260px; max-height: 240px; width: auto; height: auto; border-radius: 10px; }
+/* Single photo — natural aspect ratio, no square crop */
+.gridSolo {
+  max-width: 280px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+.gridImgSolo {
+  max-width: 280px;
+  max-height: 300px;
+  width: auto;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  border-radius: 10px;
+}
 
 /* 2 photos */
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 260px; }
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  max-width: 280px;
+  width: 100%;
+}
 .grid2 .gridImg { height: 130px; }
 
-/* 3+ photos: Telegram-style */
-.gridStack { display: flex; flex-direction: column; gap: 3px; width: 280px; }
-.gridTopRow { height: 170px; overflow: hidden; border-radius: 8px 8px 0 0; }
-.gridImgTop { width: 100%; height: 170px; border-radius: 8px 8px 0 0; }
-.gridBottomRow { display: flex; gap: 3px; height: 90px; }
-.gridBottomRow .gridImg { flex: 1; border-radius: 0; }
+/* 3+ photos: Telegram-style (first full-width, rest rows of 3) */
+.gridStack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 280px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+}
+.gridTopRow {
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.gridImgTop { width: 100%; height: 160px; object-fit: cover; border-radius: 0; }
+.gridBottomRow {
+  display: flex;
+  gap: 3px;
+  height: 85px;
+  width: 100%;
+  flex-shrink: 0;
+}
+.gridBottomRow .gridImg { flex: 1; min-width: 0; border-radius: 0; }
+/* Round corners for first/last image in last row */
 .gridBottomRow:last-child .gridImg:first-child { border-bottom-left-radius: 8px; }
 .gridBottomRow:last-child .gridImg:last-child { border-bottom-right-radius: 8px; }
 

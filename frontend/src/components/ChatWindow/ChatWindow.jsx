@@ -93,25 +93,12 @@ const ChatWindow = ({ chatId }) => {
     refreshUnread();
   }, [socket, chatId, messages.length, refreshUnread]);
 
-  // Scroll to bottom on initial load
+  // Scroll to bottom once on initial load only
   useEffect(() => {
     if (isLoading || initialScrollDoneRef.current) return;
     initialScrollDoneRef.current = true;
     messagesEndRef.current?.scrollIntoView();
   }, [isLoading]);
-
-  // Auto-scroll on new message if near bottom or sender is me
-  useEffect(() => {
-    if (!initialScrollDoneRef.current) return;
-    const container = containerRef.current;
-    if (!container) return;
-    const { scrollTop, scrollHeight, clientHeight } = container;
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 160;
-    const lastMsg = messages[messages.length - 1];
-    if (isNearBottom || lastMsg?.senderId === user?.id) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages.length]);
 
   // Socket: receive new messages + typing + online status
   useEffect(() => {

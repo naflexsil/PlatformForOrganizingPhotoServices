@@ -15,12 +15,16 @@ function formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
 }
 
-// Gallery overlay component
+// Gallery overlay: shows preview, click → open original in new tab
 const Gallery = ({ photos, startIndex, onClose }) => {
   const [index, setIndex] = useState(startIndex);
 
   const prev = (e) => { e.stopPropagation(); setIndex((i) => i - 1); };
   const next = (e) => { e.stopPropagation(); setIndex((i) => i + 1); };
+  const openOriginal = (e) => {
+    e.stopPropagation();
+    window.open(photos[index].originalUrl, "_blank");
+  };
 
   return (
     <div className={s.galleryOverlay} onClick={onClose}>
@@ -29,18 +33,22 @@ const Gallery = ({ photos, startIndex, onClose }) => {
           <img src={arrowLeft} alt="←" />
         </button>
       )}
+      {/* previewUrl shown; click on image opens originalUrl */}
       <img
         className={s.galleryImg}
-        src={photos[index].originalUrl}
+        src={photos[index].previewUrl}
         alt=""
-        onClick={(e) => e.stopPropagation()}
+        title="Нажмите, чтобы открыть оригинал"
+        onClick={openOriginal}
       />
       {index < photos.length - 1 && (
         <button className={`${s.galleryArrow} ${s.galleryArrowRight}`} onClick={next}>
           <img src={arrowRight} alt="→" />
         </button>
       )}
-      <span className={s.galleryCounter}>{index + 1} / {photos.length}</span>
+      {photos.length > 1 && (
+        <span className={s.galleryCounter}>{index + 1} / {photos.length}</span>
+      )}
     </div>
   );
 };

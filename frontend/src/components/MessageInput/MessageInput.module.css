@@ -159,7 +159,7 @@
   transition: background-color 0.15s;
 }
 .attachBtn:hover { background: #f5efef; }
-.attachBtn:disabled { opacity: 0.4; cursor: default; }
+.attachBtnDisabled { opacity: 0.4; cursor: default; }
 
 .attachIcon {
   width: 36px;
@@ -167,37 +167,39 @@
   display: block;
 }
 
-/* Send button: 50x50, icon fills it naturally */
+/* Send button: transparent bg — SVG has its own red rounded rect */
 .sendBtn {
   flex-shrink: 0;
   width: 50px;
   height: 50px;
-  border-radius: 14px;
-  background: #ddd;
+  background: none;
   border: none;
-  cursor: default;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s;
   padding: 0;
 }
 
-.sendBtnActive {
-  background: var(--accent-red);
-  cursor: pointer;
-}
-.sendBtnActive:hover { opacity: 0.88; }
-
-.sendIcon {
-  width: 36px;
-  height: 36px;
-  display: block;
+/* Disabled: grayscale the SVG (red rect becomes gray, white arrow stays visible) */
+.sendBtn:not(.sendBtnActive) .sendIcon {
+  filter: grayscale(1) opacity(0.55);
 }
 
-/* Invert icon only when button is red (active) */
+/* Active: no filter, natural SVG colors */
 .sendBtnActive .sendIcon {
-  filter: brightness(0) invert(1);
+  filter: none;
+}
+.sendBtnActive:hover .sendIcon {
+  filter: brightness(1.05);
+}
+
+/* Icon fills the button completely — SVG already has built-in rounded rect bg */
+.sendIcon {
+  width: 50px;
+  height: 50px;
+  display: block;
+  transition: filter 0.2s;
 }
 
 .hiddenInput { display: none; }
