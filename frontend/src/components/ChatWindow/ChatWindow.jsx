@@ -26,7 +26,7 @@ function formatLastSeen(companion) {
 
 const ChatWindow = ({ chatId }) => {
   const { accessToken, user } = useAuth();
-  const { socket, setActiveChatId, refreshUnread } = useSocket();
+  const { socket, isConnected, setActiveChatId, refreshUnread } = useSocket();
   const navigate = useNavigate();
 
   const [companion, setCompanion] = useState(null);
@@ -34,7 +34,6 @@ const ChatWindow = ({ chatId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [typingVisible, setTypingVisible] = useState(false);
   const typingTimerRef = useRef(null);
-  const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
   const initialScrollDoneRef = useRef(false);
 
@@ -93,12 +92,36 @@ const ChatWindow = ({ chatId }) => {
     refreshUnread();
   }, [socket, chatId, messages.length, refreshUnread]);
 
-  // Scroll to bottom once on initial load only
+  // Scroll container to bottom (never touches document scroll)
+  const scrollToBottom = (smooth = false) => {
+    const c = containerRef.current;
+    if (!c) return;
+    if (smooth) {
+      c.scrollTo({ top: c.scrollHeight, behavior: "smooth" });
+    } else {
+      c.scrollTop = c.scrollHeight;
+    }
+  };
+
+  // Scroll to bottom on initial load
   useEffect(() => {
     if (isLoading || initialScrollDoneRef.current) return;
     initialScrollDoneRef.current = true;
-    messagesEndRef.current?.scrollIntoView();
+    scrollToBottom(false);
   }, [isLoading]);
+
+  // Auto-scroll when new message arrives (smooth, only if near bottom or own message)
+  useEffect(() => {
+    if (!initialScrollDoneRef.current || messages.length === 0) return;
+    const c = containerRef.current;
+    if (!c) return;
+    const { scrollTop, scrollHeight, clientHeight } = c;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 160;
+    const lastMsg = messages[messages.length - 1];
+    if (isNearBottom || lastMsg?.senderId === user?.id) {
+      scrollToBottom(true);
+    }
+  }, [messages.length]);
 
   // Socket: receive new messages + typing + online status
   useEffect(() => {
@@ -205,13 +228,12 @@ const ChatWindow = ({ chatId }) => {
                 <span className={s.typingDot} />
               </div>
             )}
-            <div ref={messagesEndRef} />
           </>
         )}
       </div>
 
       {/* Input */}
-      <MessageInput chatId={chatId} />
+      <MessageInput chatId={chatId} socketReady={isConnected} />
     </div>
   );
 };

@@ -9,7 +9,7 @@ import s from "./MessageInput.module.css";
 
 const MAX_PHOTOS = 10;
 
-const MessageInput = ({ chatId }) => {
+const MessageInput = ({ chatId, socketReady = true }) => {
   const { accessToken } = useAuth();
   const { socket } = useSocket();
   const [text, setText] = useState("");
@@ -110,7 +110,7 @@ const MessageInput = ({ chatId }) => {
   };
 
   const handleSend = () => {
-    if (!socket || !canSend) return;
+    if (!socket || !canSend || !socketReady) return;
     const trimmed = text.trim();
 
     if (pendingPhotos.length > 0) {
@@ -172,6 +172,14 @@ const MessageInput = ({ chatId }) => {
           <button className={s.removePendingFile} onClick={() => setPendingFile(null)}>
             <img src={closeIcon} alt="×" className={s.removePendingFileIcon} />
           </button>
+        </div>
+      )}
+
+      {/* Offline notice */}
+      {!socketReady && (
+        <div className={s.offlineNotice}>
+          <div className={s.uploadSpinner} />
+          <span>Подключение к серверу...</span>
         </div>
       )}
 

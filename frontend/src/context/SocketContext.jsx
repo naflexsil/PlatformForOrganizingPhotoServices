@@ -7,6 +7,7 @@ const SocketContext = createContext(null);
 export const SocketProvider = ({ children }) => {
   const { accessToken, isAuth, user } = useAuth();
   const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
   const [unreadTotal, setUnreadTotal] = useState(0);
   // Ref to the currently open chat — new messages for it won't increment unread
   const activeChatIdRef = useRef(null);
@@ -47,13 +48,25 @@ export const SocketProvider = ({ children }) => {
 
     const s = io(SOCKET_URL, {
       auth: { token: accessToken },
-      transports: ["websocket"],
+      // No transports restriction — allows polling fallback for mobile networks that block WS
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
     });
 
     setSocket(s);
 
+    s.on("connect", () => {
+      setIsConnected(true);
+      console.log("[Socket] connected via", s.io.engine.transport.name);
+    });
+
+    s.on("disconnect", () => {
+      setIsConnected(false);
+    });
+
     s.on("new-message", ({ message }) => {
-      // Only increment unread if message is from someone else AND that chat is not open
       if (user?.id && message.senderId !== user.id && activeChatIdRef.current !== message.chatId) {
         setUnreadTotal((prev) => prev + 1);
       }
@@ -61,11 +74,13 @@ export const SocketProvider = ({ children }) => {
 
     s.on("connect_error", (err) => {
       console.error("[Socket] connect error:", err.message);
+      setIsConnected(false);
     });
 
     return () => {
       s.disconnect();
       setSocket(null);
+      setIsConnected(false);
     };
   }, [isAuth, accessToken]);
 
@@ -74,7 +89,7 @@ export const SocketProvider = ({ children }) => {
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket, unreadTotal, refreshUnread, setActiveChatId }}>
+    <SocketContext.Provider value={{ socket, isConnected, unreadTotal, refreshUnread, setActiveChatId }}>
       {children}
     </SocketContext.Provider>
   );

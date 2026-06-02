@@ -5,6 +5,16 @@
   padding: 8px 40px;
 }
 
+/* ── Offline / reconnecting notice ── */
+.offlineNotice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 2px;
+  font-size: 13px;
+  color: var(--accent-red);
+}
+
 /* ── Upload progress bar ── */
 .uploadingBar {
   display: flex;
