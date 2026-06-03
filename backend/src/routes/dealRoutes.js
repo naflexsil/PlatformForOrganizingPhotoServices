@@ -12,6 +12,7 @@ import {
   requestRevision,
   rateDeal,
   getDeals,
+  getDealById,
 } from "../controllers/DealController.js";
 
 const router = Router();
@@ -19,6 +20,7 @@ const router = Router();
 router.use(authMiddleware);
 
 router.get("/", getDeals);
+router.get("/:id", getDealById);
 router.post("/", proposeDeal);
 router.patch("/:id/accept", acceptDeal);
 router.patch("/:id/reject", rejectDeal);

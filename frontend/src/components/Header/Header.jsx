@@ -26,6 +26,7 @@ const Header = ({ isAuthenticated, onLoginClick }) => {
   const handleLogout = () => {
     closeMenu();
     logout();
+    navigate("/", { replace: true });
   };
 
   return (
@@ -34,7 +35,6 @@ const Header = ({ isAuthenticated, onLoginClick }) => {
         <img src="/logo_psyshe.svg" alt="Psyshe" className={s.logo} />
       </Link>
 
-      {/* Desktop nav */}
       <nav className={s.nav}>
         <Link to="/search">Поиск</Link>
         <Link to="/feed">Лента вдохновения</Link>
@@ -54,7 +54,6 @@ const Header = ({ isAuthenticated, onLoginClick }) => {
         )}
       </nav>
 
-      {/* Mobile burger button */}
       <div className={s.burgerWrap} ref={menuRef}>
         <button className={s.burgerBtn} onClick={() => setMenuOpen((v) => !v)} aria-label="Меню">
           <img src={burgerIcon} alt="Меню" className={s.burgerIcon} />

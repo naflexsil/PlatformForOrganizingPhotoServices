@@ -1,0 +1,29 @@
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(51,39,39,0.5); z-index: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal {
+  background: var(--white); border-radius: 24px;
+  width: 420px; max-width: 95vw; padding: 28px 32px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+.title { font-family: "Farabee", serif; font-size: 20px; color: var(--dark-text); margin: 0 0 16px; }
+.label { display: block; font-size: 13px; color: var(--dark-text); opacity: 0.6; margin-bottom: 8px; }
+.textarea {
+  width: 100%; box-sizing: border-box;
+  border: 1px solid #e8dada; border-radius: 12px;
+  padding: 10px 14px; resize: none;
+  font-family: "Inter", sans-serif; font-size: 14px; font-weight: 600;
+  color: var(--dark-text); background: #fdf8f8; outline: none; min-height: 90px;
+}
+.textarea:focus { border-color: var(--accent-red); }
+.actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+.cancelBtn {
+  background: transparent; color: var(--dark-text); border: 2px solid #ddd;
+  border-radius: 10px; padding: 8px 20px; font-family: "Farabee", serif; font-size: 15px; cursor: pointer;
+}
+.confirmBtn {
+  background: var(--error-red); color: var(--white); border: 2px solid transparent;
+  border-radius: 10px; padding: 8px 20px; font-family: "Farabee", serif; font-size: 15px; cursor: pointer;
+}

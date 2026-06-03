@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import starEmpty from "../../assets/icons/review_star.svg";
+import starFilled from "../../assets/icons/review_star_painted_over.svg";
 import s from "./RatingModal.module.css";
 
 const RatingModal = ({ deal, companionName, onClose, onRated }) => {
@@ -35,11 +37,17 @@ const RatingModal = ({ deal, companionName, onClose, onRated }) => {
           {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
-              className={`${s.star} ${n <= displayStars ? s.starFilled : ""}`}
+              className={s.starBtn}
               onMouseEnter={() => setHovered(n)}
               onMouseLeave={() => setHovered(0)}
               onClick={() => setStars(n)}
-            >★</button>
+            >
+              <img
+                src={n <= displayStars ? starFilled : starEmpty}
+                alt={`${n} звезд`}
+                className={s.starImg}
+              />
+            </button>
           ))}
         </div>
         {stars > 0 && (

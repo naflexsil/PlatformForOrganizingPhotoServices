@@ -58,6 +58,15 @@
   flex-shrink: 0;
 }
 
+.companionInfoClickable {
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background-color 0.15s;
+  padding: 4px 8px;
+  margin: -4px -8px;
+}
+.companionInfoClickable:hover { background: #f5eded; }
+
 .companionTexts {
   display: flex;
   flex-direction: column;

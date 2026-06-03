@@ -36,6 +36,7 @@ model User {
   subscribers    Subscription[]   @relation("Subscribed")
   photoLikes     PhotoLike[]
   photoFavorites PhotoFavorite[]
+  supportTickets SupportTicket[]
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
   isOnline    Boolean   @default(false)
@@ -225,6 +226,27 @@ model Deal {
 
   @@index([chatId])
   @@map("deals")
+}
+
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+model SupportTicket {
+  id        String              @id @default(uuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String
+  dealId    String?
+  chatId    String?
+  status    SupportTicketStatus @default(OPEN)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@index([userId])
+  @@map("support_tickets")
 }
 
 model DealRevision {

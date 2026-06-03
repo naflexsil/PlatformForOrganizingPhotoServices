@@ -1,9 +1,9 @@
 import prisma from "../config/db.js";
 import { getIO } from "../socket/index.js";
 
-const SUPPORT_EMAIL = "mailto:laceebbarffq2d@outlook.com";
-
 const ACTIVE_STATUSES = ["PENDING", "AWAITING_PAYMENT", "IN_PROGRESS", "AWAITING_REVIEW", "REVISION"];
+
+const userSelect = { id: true, firstName: true, lastName: true, tag: true, avatarUrl: true, role: true };
 
 const dealSelect = {
   id: true,
@@ -18,11 +18,20 @@ const dealSelect = {
   ratingComment: true,
   createdAt: true,
   updatedAt: true,
-  revisions: { orderBy: { createdAt: "desc" }, take: 1, select: { reason: true, createdAt: true } },
+  revisions: { orderBy: { createdAt: "asc" }, select: { reason: true, createdAt: true } },
 };
 
 function emitDealUpdated(deal) {
   getIO()?.to(`chat:${deal.chatId}`).emit("deal-updated", { deal });
+}
+
+async function emitSystemMessage(chatId, senderId, text) {
+  const msg = await prisma.message.create({
+    data: { chatId, senderId, text, attachmentType: "TEXT" },
+    include: { sender: { select: userSelect } },
+  });
+  await prisma.chat.update({ where: { id: chatId }, data: { updatedAt: new Date() } });
+  getIO()?.to(`chat:${chatId}`).emit("new-message", { message: msg });
 }
 
 export const proposeDeal = async (req, res, next) => {
@@ -36,8 +45,21 @@ export const proposeDeal = async (req, res, next) => {
 
     const chat = await prisma.chat.findFirst({
       where: { id: chatId, OR: [{ user1Id: userId }, { user2Id: userId }] },
+      include: {
+        user1: { select: { id: true, role: true } },
+        user2: { select: { id: true, role: true } },
+      },
     });
     if (!chat) return res.status(403).json({ status: "error", message: "Нет доступа к чату" });
+
+    const isUser1 = chat.user1Id === userId;
+    const proposer = isUser1 ? chat.user1 : chat.user2;
+    const companion = isUser1 ? chat.user2 : chat.user1;
+    const companionId = companion.id;
+
+    if (proposer.role === "USER" && companion.role === "USER") {
+      return res.status(400).json({ status: "error", message: "Клиент не может предложить сделку другому клиенту" });
+    }
 
     const activeDeal = await prisma.deal.findFirst({
       where: { chatId, status: { in: ACTIVE_STATUSES } },
@@ -46,23 +68,29 @@ export const proposeDeal = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "В этом чате уже есть активная сделка" });
     }
 
-    const companionId = chat.user1Id === userId ? chat.user2Id : chat.user1Id;
+    let clientId, photographerId;
+    if (proposer.role === "PHOTOGRAPHER" && companion.role === "USER") {
+      clientId = companionId;
+      photographerId = userId;
+    } else if (proposer.role === "USER" && companion.role === "PHOTOGRAPHER") {
+      clientId = userId;
+      photographerId = companionId;
+    } else {
+      clientId = userId;
+      photographerId = companionId;
+    }
 
     const deal = await prisma.deal.create({
-      data: {
-        chatId,
-        clientId: userId,
-        photographerId: companionId,
-        conditions: conditions.trim(),
-      },
+      data: { chatId, clientId, photographerId, conditions: conditions.trim() },
       select: dealSelect,
     });
 
     emitDealUpdated(deal);
+
+    await emitSystemMessage(chatId, userId, `Предложена сделка:\n${conditions.trim()}`);
+
     return res.status(201).json({ status: "success", data: deal });
-  } catch (err) {
-    return next(err);
-  }
+  } catch (err) { return next(err); }
 };
 
 export const acceptDeal = async (req, res, next) => {
@@ -79,6 +107,7 @@ export const acceptDeal = async (req, res, next) => {
       select: dealSelect,
     });
     emitDealUpdated(updated);
+    await emitSystemMessage(deal.chatId, userId, "Сделка принята. Ожидается оплата.");
     return res.json({ status: "success", data: updated });
   } catch (err) { return next(err); }
 };
@@ -86,10 +115,15 @@ export const acceptDeal = async (req, res, next) => {
 export const rejectDeal = async (req, res, next) => {
   try {
     const userId = req.user.id;
+    const { reason } = req.body;
     const deal = await prisma.deal.findUnique({ where: { id: req.params.id } });
     if (!deal) return res.status(404).json({ status: "error", message: "Сделка не найдена" });
     if (deal.photographerId !== userId) return res.status(403).json({ status: "error", message: "Только исполнитель может отклонить сделку" });
     if (deal.status !== "PENDING") return res.status(400).json({ status: "error", message: "Нельзя отклонить сделку в текущем статусе" });
+
+    if (reason?.trim()) {
+      await prisma.dealRevision.create({ data: { dealId: deal.id, reason: `Отказ: ${reason.trim()}` } });
+    }
 
     const updated = await prisma.deal.update({
       where: { id: deal.id },
@@ -97,6 +131,8 @@ export const rejectDeal = async (req, res, next) => {
       select: dealSelect,
     });
     emitDealUpdated(updated);
+    const reasonText = reason?.trim() ? ` Причина: ${reason.trim()}` : "";
+    await emitSystemMessage(deal.chatId, userId, `Сделка отклонена.${reasonText}`);
     return res.json({ status: "success", data: updated });
   } catch (err) { return next(err); }
 };
@@ -104,6 +140,7 @@ export const rejectDeal = async (req, res, next) => {
 export const cancelDeal = async (req, res, next) => {
   try {
     const userId = req.user.id;
+    const { reason } = req.body;
     const deal = await prisma.deal.findUnique({ where: { id: req.params.id } });
     if (!deal) return res.status(404).json({ status: "error", message: "Сделка не найдена" });
     if (deal.clientId !== userId && deal.photographerId !== userId) {
@@ -113,12 +150,18 @@ export const cancelDeal = async (req, res, next) => {
       return res.status(400).json({ status: "error", message: "Отменить можно только в статусе Ожидает подтверждения" });
     }
 
+    if (reason?.trim()) {
+      await prisma.dealRevision.create({ data: { dealId: deal.id, reason: `Отмена: ${reason.trim()}` } });
+    }
+
     const updated = await prisma.deal.update({
       where: { id: deal.id },
       data: { status: "REJECTED" },
       select: dealSelect,
     });
     emitDealUpdated(updated);
+    const reasonText = reason?.trim() ? ` Причина: ${reason.trim()}` : "";
+    await emitSystemMessage(deal.chatId, userId, `Сделка отменена.${reasonText}`);
     return res.json({ status: "success", data: updated });
   } catch (err) { return next(err); }
 };
@@ -134,13 +177,15 @@ export const confirmPaid = async (req, res, next) => {
     const bothConfirmed = deal.photographerConfirmedPayment;
     const updated = await prisma.deal.update({
       where: { id: deal.id },
-      data: {
-        clientPaid: true,
-        ...(bothConfirmed && { status: "IN_PROGRESS" }),
-      },
+      data: { clientPaid: true, ...(bothConfirmed && { status: "IN_PROGRESS" }) },
       select: dealSelect,
     });
     emitDealUpdated(updated);
+    if (bothConfirmed) {
+      await emitSystemMessage(deal.chatId, userId, "Оплата подтверждена обеими сторонами. Сделка в работе!");
+    } else {
+      await emitSystemMessage(deal.chatId, userId, "Клиент подтвердил оплату. Ожидается подтверждение исполнителя.");
+    }
     return res.json({ status: "success", data: updated });
   } catch (err) { return next(err); }
 };
@@ -153,16 +198,17 @@ export const confirmPaymentReceived = async (req, res, next) => {
     if (deal.photographerId !== userId) return res.status(403).json({ status: "error", message: "Только исполнитель может подтвердить получение оплаты" });
     if (deal.status !== "AWAITING_PAYMENT") return res.status(400).json({ status: "error", message: "Неверный статус" });
 
-    const bothConfirmed = deal.clientPaid;
+    if (!deal.clientPaid) {
+      return res.status(400).json({ status: "error", message: "Клиент ещё не подтвердил оплату" });
+    }
+
     const updated = await prisma.deal.update({
       where: { id: deal.id },
-      data: {
-        photographerConfirmedPayment: true,
-        ...(bothConfirmed && { status: "IN_PROGRESS" }),
-      },
+      data: { photographerConfirmedPayment: true, status: "IN_PROGRESS" },
       select: dealSelect,
     });
     emitDealUpdated(updated);
+    await emitSystemMessage(deal.chatId, userId, "Оплата подтверждена. Сделка переходит в работу!");
     return res.json({ status: "success", data: updated });
   } catch (err) { return next(err); }
 };
@@ -183,6 +229,7 @@ export const completeWork = async (req, res, next) => {
       select: dealSelect,
     });
     emitDealUpdated(updated);
+    await emitSystemMessage(deal.chatId, userId, "Исполнитель сдал работу. Ожидается проверка клиентом.");
     return res.json({ status: "success", data: updated });
   } catch (err) { return next(err); }
 };
@@ -201,6 +248,7 @@ export const approveDeal = async (req, res, next) => {
       select: dealSelect,
     });
     emitDealUpdated(updated);
+    await emitSystemMessage(deal.chatId, userId, "Сделка успешно завершена!");
     return res.json({ status: "success", data: updated });
   } catch (err) { return next(err); }
 };
@@ -222,6 +270,8 @@ export const requestRevision = async (req, res, next) => {
       select: dealSelect,
     });
     emitDealUpdated(updated);
+    const txt = reason?.trim() ? reason.trim() : "Без указания причины";
+    await emitSystemMessage(deal.chatId, userId, `Работа отправлена на доработку. Причина: ${txt}`);
     return res.json({ status: "success", data: updated });
   } catch (err) { return next(err); }
 };
@@ -252,7 +302,7 @@ export const rateDeal = async (req, res, next) => {
     });
     if (deals.length > 0) {
       const avg = deals.reduce((s, d) => s + d.rating, 0) / deals.length;
-      await prisma.photographer.update({
+      await prisma.photographer.updateMany({
         where: { userId: deal.photographerId },
         data: { rating: Math.round(avg * 10) / 10 },
       });
@@ -260,6 +310,31 @@ export const rateDeal = async (req, res, next) => {
 
     emitDealUpdated(updated);
     return res.json({ status: "success", data: updated });
+  } catch (err) { return next(err); }
+};
+
+export const getDealById = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const deal = await prisma.deal.findUnique({
+      where: { id: req.params.id },
+      select: {
+        ...dealSelect,
+        revisions: { orderBy: { createdAt: "asc" }, select: { reason: true, createdAt: true } },
+        chat: {
+          select: {
+            id: true,
+            user1: { select: userSelect },
+            user2: { select: userSelect },
+          },
+        },
+      },
+    });
+    if (!deal) return res.status(404).json({ status: "error", message: "Сделка не найдена" });
+    if (deal.clientId !== userId && deal.photographerId !== userId) {
+      return res.status(403).json({ status: "error", message: "Нет доступа" });
+    }
+    return res.json({ status: "success", data: deal });
   } catch (err) { return next(err); }
 };
 
@@ -279,15 +354,12 @@ export const getDeals = async (req, res, next) => {
         chat: {
           select: {
             id: true,
-            user1: { select: { id: true, firstName: true, lastName: true, avatarUrl: true, tag: true } },
-            user2: { select: { id: true, firstName: true, lastName: true, avatarUrl: true, tag: true } },
+            user1: { select: userSelect },
+            user2: { select: userSelect },
           },
         },
       },
-      orderBy: [
-        { status: "asc" },  
-        { updatedAt: "desc" },
-      ],
+      orderBy: { updatedAt: "desc" },
     });
 
     return res.json({ status: "success", data: deals });

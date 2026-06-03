@@ -34,15 +34,15 @@ const DealProposalModal = ({ chatId, onClose, onCreated }) => {
     <div className={s.overlay} onClick={onClose}>
       <div className={s.modal} onClick={(e) => e.stopPropagation()}>
         <div className={s.header}>
-          <span className={s.title}>Предложить сделку</span>
+          <span className={s.title}>Предложить съемку</span>
           <button className={s.closeBtn} onClick={onClose}>✕</button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <label className={s.label}>Условия съёмки</label>
+          <label className={s.label}>Условия съемки</label>
           <textarea
             className={s.textarea}
-            placeholder="Опишите дату, место, формат съёмки, пожелания..."
+            placeholder="Опишите дату, место, формат съемки, пожелания..."
             value={conditions}
             onChange={(e) => setConditions(e.target.value)}
             rows={5}

@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import s from "./ChatsPage.module.css";
 import ChatList from "../../components/ChatList/ChatList";
 import ChatWindow from "../../components/ChatWindow/ChatWindow";
@@ -17,8 +18,14 @@ const EmptyState = () => (
 
 const ChatsPage = () => {
   const { chatId } = useParams();
+  const navigate = useNavigate();
+  const { isAuth } = useAuth();
   const [activeTab, setActiveTab] = useState("chats");
   const [showNewChatModal, setShowNewChatModal] = useState(false);
+
+  useEffect(() => {
+    if (!isAuth) navigate("/", { replace: true });
+  }, [isAuth, navigate]);
 
   return (
     <div className={s.page}>

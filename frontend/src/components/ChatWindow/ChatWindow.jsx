@@ -98,7 +98,8 @@ const ChatWindow = ({ chatId }) => {
       .then((r) => r.json())
       .then((data) => {
         if (data.status === "success" && data.data.length > 0) {
-          setActiveDeal(data.data[0]);
+          const active = data.data.find((d) => ACTIVE_DEAL_STATUSES.includes(d.status));
+          setActiveDeal(active || data.data[0]);
         }
       })
       .catch(() => {});
@@ -207,12 +208,14 @@ const ChatWindow = ({ chatId }) => {
 
   return (
     <div className={s.window}>
-      {/* Header */}
       <div className={s.header}>
         <button className={s.closeBtn} onClick={() => navigate("/chats")} title="Закрыть">
           <img src={closeIcon} alt="Закрыть" className={s.closeBtnIcon} />
         </button>
-        <div className={s.companionInfo}>
+        <div
+          className={`${s.companionInfo} ${companion?.tag ? s.companionInfoClickable : ""}`}
+          onClick={() => companion?.tag && navigate(`/${companion.tag}`)}
+        >
           {companion?.avatarUrl && (
             <img src={companion.avatarUrl} className={s.companionAvatar} alt="" />
           )}
@@ -226,15 +229,15 @@ const ChatWindow = ({ chatId }) => {
           </div>
         </div>
 
-        {/* Deal button — shown when no active deal */}
-        {companion && !ACTIVE_DEAL_STATUSES.includes(activeDeal?.status) && (
+        {companion &&
+          !(user?.role === "USER" && companion?.role === "USER") &&
+          !ACTIVE_DEAL_STATUSES.includes(activeDeal?.status) && (
           <button className={s.dealBtn} onClick={() => setShowProposalModal(true)}>
-            {user?.role === "USER" ? "Заказать" : "Предложить съёмку"}
+            {user?.role === "USER" ? "Заказать" : "Предложить съемку"}
           </button>
         )}
       </div>
 
-      {/* Active deal card */}
       {activeDeal && (
         <DealCard
           deal={activeDeal}
@@ -244,7 +247,6 @@ const ChatWindow = ({ chatId }) => {
         />
       )}
 
-      {/* Messages */}
       <div className={s.messages} ref={containerRef}>
         {isLoading ? (
           <div className={s.loadingWrap}>
@@ -272,10 +274,8 @@ const ChatWindow = ({ chatId }) => {
         )}
       </div>
 
-      {/* Input */}
       <MessageInput chatId={chatId} socketReady={isConnected} />
 
-      {/* Deal modals */}
       {showProposalModal && (
         <DealProposalModal
           chatId={chatId}
