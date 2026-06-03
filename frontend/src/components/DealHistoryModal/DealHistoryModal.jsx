@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import StarRating from "../StarRating/StarRating";
 import s from "./DealHistoryModal.module.css";
 
 function fmt(dateStr) {
@@ -27,7 +28,7 @@ const DealHistoryModal = ({ dealId, onClose }) => {
 
   if (!deal && !isLoading) return null;
 
-  const companion = deal?.chat?.user1?.id === user?.id ? deal.chat?.user2 : deal.chat?.user1;
+  const companion = deal?.chat?.user1?.id === user?.id ? deal?.chat?.user2 : deal?.chat?.user1;
   const isClient = deal?.clientId === user?.id;
 
   const timeline = [];
@@ -61,7 +62,8 @@ const DealHistoryModal = ({ dealId, onClose }) => {
       timeline.push({ label: "Сделка завершена", time: deal.updatedAt, isKey: true });
       if (deal.rating) {
         timeline.push({
-          label: `Оценка: ${"★".repeat(deal.rating)}${"☆".repeat(5 - deal.rating)}`,
+          label: "Оценка",
+          rating: deal.rating,
           time: null,
           note: deal.ratingComment,
         });
@@ -99,7 +101,10 @@ const DealHistoryModal = ({ dealId, onClose }) => {
                   {i < timeline.length - 1 && <div className={s.stepLine} />}
                 </div>
                 <div className={s.stepContent}>
-                  <span className={s.stepLabel}>{item.label}</span>
+                  <div className={s.stepLabelRow}>
+                    <span className={s.stepLabel}>{item.label}</span>
+                    {item.rating && <StarRating rating={item.rating} size={14} />}
+                  </div>
                   {item.time && <span className={s.stepTime}>{fmt(item.time)}</span>}
                   {item.note && <p className={s.stepNote}>{item.note}</p>}
                 </div>

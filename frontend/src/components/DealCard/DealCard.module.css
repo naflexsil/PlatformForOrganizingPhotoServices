@@ -56,6 +56,8 @@
   white-space: pre-wrap;
 }
 
+.revisionBlock { margin-bottom: 8px; }
+
 .revisionReason {
   font-size: 13px;
   color: #7a3c00;
@@ -66,8 +68,9 @@
 }
 
 .ratingRow {
-  font-size: 16px;
-  color: #c0a000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin-bottom: 10px;
 }
 .ratingComment {

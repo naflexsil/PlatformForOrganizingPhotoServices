@@ -3,6 +3,8 @@ import { useAuth } from "../../context/AuthContext";
 import AcceptDealModal from "../AcceptDealModal/AcceptDealModal";
 import RejectReasonModal from "../RejectReasonModal/RejectReasonModal";
 import SupportModal from "../SupportModal/SupportModal";
+import TextModal from "../TextModal/TextModal";
+import StarRating from "../StarRating/StarRating";
 import s from "./DealCard.module.css";
 
 const STATUS_LABELS = {
@@ -21,14 +23,16 @@ const MAX_CONDITIONS = 160;
 const DealCard = ({ deal, onDealUpdated, onRevision, onRate }) => {
   const { accessToken, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [showFullText, setShowFullText] = useState(false);
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [showTextModal, setShowTextModal] = useState(null);
   const [rejectConfig, setRejectConfig] = useState(null);
 
   const isClient = deal.clientId === user?.id;
   const isPhotographer = deal.photographerId === user?.id;
+  const isProposer = deal.proposerId === user?.id;
+  const isReceiver = !isProposer && (isClient || isPhotographer);
   const isActive = !TERMINAL.includes(deal.status);
 
   const call = async (endpoint, method = "PATCH", body) => {
@@ -61,11 +65,11 @@ const DealCard = ({ deal, onDealUpdated, onRevision, onRate }) => {
 
     switch (deal.status) {
       case "PENDING":
-        if (isPhotographer) {
+        if (isReceiver) {
           btns.push(add("Согласиться", () => setShowAcceptModal(true), "primary"));
           btns.push(add("Отказаться", () => triggerReject("reject", "Причина отказа", "Почему вы отказываетесь от сделки?"), "danger"));
         }
-        if (isClient) {
+        if (isProposer) {
           btns.push(add("Отменить", () => triggerReject("cancel", "Причина отмены", "Почему вы отменяете сделку?"), "outline"));
         }
         break;
@@ -112,9 +116,8 @@ const DealCard = ({ deal, onDealUpdated, onRevision, onRate }) => {
 
   const buttons = getButtons();
   const isLong = deal.conditions.length > MAX_CONDITIONS;
-  const displayText = isLong && !showFullText
-    ? deal.conditions.slice(0, MAX_CONDITIONS) + "..."
-    : deal.conditions;
+  const lastRevision = deal.revisions?.[deal.revisions.length - 1];
+  const isRevisionLong = lastRevision && lastRevision.reason.length > MAX_CONDITIONS;
 
   return (
     <>
@@ -135,23 +138,32 @@ const DealCard = ({ deal, onDealUpdated, onRevision, onRate }) => {
           )}
         </div>
 
-        <p className={s.conditions}>{displayText}</p>
+        <p className={s.conditions}>
+          {isLong ? deal.conditions.slice(0, MAX_CONDITIONS) + "..." : deal.conditions}
+        </p>
         {isLong && (
-          <button className={s.moreBtn} onClick={() => setShowFullText((v) => !v)}>
-            {showFullText ? "Свернуть" : "Подробнее"}
+          <button className={s.moreBtn} onClick={() => setShowTextModal({ title: "Условия съемки", text: deal.conditions })}>
+            Подробнее
           </button>
         )}
 
-        {deal.revisions?.[deal.revisions.length - 1] && deal.status === "REVISION" && (
-          <p className={s.revisionReason}>
-            Причина доработки: {deal.revisions[deal.revisions.length - 1].reason}
-          </p>
+        {lastRevision && deal.status === "REVISION" && (
+          <div className={s.revisionBlock}>
+            <p className={s.revisionReason}>
+              {isRevisionLong ? lastRevision.reason.slice(0, MAX_CONDITIONS) + "..." : lastRevision.reason}
+            </p>
+            {isRevisionLong && (
+              <button className={s.moreBtn} onClick={() => setShowTextModal({ title: "Причина доработки", text: lastRevision.reason })}>
+                Подробнее
+              </button>
+            )}
+          </div>
         )}
 
         {deal.rating !== null && (
           <div className={s.ratingRow}>
-            {"★".repeat(deal.rating)}{"☆".repeat(5 - deal.rating)}
-            {deal.ratingComment && <span className={s.ratingComment}> {deal.ratingComment}</span>}
+            <StarRating rating={deal.rating} size={16} />
+            {deal.ratingComment && <span className={s.ratingComment}>{deal.ratingComment}</span>}
           </div>
         )}
 
@@ -194,6 +206,14 @@ const DealCard = ({ deal, onDealUpdated, onRevision, onRate }) => {
           dealId={deal.id}
           chatId={deal.chatId}
           onClose={() => setShowSupportModal(false)}
+        />
+      )}
+
+      {showTextModal && (
+        <TextModal
+          title={showTextModal.title}
+          text={showTextModal.text}
+          onClose={() => setShowTextModal(null)}
         />
       )}
     </>

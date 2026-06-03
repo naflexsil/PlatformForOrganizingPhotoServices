@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import DealHistoryModal from "../../components/DealHistoryModal/DealHistoryModal";
+import StarRating from "../../components/StarRating/StarRating";
 import s from "./DealsTab.module.css";
 
 const STATUS_LABELS = {
@@ -57,10 +58,10 @@ const DealsTab = () => {
         </div>
         <p className={s.conditions}>{deal.conditions.slice(0, 80)}{deal.conditions.length > 80 ? "..." : ""}</p>
         {deal.rating !== null && (
-          <span className={s.stars}>
-            {"★".repeat(deal.rating)}{"☆".repeat(5 - deal.rating)}
-            {deal.ratingComment && ` ${deal.ratingComment}`}
-          </span>
+          <div className={s.starsRow}>
+            <StarRating rating={deal.rating} size={14} />
+            {deal.ratingComment && <span className={s.ratingComment}>{deal.ratingComment}</span>}
+          </div>
         )}
       </div>
     );

@@ -10,6 +10,7 @@ const dealSelect = {
   chatId: true,
   clientId: true,
   photographerId: true,
+  proposerId: true,
   conditions: true,
   status: true,
   clientPaid: true,
@@ -81,7 +82,7 @@ export const proposeDeal = async (req, res, next) => {
     }
 
     const deal = await prisma.deal.create({
-      data: { chatId, clientId, photographerId, conditions: conditions.trim() },
+      data: { chatId, clientId, photographerId, proposerId: userId, conditions: conditions.trim() },
       select: dealSelect,
     });
 

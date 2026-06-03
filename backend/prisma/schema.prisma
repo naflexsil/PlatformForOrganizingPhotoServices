@@ -216,6 +216,7 @@ model Deal {
   photographerId String
   conditions     String
   status         DealStatus   @default(PENDING)
+  proposerId     String
   clientPaid                  Boolean @default(false)
   photographerConfirmedPayment Boolean @default(false)
   revisions      DealRevision[]
