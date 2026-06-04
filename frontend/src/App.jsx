@@ -13,6 +13,7 @@ import PublicProfile from "./pages/PublicProfile/PublicProfile";
 import PortfolioPage from "./pages/Portfolio/PortfolioPage";
 import PortfolioFolderPage from "./pages/Portfolio/PortfolioFolderPage";
 import InspirationPage from "./pages/InspirationPage/InspirationPage";
+import SearchPage from "./pages/SearchPage/SearchPage";
 import ChatsPage from "./pages/ChatsPage/ChatsPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
@@ -117,6 +118,7 @@ const AppContent = () => {
       />
       <Routes>
         <Route path="/" element={<MainPage />} />
+        <Route path="/search" element={<SearchPage />} />
         <Route path="/feed" element={<InspirationPage />} />
         <Route path="/chats" element={<ChatsPage />} />
         <Route path="/chats/:chatId" element={<ChatsPage />} />
