@@ -222,6 +222,7 @@ export const loginWithVkSdk = async (req, res) => {
           avatarUrl: user.avatarUrl,
           birthDate: user.birthDate,
           gender: user.gender,
+          isDeleted: user.isDeleted,
         },
         registrationComplete,
       },

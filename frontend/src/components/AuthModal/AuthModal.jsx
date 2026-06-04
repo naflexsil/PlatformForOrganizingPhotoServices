@@ -3,7 +3,7 @@ import s from "./AuthModal.module.css";
 import closeIcon from "../../assets/icons/carousel_close.svg";
 let vkConfigInitialized = false;
 
-const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
+const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration, onNeedRestore }) => {
   const vkContainerRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -93,6 +93,11 @@ const AuthModal = ({ onClose, onLoginSuccess, onNeedRegistration }) => {
 
     const { accessToken, refreshToken, user, registrationComplete } =
       result.data;
+
+    if (user.isDeleted) {
+      onNeedRestore({ accessToken, refreshToken }, user);
+      return;
+    }
 
     if (registrationComplete) {
       onLoginSuccess({ accessToken, refreshToken }, user);

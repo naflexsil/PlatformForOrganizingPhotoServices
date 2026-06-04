@@ -11,6 +11,7 @@ import heartFilledIcon from "../../assets/icons/heart_filled.svg";
 import defaultAvatar from "../../assets/images/default_avatar.png";
 import chartIcon from "../../assets/icons/chart.svg";
 import editIcon from "../../assets/icons/edit.svg";
+import deleteIcon from "../../assets/icons/delete.svg";
 import CreatePostModal from "../../components/CreatePostModal/CreatePostModal";
 import PostModal from "../../components/PostModal/PostModal";
 import PhotoModal from "../../components/PhotoModal/PhotoModal";
@@ -84,10 +85,11 @@ const normalizePost = (p) => ({
 });
 
 const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
-  const { accessToken } = useAuth();
+  const { accessToken, logout } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
@@ -233,6 +235,22 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
     if (res.ok) {
       setPosts((prev) => prev.filter((p) => p.id !== postId));
       setSelectedPost(null);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      const res = await fetch("/api/users/me", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const result = await res.json();
+      if (result.status !== "success") throw new Error(result.message);
+      logout();
+      navigate("/");
+    } catch (err) {
+      showToast(err.message || "Не удалось удалить аккаунт", "error");
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -444,6 +462,16 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
                           <img src={editIcon} alt="Edit" />
                           <span>Редактировать профиль</span>
                         </div>
+                        <div
+                          className={`${s.modalItem} ${s.modalItemDelete}`}
+                          onClick={() => {
+                            setIsSettingsOpen(false);
+                            setShowDeleteConfirm(true);
+                          }}
+                        >
+                          <img src={deleteIcon} alt="Delete" />
+                          <span>Удалить аккаунт</span>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -638,6 +666,25 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
         </div>
       )}
     </div>
+
+    {showDeleteConfirm && (
+      <div className={s.confirmOverlay} onClick={() => setShowDeleteConfirm(false)}>
+        <div className={s.confirmModal} onClick={(e) => e.stopPropagation()}>
+          <h3 className={s.confirmTitle}>Удалить аккаунт?</h3>
+          <p className={s.confirmText}>
+            Ваш профиль и публикации будут скрыты. При следующем входе через VK ID вы сможете восстановить аккаунт.
+          </p>
+          <div className={s.confirmActions}>
+            <button className={s.confirmCancel} onClick={() => setShowDeleteConfirm(false)}>
+              Отмена
+            </button>
+            <button className={s.confirmDelete} onClick={handleDeleteAccount}>
+              Удалить
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
   );
 };
 

@@ -8,6 +8,7 @@ import UserProfile from "./pages/UserProfile/UserProfile";
 import AuthModal from "./components/AuthModal/AuthModal";
 import RoleModal from "./components/RoleModal/RoleModal";
 import RegistrationFormModal from "./components/RegistrationFormModal/RegistrationFormModal";
+import RestoreAccountModal from "./components/RestoreAccountModal/RestoreAccountModal";
 import PublicProfile from "./pages/PublicProfile/PublicProfile";
 import PortfolioPage from "./pages/Portfolio/PortfolioPage";
 import PortfolioFolderPage from "./pages/Portfolio/PortfolioFolderPage";
@@ -36,11 +37,31 @@ const AppContent = () => {
   const [selectedRole, setSelectedRole] = useState(null);
   const [pendingTokens, setPendingTokens] = useState(null);
   const [pendingVkUser, setPendingVkUser] = useState(null);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [restoreTokens, setRestoreTokens]       = useState(null);
 
   const handleLoginSuccess = (tokens, user) => {
     login(tokens, user);
     setShowAuthModal(false);
     navigate(`/profile`);
+  };
+
+  const handleNeedRestore = (tokens) => {
+    setShowAuthModal(false);
+    setRestoreTokens(tokens);
+    setShowRestoreModal(true);
+  };
+
+  const handleRestored = (tokens, restoredUser) => {
+    login(tokens, restoredUser);
+    setShowRestoreModal(false);
+    setRestoreTokens(null);
+    navigate("/profile");
+  };
+
+  const handleRestoreCancel = () => {
+    setShowRestoreModal(false);
+    setRestoreTokens(null);
   };
 
   const handleNeedRegistration = (tokens, user) => {
@@ -111,6 +132,15 @@ const AppContent = () => {
           onClose={() => setShowAuthModal(false)}
           onLoginSuccess={handleLoginSuccess}
           onNeedRegistration={handleNeedRegistration}
+          onNeedRestore={handleNeedRestore}
+        />
+      )}
+
+      {showRestoreModal && (
+        <RestoreAccountModal
+          tokens={restoreTokens}
+          onRestore={handleRestored}
+          onCancel={handleRestoreCancel}
         />
       )}
 
