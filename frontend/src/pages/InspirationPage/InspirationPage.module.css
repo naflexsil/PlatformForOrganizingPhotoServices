@@ -18,6 +18,87 @@
   gap: 6px;
 }
 
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.searchBtn {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--accent-red);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.searchBtn:hover {
+  opacity: 0.85;
+}
+
+.searchHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.searchPreview {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.searchHeaderInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.searchTitle {
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark-text);
+  margin: 0;
+}
+
+.backBtn {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent-red);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.backBtn:hover {
+  opacity: 0.75;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.searchSpinnerWrap {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
 .title {
   font-family: "Farabee", serif;
   font-size: 28px;
@@ -32,6 +113,87 @@
   opacity: 0.5;
   margin: 0;
   font-weight: 500;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+}
+
+.searchBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.searchBarPreview {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.searchBarInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.searchBarStatus {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+.backBtn {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent-red);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-align: left;
+}
+
+.backBtn:hover {
+  opacity: 0.75;
+}
+
+.searchPhotoBtn {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--accent-red);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.searchPhotoBtn:hover {
+  opacity: 0.85;
+}
+
+.searchSpinnerWrap {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
 }
 
 /* Скелетон загрузки */

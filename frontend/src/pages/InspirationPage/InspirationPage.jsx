@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import MasonryGrid from "../../components/MasonryGrid/MasonryGrid";
 import PortfolioPhotoModal from "../../components/PortfolioPhotoModal/PortfolioPhotoModal";
+import SearchByPhotoModal from "../../components/SearchByPhotoModal/SearchByPhotoModal";
 import s from "./InspirationPage.module.css";
 
 const LIMIT = 20;
@@ -15,8 +16,6 @@ const getNumCols = () => {
   return 3;
 };
 
-// Reorders sorted array so CSS columns layout displays items left-to-right by rank
-// e.g. [9,8,7,6,5,4] with 3 cols → visual rows: [9,8,7], [6,5,4]
 const reorderForColumns = (arr, numCols) => {
   if (numCols <= 1 || arr.length === 0) return arr;
   const n = arr.length;
@@ -43,15 +42,28 @@ const InspirationPage = () => {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [numCols, setNumCols] = useState(() => getNumCols());
 
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [searchMode, setSearchMode] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchPreviewUrl, setSearchPreviewUrl] = useState(null);
+
   const sentinelRef = useRef(null);
   const loadingRef = useRef(false);
   const pageRef = useRef(1);
   const hasMoreRef = useRef(true);
+  const searchControllerRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => setNumCols(getNumCols());
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (searchPreviewUrl) URL.revokeObjectURL(searchPreviewUrl);
+    };
   }, []);
 
   const loadPage = useCallback(async (pageNum) => {
@@ -99,6 +111,7 @@ const InspirationPage = () => {
 
   const applyPhotoUpdate = (updater) => {
     setPhotos((prev) => prev.map(updater));
+    setSearchResults((prev) => prev.map(updater));
     setSelectedPhoto((prev) => (prev ? updater(prev) : prev));
   };
 
@@ -195,9 +208,60 @@ const InspirationPage = () => {
     applyPhotoUpdate((p) => (p.id === photoId ? { ...p, description } : p));
   };
 
+  const handleSearch = async (file) => {
+    if (searchControllerRef.current) searchControllerRef.current.abort();
+    searchControllerRef.current = new AbortController();
+
+    const newPreviewUrl = URL.createObjectURL(file);
+    if (searchPreviewUrl) URL.revokeObjectURL(searchPreviewUrl);
+    setSearchPreviewUrl(newPreviewUrl);
+    setSearchMode(true);
+    setSearchLoading(true);
+    setSearchResults([]);
+    setSelectedPhoto(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+      const res = await fetch("/api/search/by-image", {
+        method: "POST",
+        headers,
+        body: formData,
+        signal: searchControllerRef.current.signal,
+      });
+      const result = await res.json();
+      if (result.status === "success") {
+        setSearchResults(result.data);
+      } else {
+        showToast(result.message || "Ошибка поиска", "error");
+      }
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        showToast("Сервис поиска недоступен", "error");
+      }
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleReturnToFeed = () => {
+    if (searchControllerRef.current) searchControllerRef.current.abort();
+    setSearchMode(false);
+    setSearchResults([]);
+    if (searchPreviewUrl) URL.revokeObjectURL(searchPreviewUrl);
+    setSearchPreviewUrl(null);
+    setSelectedPhoto(null);
+  };
+
   const displayedPhotos = useMemo(
     () => reorderForColumns(photos, numCols),
     [photos, numCols]
+  );
+
+  const displayedSearchResults = useMemo(
+    () => reorderForColumns(searchResults, numCols),
+    [searchResults, numCols]
   );
 
   return (
@@ -208,45 +272,108 @@ const InspirationPage = () => {
           <p className={s.subtitle}>Фотографии из портфолио фотографов платформы</p>
         </div>
 
-        {!initialLoaded && (
-          <div className={s.skeletonGrid}>
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className={s.skeletonItem} />
-            ))}
-          </div>
-        )}
+        <div className={s.searchBar}>
+          {searchMode && (
+            <div className={s.searchBarLeft}>
+              {searchPreviewUrl && (
+                <img src={searchPreviewUrl} alt="" className={s.searchBarPreview} />
+              )}
+              <div className={s.searchBarInfo}>
+                {searchLoading ? (
+                  <span className={s.searchBarStatus}>Идёт поиск...</span>
+                ) : (
+                  <>
+                    <span className={s.searchBarStatus}>Найдено: {searchResults.length}</span>
+                    <button className={s.backBtn} onClick={handleReturnToFeed}>
+                      ← Вернуться к ленте
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+          <button className={s.searchPhotoBtn} onClick={() => setSearchModalOpen(true)}>
+            Найти по фото
+          </button>
+        </div>
 
-        {initialLoaded && photos.length === 0 && (
-          <div className={s.empty}>
-            <p>Пока нет фотографий в ленте</p>
-            <span>Фотографы ещё не добавили работы в портфолио</span>
-          </div>
-        )}
+        {searchMode ? (
+          <>
+            {searchLoading && (
+              <div className={s.searchSpinnerWrap}>
+                <div className={s.spinner} />
+              </div>
+            )}
 
-        {photos.length > 0 && (
-          <MasonryGrid
-            photos={displayedPhotos}
-            isOwner={false}
-            onPhotoClick={(photo) => setSelectedPhoto(photo)}
-            showLike={true}
-            onLike={handleLike}
-            showFavorite={true}
-            onFavorite={handleFavorite}
-          />
-        )}
+            {!searchLoading && searchResults.length === 0 && (
+              <div className={s.empty}>
+                <p>Похожих работ не найдено</p>
+                <span>Попробуйте загрузить другое фото</span>
+              </div>
+            )}
 
-        <div ref={sentinelRef} className={s.sentinel} />
+            {displayedSearchResults.length > 0 && (
+              <MasonryGrid
+                photos={displayedSearchResults}
+                isOwner={false}
+                onPhotoClick={(photo) => setSelectedPhoto(photo)}
+                showLike={true}
+                onLike={handleLike}
+                showFavorite={true}
+                onFavorite={handleFavorite}
+              />
+            )}
+          </>
+        ) : (
+          <>
+            {!initialLoaded && (
+              <div className={s.skeletonGrid}>
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className={s.skeletonItem} />
+                ))}
+              </div>
+            )}
 
-        {loading && initialLoaded && (
-          <div className={s.loadingMore}>
-            <div className={s.spinner} />
-          </div>
-        )}
+            {initialLoaded && photos.length === 0 && (
+              <div className={s.empty}>
+                <p>Пока нет фотографий в ленте</p>
+                <span>Фотографы ещё не добавили работы в портфолио</span>
+              </div>
+            )}
 
-        {!hasMore && photos.length > 0 && (
-          <p className={s.endMessage}>Вы посмотрели все фотографии</p>
+            {photos.length > 0 && (
+              <MasonryGrid
+                photos={displayedPhotos}
+                isOwner={false}
+                onPhotoClick={(photo) => setSelectedPhoto(photo)}
+                showLike={true}
+                onLike={handleLike}
+                showFavorite={true}
+                onFavorite={handleFavorite}
+              />
+            )}
+
+            <div ref={sentinelRef} className={s.sentinel} />
+
+            {loading && initialLoaded && (
+              <div className={s.loadingMore}>
+                <div className={s.spinner} />
+              </div>
+            )}
+
+            {!hasMore && photos.length > 0 && (
+              <p className={s.endMessage}>Вы посмотрели все фотографии</p>
+            )}
+          </>
         )}
       </div>
+
+      {searchModalOpen && (
+        <SearchByPhotoModal
+          onClose={() => setSearchModalOpen(false)}
+          onSearch={handleSearch}
+        />
+      )}
 
       {selectedPhoto && (
         <PortfolioPhotoModal
