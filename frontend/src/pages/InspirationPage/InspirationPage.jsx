@@ -288,7 +288,7 @@ const InspirationPage = () => {
               )}
               <div className={s.searchBarInfo}>
                 {searchLoading ? (
-                  <span className={s.searchBarStatus}>Идёт поиск...</span>
+                  <span className={s.searchBarStatus}>Идет поиск...</span>
                 ) : (
                   <>
                     <span className={s.searchBarStatus}>Найдено: {searchResults.length}</span>
