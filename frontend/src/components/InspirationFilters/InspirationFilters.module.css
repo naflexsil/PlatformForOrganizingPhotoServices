@@ -50,7 +50,8 @@
   background: var(--gray);
   border: 1.5px solid transparent;
   border-radius: 10px;
-  padding: 9px 16px;
+  height: 42px;
+  padding: 0 16px;
   font-family: "Inter", sans-serif;
   font-size: 14px;
   font-weight: 500;
