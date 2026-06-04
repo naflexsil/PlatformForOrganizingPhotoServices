@@ -1,5 +1,5 @@
 .pageWrapper {
-  background-color: var(--white);
+  background-color: var(--gray);
   min-height: 100vh;
   padding: 48px var(--side-padding) 80px;
 }
@@ -118,9 +118,10 @@
 .searchBar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
-  min-height: 48px;
+  background: var(--white);
+  border-radius: 14px;
+  padding: 12px 20px;
 }
 
 .searchBarLeft {
@@ -171,24 +172,6 @@
   opacity: 0.75;
 }
 
-.searchPhotoBtn {
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--white);
-  background: var(--accent-red);
-  border: none;
-  border-radius: 10px;
-  padding: 10px 20px;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: opacity 0.15s;
-}
-
-.searchPhotoBtn:hover {
-  opacity: 0.85;
-}
 
 .searchSpinnerWrap {
   display: flex;

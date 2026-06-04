@@ -27,18 +27,17 @@ def main():
     print(f"AI-сервис: {args.ai_url} ✓")
 
     conn = psycopg2.connect(args.db_url)
-
     cur  = conn.cursor()
 
     cur.execute("""
         SELECT id, "urlPreview" FROM photos
-        WHERE "embeddingVector" IS NULL
-          AND "userId" IS NOT NULL
+        WHERE "userId" IS NOT NULL
           AND id NOT IN (SELECT "A" FROM "_PhotoToPost")
+          AND ("embeddingVector" IS NULL OR "category" IS NULL OR "colorTone" IS NULL)
         ORDER BY "createdAt" DESC
     """)
     photos = cur.fetchall()
-    print(f"Portfolio-фото без эмбеддинга: {len(photos)}")
+    print(f"Фото требующих обработки: {len(photos)}")
 
     if not photos:
         print("Все фото уже обработаны.")
@@ -47,23 +46,32 @@ def main():
         return
 
     ok = fail = 0
-    for photo_id, preview_url in tqdm(photos, desc="Генерация эмбеддингов"):
+    for photo_id, preview_url in tqdm(photos, desc="Анализ фото"):
         try:
             full_url = (
                 preview_url if preview_url.startswith("http")
                 else f"{args.backend_url}{preview_url}"
             )
-            r = requests.post(f"{args.ai_url}/embed", json={"url": full_url}, timeout=30)
+            r = requests.post(f"{args.ai_url}/analyze-url", json={"url": full_url}, timeout=30)
             r.raise_for_status()
-            embedding = r.json()["embedding"]
+            data = r.json()
 
-            vector_str = f"[{','.join(str(v) for v in embedding)}]"
-            cur.execute(
-                'UPDATE photos SET "embeddingVector" = %s::vector WHERE id = %s',
-                (vector_str, photo_id),
-            )
-            conn.commit()
-            ok += 1
+            embedding  = data.get("embedding")
+            category   = data.get("category")
+            color_tone = data.get("colorTone")
+
+            if embedding:
+                vector_str = f"[{','.join(str(v) for v in embedding)}]"
+                cur.execute(
+                    """UPDATE photos
+                       SET "embeddingVector" = %s::vector,
+                           "category"        = %s,
+                           "colorTone"       = %s
+                       WHERE id = %s""",
+                    (vector_str, category, color_tone, photo_id),
+                )
+                conn.commit()
+                ok += 1
             time.sleep(0.05)
         except Exception as e:
             fail += 1

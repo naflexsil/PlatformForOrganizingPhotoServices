@@ -5,6 +5,7 @@ import { useToast } from "../../context/ToastContext";
 import MasonryGrid from "../../components/MasonryGrid/MasonryGrid";
 import PortfolioPhotoModal from "../../components/PortfolioPhotoModal/PortfolioPhotoModal";
 import SearchByPhotoModal from "../../components/SearchByPhotoModal/SearchByPhotoModal";
+import InspirationFilters from "../../components/InspirationFilters/InspirationFilters";
 import s from "./InspirationPage.module.css";
 
 const LIMIT = 20;
@@ -48,6 +49,8 @@ const InspirationPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchPreviewUrl, setSearchPreviewUrl] = useState(null);
 
+  const [activeFilters, setActiveFilters] = useState({ category: null, colorTone: null });
+
   const sentinelRef = useRef(null);
   const loadingRef = useRef(false);
   const pageRef = useRef(1);
@@ -67,14 +70,17 @@ const InspirationPage = () => {
     };
   }, []);
 
-  const loadPage = useCallback(async (pageNum) => {
+  const loadPage = useCallback(async (pageNum, filters = activeFilters) => {
     if (loadingRef.current || !hasMoreRef.current) return;
     loadingRef.current = true;
     setLoading(true);
 
     try {
       const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
-      const res = await fetch(`/api/inspiration?page=${pageNum}&limit=${LIMIT}`, { headers });
+      const params = new URLSearchParams({ page: pageNum, limit: LIMIT });
+      if (filters.category)  params.set("category",  filters.category);
+      if (filters.colorTone) params.set("colorTone", filters.colorTone);
+      const res = await fetch(`/api/inspiration?${params}`, { headers });
       const result = await res.json();
 
       if (result.status === "success") {
@@ -216,6 +222,17 @@ const InspirationPage = () => {
     applyPhotoUpdate((p) => (p.id === photoId ? { ...p, description } : p));
   };
 
+  const handleApplyFilters = (filters) => {
+    if (searchMode) return;
+    setActiveFilters(filters);
+    setPhotos([]);
+    seenIdsRef.current = new Set();
+    pageRef.current = 1;
+    hasMoreRef.current = true;
+    setInitialLoaded(false);
+    loadPage(1, filters);
+  };
+
   const handleSearch = async (file) => {
     if (searchControllerRef.current) searchControllerRef.current.abort();
     searchControllerRef.current = new AbortController();
@@ -280,30 +297,30 @@ const InspirationPage = () => {
           <p className={s.subtitle}>Фотографии из портфолио фотографов платформы</p>
         </div>
 
-        <div className={s.searchBar}>
-          {searchMode && (
-            <div className={s.searchBarLeft}>
-              {searchPreviewUrl && (
-                <img src={searchPreviewUrl} alt="" className={s.searchBarPreview} />
+        <InspirationFilters
+          onApply={handleApplyFilters}
+          onSearchPhoto={() => setSearchModalOpen(true)}
+        />
+
+        {searchMode && (
+          <div className={s.searchBar}>
+            {searchPreviewUrl && (
+              <img src={searchPreviewUrl} alt="" className={s.searchBarPreview} />
+            )}
+            <div className={s.searchBarInfo}>
+              {searchLoading ? (
+                <span className={s.searchBarStatus}>Идет поиск...</span>
+              ) : (
+                <>
+                  <span className={s.searchBarStatus}>Найдено: {searchResults.length}</span>
+                  <button className={s.backBtn} onClick={handleReturnToFeed}>
+                    ← Вернуться к ленте
+                  </button>
+                </>
               )}
-              <div className={s.searchBarInfo}>
-                {searchLoading ? (
-                  <span className={s.searchBarStatus}>Идет поиск...</span>
-                ) : (
-                  <>
-                    <span className={s.searchBarStatus}>Найдено: {searchResults.length}</span>
-                    <button className={s.backBtn} onClick={handleReturnToFeed}>
-                      ← Вернуться к ленте
-                    </button>
-                  </>
-                )}
-              </div>
             </div>
-          )}
-          <button className={s.searchPhotoBtn} onClick={() => setSearchModalOpen(true)}>
-            Найти по фото
-          </button>
-        </div>
+          </div>
+        )}
 
         {searchMode ? (
           <>

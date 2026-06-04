@@ -3,24 +3,26 @@ import path from 'path';
 import prisma from '../config/db.js';
 import { uploadImage as s3UploadImage, deleteFile, uploadChatImage, uploadChatFile } from '../services/fileService.js';
 
-const AI_SERVICE_URL    = process.env.AI_SERVICE_URL;
-const BACKEND_INTERNAL  = process.env.BACKEND_INTERNAL_URL || 'http://localhost:3000';
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
 
-async function scheduleEmbedding(photoId, previewUrl) {
+async function scheduleEmbedding(photoId, buffer, mimetype) {
   if (!AI_SERVICE_URL) return;
   try {
-    const fullUrl = previewUrl.startsWith('http') ? previewUrl : `${BACKEND_INTERNAL}${previewUrl}`;
-    const res  = await fetch(`${AI_SERVICE_URL}/embed`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ url: fullUrl }),
+    const formData = new FormData();
+    formData.append('file', new Blob([buffer], { type: mimetype }), 'photo');
+    const res = await fetch(`${AI_SERVICE_URL}/analyze-upload`, {
+      method: 'POST',
+      body: formData,
+      signal: AbortSignal.timeout(20000),
     });
     const data = await res.json();
     if (data.embedding) {
       const vectorLiteral = `[${data.embedding.join(',')}]`;
       await prisma.$executeRawUnsafe(
-        `UPDATE photos SET "embeddingVector" = $1::vector WHERE id = $2::uuid`,
+        `UPDATE photos SET "embeddingVector" = $1::vector, "category" = $2, "colorTone" = $3 WHERE id = $4::uuid`,
         vectorLiteral,
+        data.category ?? null,
+        data.colorTone ?? null,
         photoId,
       );
     }
@@ -97,7 +99,7 @@ export const uploadPhoto = async (req, res) => {
       },
     });
 
-    if (!postId) scheduleEmbedding(photo.id, previewUrl);
+    if (!postId) scheduleEmbedding(photo.id, req.file.buffer, req.file.mimetype);
 
     return res.status(201).json({
       status: 'success',

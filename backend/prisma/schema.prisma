@@ -111,6 +111,8 @@ model Photo {
   favorites   PhotoFavorite[]
   likesCount      Int              @default(0)
   embeddingVector Unsupported("vector(512)")?
+  category        String?
+  colorTone       String?
   createdAt       DateTime         @default(now())
 
   @@map("photos")

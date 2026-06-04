@@ -28,6 +28,23 @@ class PersonalizeResponse(BaseModel):
     avg_vector: list[float]
 
 
+class AnalyzeResponse(BaseModel):
+    embedding: list[float]
+    dim: int
+    category: str | None = None
+    categoryConfidence: float = 0.0
+    colorTone: str | None = None
+
+
+class ClassifyRequest(BaseModel):
+    embedding: list[float]
+
+
+class ClassifyResponse(BaseModel):
+    category: str | None = None
+    confidence: float = 0.0
+
+
 @router.get("/health")
 async def health():
     return {"status": "ok", "model_loaded": model_manager.is_loaded()}
@@ -57,6 +74,46 @@ async def embed_batch(req: BatchEmbedRequest):
     try:
         vecs = model_manager.clip.encode_batch_urls(req.urls)
         return {"embeddings": vecs, "count": len(vecs)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/analyze-upload", response_model=AnalyzeResponse)
+async def analyze_upload(file: UploadFile = File(...)):
+    try:
+        data = await file.read()
+        result = model_manager.clip.analyze_bytes(data)
+        return AnalyzeResponse(
+            embedding=result["embedding"],
+            dim=len(result["embedding"]),
+            category=result["category"],
+            categoryConfidence=result["categoryConfidence"],
+            colorTone=result["colorTone"],
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/analyze-url", response_model=AnalyzeResponse)
+async def analyze_url(req: EmbedUrlRequest):
+    try:
+        result = model_manager.clip.analyze_url(req.url)
+        return AnalyzeResponse(
+            embedding=result["embedding"],
+            dim=len(result["embedding"]),
+            category=result["category"],
+            categoryConfidence=result["categoryConfidence"],
+            colorTone=result["colorTone"],
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/classify", response_model=ClassifyResponse)
+async def classify(req: ClassifyRequest):
+    try:
+        category, confidence = model_manager.clip.classify(req.embedding)
+        return ClassifyResponse(category=category, confidence=confidence)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

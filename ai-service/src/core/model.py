@@ -10,6 +10,7 @@ class ModelManager:
         self._clip = CLIPWrapper(
             model_name=settings.clip_model_name,
             weights_path=settings.clip_weights_path,
+            centroids_path=settings.clip_centroids_path,
         )
 
     @property

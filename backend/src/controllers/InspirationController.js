@@ -54,8 +54,12 @@ const fetchFullPhotos = async (ids, userId) => {
   return ids.map((id) => map.get(id)).filter(Boolean);
 };
 
-const popularityFeed = async (res, page, skip, limit, userId) => {
-  const where = { userId: { not: null } };
+const popularityFeed = async (res, page, skip, limit, userId, category = null, colorTone = null) => {
+  const where = {
+    userId: { not: null },
+    ...(category  && { category }),
+    ...(colorTone && { colorTone }),
+  };
   const [photos, total] = await Promise.all([
     prisma.photo.findMany({
       where,
@@ -82,14 +86,16 @@ const popularityFeed = async (res, page, skip, limit, userId) => {
 };
 
 export const getInspirationFeed = async (req, res) => {
-  const page = Math.max(1, parseInt(req.query.page) || 1);
-  const limit = Math.min(40, Math.max(1, parseInt(req.query.limit) || 20));
-  const userId = req.user?.id ?? null;
+  const page      = Math.max(1, parseInt(req.query.page) || 1);
+  const limit     = Math.min(40, Math.max(1, parseInt(req.query.limit) || 20));
+  const userId    = req.user?.id ?? null;
+  const category  = req.query.category  || null;
+  const colorTone = req.query.colorTone || null;
   const skip = (page - 1) * limit;
 
   try {
     if (!userId) {
-      return popularityFeed(res, page, skip, limit, null);
+      return popularityFeed(res, page, skip, limit, null, category, colorTone);
     }
 
     const countRows = await prisma.$queryRawUnsafe(
@@ -105,7 +111,7 @@ export const getInspirationFeed = async (req, res) => {
     const { pop, per } = getMixRatio(likeCount);
 
     if (per === 0) {
-      return popularityFeed(res, page, skip, limit, userId);
+      return popularityFeed(res, page, skip, limit, userId, category, colorTone);
     }
 
     const vecRows = await prisma.$queryRawUnsafe(
@@ -128,16 +134,21 @@ export const getInspirationFeed = async (req, res) => {
       return popularityFeed(res, page, skip, limit, userId);
     }
 
+    const catFilter  = category  ? `AND "category" = '${category.replace(/'/g, "''")}'`  : '';
+    const toneFilter = colorTone ? `AND "colorTone" = '${colorTone.replace(/'/g, "''")}'` : '';
+
     const ranked = await prisma.$queryRawUnsafe(
       `WITH max_l AS (
          SELECT GREATEST(MAX("likesCount"), 1)::float AS val
          FROM photos
          WHERE "userId" IS NOT NULL AND "embeddingVector" IS NOT NULL
+         ${catFilter} ${toneFilter}
        )
        SELECT id::text
        FROM photos, max_l
        WHERE "userId" IS NOT NULL
          AND "embeddingVector" IS NOT NULL
+         ${catFilter} ${toneFilter}
        ORDER BY
          $1::float * ("likesCount"::float / max_l.val) +
          $2::float * (1 - ("embeddingVector" <=> $3::vector))
@@ -148,7 +159,8 @@ export const getInspirationFeed = async (req, res) => {
 
     const totalRows = await prisma.$queryRawUnsafe(
       `SELECT COUNT(*)::int AS cnt FROM photos
-       WHERE "userId" IS NOT NULL AND "embeddingVector" IS NOT NULL`,
+       WHERE "userId" IS NOT NULL AND "embeddingVector" IS NOT NULL
+       ${catFilter} ${toneFilter}`,
     );
     const total = Number(totalRows[0]?.cnt ?? 0);
 

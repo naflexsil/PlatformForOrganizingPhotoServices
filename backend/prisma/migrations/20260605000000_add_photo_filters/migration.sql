@@ -1,0 +1,2 @@
+ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "category"  TEXT;
+ALTER TABLE "photos" ADD COLUMN IF NOT EXISTS "colorTone" TEXT;
