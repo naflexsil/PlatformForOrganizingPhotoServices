@@ -292,14 +292,10 @@ const InspirationPage = () => {
   return (
     <div className={s.pageWrapper}>
       <div className={s.container}>
-        <div className={s.pageHeader}>
-          <h1 className={s.title}>Лента вдохновения</h1>
-          <p className={s.subtitle}>Фотографии из портфолио фотографов платформы</p>
-        </div>
-
         <InspirationFilters
           onApply={handleApplyFilters}
           onSearchPhoto={() => setSearchModalOpen(true)}
+          searchMode={searchMode}
         />
 
         {searchMode && (

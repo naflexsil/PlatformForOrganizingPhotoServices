@@ -12,18 +12,6 @@
   gap: 28px;
 }
 
-.pageHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.headerRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
 
 .searchBtn {
   font-family: "Inter", sans-serif;
