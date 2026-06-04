@@ -27,6 +27,7 @@ def main():
     print(f"AI-сервис: {args.ai_url} ✓")
 
     conn = psycopg2.connect(args.db_url)
+
     cur  = conn.cursor()
 
     cur.execute("""
