@@ -53,6 +53,7 @@ const InspirationPage = () => {
   const pageRef = useRef(1);
   const hasMoreRef = useRef(true);
   const searchControllerRef = useRef(null);
+  const seenIdsRef = useRef(new Set());
 
   useEffect(() => {
     const handleResize = () => setNumCols(getNumCols());
@@ -77,7 +78,14 @@ const InspirationPage = () => {
       const result = await res.json();
 
       if (result.status === "success") {
-        setPhotos((prev) => (pageNum === 1 ? result.data : [...prev, ...result.data]));
+        if (pageNum === 1) {
+          seenIdsRef.current = new Set(result.data.map((p) => p.id));
+          setPhotos(result.data);
+        } else {
+          const fresh = result.data.filter((p) => !seenIdsRef.current.has(p.id));
+          fresh.forEach((p) => seenIdsRef.current.add(p.id));
+          setPhotos((prev) => [...prev, ...fresh]);
+        }
         hasMoreRef.current = result.pagination.hasMore;
         setHasMore(result.pagination.hasMore);
         pageRef.current = pageNum + 1;

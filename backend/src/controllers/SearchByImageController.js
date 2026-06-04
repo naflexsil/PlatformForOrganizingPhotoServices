@@ -35,6 +35,7 @@ export const searchByImage = async (req, res) => {
 
   const userId = req.user?.id ?? null;
 
+  let embedding;
   try {
     const formData = new FormData();
     formData.append(
@@ -53,7 +54,15 @@ export const searchByImage = async (req, res) => {
       return res.status(503).json({ status: 'error', message: 'Сервис поиска временно недоступен' });
     }
 
-    const { embedding } = await aiRes.json();
+    ({ embedding } = await aiRes.json());
+  } catch (err) {
+    if (err.name === 'TimeoutError') {
+      return res.status(504).json({ status: 'error', message: 'Сервис поиска не ответил вовремя' });
+    }
+    return res.status(503).json({ status: 'error', message: 'Сервис поиска временно недоступен' });
+  }
+
+  try {
     const vectorLiteral = `[${embedding.join(',')}]`;
 
     const rows = await prisma.$queryRawUnsafe(
@@ -113,9 +122,6 @@ export const searchByImage = async (req, res) => {
 
     return res.json({ status: 'success', data });
   } catch (err) {
-    if (err.name === 'TimeoutError') {
-      return res.status(504).json({ status: 'error', message: 'Сервис поиска не ответил вовремя' });
-    }
     return res.status(500).json({ status: 'error', message: err.message });
   }
 };
