@@ -1,13 +1,3 @@
-"""
-Fine-tuning CLIP ViT-B/32 с Triplet Loss на отфильтрованном Flickr30k.
-
-Математика (Triplet Loss):
-    L(a, p, n) = max(0, ||f(a) − f(p)||² − ||f(a) − f(n)||² + α)
-    f(x) = normalize(CLIP_vision_encoder(x))
-    a — anchor, p — positive (тот же класс), n — negative (другой класс)
-    α — margin: минимальный зазор между pos и neg дистанцией
-"""
-
 import csv
 import random
 import sys
@@ -24,21 +14,17 @@ from transformers import CLIPModel, CLIPProcessor
 from PIL import Image
 from tqdm import tqdm
 
-# ─── Гиперпараметры ──────────────────────────────────────────────────────────
-
 MODEL_NAME = "openai/clip-vit-base-patch32"
 DATA_CSV = Path(__file__).parent / "data" / "labels.csv"
 WEIGHTS_DIR = Path(__file__).parent.parent / "weights"
 WEIGHTS_DIR.mkdir(exist_ok=True)
 
-BATCH_SIZE = 16     # уменьши до 8 если не хватает VRAM
+BATCH_SIZE = 16
 EPOCHS = 5
 LR = 1e-5
 MARGIN = 0.3    # α
 GRAD_CLIP = 1.0
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
-# ─── Triplet Loss ─────────────────────────────────────────────────────────────
 
 
 class TripletLoss(nn.Module):
@@ -60,8 +46,6 @@ class TripletLoss(nn.Module):
         neg_dist = (a - n).pow(2).sum(dim=-1)
         return F.relu(pos_dist - neg_dist + self.margin).mean()
 
-
-# ─── Dataset ─────────────────────────────────────────────────────────────────
 
 class TripletDataset(Dataset):
     def __init__(self, csv_path: Path, processor: CLIPProcessor):
@@ -92,7 +76,6 @@ class TripletDataset(Dataset):
             print(f"  {cat:12s}: {len(self.by_category[cat])} изображений")
 
     def _build_triplets(self) -> list[tuple[Path, Path, Path]]:
-        # Все негативы: объединяем пути из всех ДРУГИХ категорий
         neg_pool: dict[str, list[Path]] = {
             cat: [p for c, paths in self.by_category.items() if c !=
                   cat for p in paths]
@@ -123,8 +106,6 @@ class TripletDataset(Dataset):
         return self.processor(images=img, return_tensors="pt")["pixel_values"].squeeze(0)
 
 
-# ─── Обучение ─────────────────────────────────────────────────────────────────
-
 def train():
     print(f"Устройство: {DEVICE}")
     if DEVICE == "cuda":
@@ -135,7 +116,6 @@ def train():
     processor = CLIPProcessor.from_pretrained(MODEL_NAME)
     model = CLIPModel.from_pretrained(MODEL_NAME).to(DEVICE)
 
-    # Замораживаем текстовый энкодер — он нам не нужен для задачи
     for param in model.text_model.parameters():
         param.requires_grad = False
     for param in model.text_projection.parameters():
@@ -177,9 +157,12 @@ def train():
         for a, p, n in tqdm(loader, desc=f"Epoch {epoch}/{EPOCHS}"):
             a, p, n = a.to(DEVICE), p.to(DEVICE), n.to(DEVICE)
 
-            a_emb = model.visual_projection(model.vision_model(pixel_values=a).pooler_output)
-            p_emb = model.visual_projection(model.vision_model(pixel_values=p).pooler_output)
-            n_emb = model.visual_projection(model.vision_model(pixel_values=n).pooler_output)
+            a_emb = model.visual_projection(
+                model.vision_model(pixel_values=a).pooler_output)
+            p_emb = model.visual_projection(
+                model.vision_model(pixel_values=p).pooler_output)
+            n_emb = model.visual_projection(
+                model.vision_model(pixel_values=n).pooler_output)
 
             loss = criterion(a_emb, p_emb, n_emb)
 

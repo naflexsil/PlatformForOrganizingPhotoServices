@@ -110,7 +110,7 @@ model Photo {
   likes       PhotoLike[]
   favorites   PhotoFavorite[]
   likesCount      Int              @default(0)
-  embeddingVector Float[]          @default([])
+  embeddingVector Unsupported("vector(512)")?
   createdAt       DateTime         @default(now())
 
   @@map("photos")

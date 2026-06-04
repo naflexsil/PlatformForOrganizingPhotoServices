@@ -14,43 +14,58 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 SHOOT_KEYWORDS: dict[str, list[str]] = {
     "wedding": [
-        "wedding", "bride", "groom", "ceremony", "bridal", "veil", "bouquet",
+        "wedding", "bride", "groom", "bridal", "veil", "bouquet",
+        "wedding dress", "wedding cake", "wedding reception", "just married",
     ],
     "family": [
         "family", "children", "parents", "kids", "son", "daughter",
         "grandmother", "grandfather", "siblings", "toddler",
     ],
-    "couple": [
-        "couple", "holding hands", "kissing", "boyfriend", "girlfriend",
-        "romantic", "embrace", "hug each other",
-    ],
     "event": [
-        "party", "concert", "festival", "celebration", "crowd",
-        "audience", "performance", "conference",
+        "concert", "music festival", "crowd", "audience",
+        "on stage", "graduation", "sports game", "fans cheering",
+        "parade", "performance", "festival",
     ],
     "portrait": [
-        "portrait", "headshot", "posing", "smiling at camera",
-        "close-up of a man", "close-up of a woman",
+        "portrait", "headshot", "close-up of a man", "close-up of a woman",
+        "posing", "looking at the camera", "smiling at the camera",
+        "looking at camera", "smiling at camera",
     ],
     "commercial": [
-        "product", "fashion", "wearing", "outfit", "clothing", "model wearing",
+        "fashion", "model", "outfit", "clothing",
+        "runway", "fashion show",
+    ],
+    "couple": [
+        "couple", "kissing", "holding hands", "boyfriend", "girlfriend",
+        "romantic", "embrace", "hug each other",
     ],
 }
 
-MAX_PER_CLASS = 800  # максимум изображений на категорию
+EXCLUDE_KEYWORDS: dict[str, list[str]] = {
+    "couple":     ["wedding", "bride", "groom", "bridal", "ceremony", "family", "children", "kids"],
+    "portrait":   ["wedding", "bride", "groom", "family", "children"],
+    "commercial": ["wedding", "bride", "groom", "family", "children", "kids"],
+    "event":      ["wedding ceremony"],
+}
+
+MAX_PER_CLASS = 1500  # максимум изображений на категорию
 
 
 def classify(captions: list[str]) -> str | None:
     text = " ".join(captions).lower()
     for category, kws in SHOOT_KEYWORDS.items():
-        if any(kw in text for kw in kws):
-            return category
+        if not any(kw in text for kw in kws):
+            continue
+
+        exclusions = EXCLUDE_KEYWORDS.get(category, [])
+        if any(ex in text for ex in exclusions):
+            continue
+        return category
     return None
 
 
 def main():
     print("Загрузка Flickr30k (первый запуск: ~6 ГБ, кэшируется)...")
-    # split="test" — в nlphuji/flickr30k весь датасет лежит в этом сплите
     ds = load_dataset("nlphuji/flickr30k", split="test")
     print(f"Датасет загружен: {len(ds)} изображений\n")
 
@@ -81,7 +96,6 @@ def main():
         })
         counts[category] += 1
 
-    # Сохраняем CSV
     out = DATA_DIR / "labels.csv"
     with open(out, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(

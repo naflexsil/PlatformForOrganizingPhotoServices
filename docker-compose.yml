@@ -14,7 +14,7 @@ services:
       - ./garage.toml:/etc/garage.toml
 
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: photoservices_postgres
     restart: unless-stopped
     environment:

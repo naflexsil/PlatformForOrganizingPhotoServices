@@ -17,10 +17,12 @@ async function scheduleEmbedding(photoId, previewUrl) {
     });
     const data = await res.json();
     if (data.embedding) {
-      await prisma.photo.update({
-        where: { id: photoId },
-        data:  { embeddingVector: data.embedding },
-      });
+      const vectorLiteral = `[${data.embedding.join(',')}]`;
+      await prisma.$executeRawUnsafe(
+        `UPDATE photos SET "embeddingVector" = $1::vector WHERE id = $2::uuid`,
+        vectorLiteral,
+        photoId,
+      );
     }
   } catch (err) {
     console.error(`[EMBED] failed for photo ${photoId}:`, err.message);
@@ -63,7 +65,6 @@ export const uploadPhoto = async (req, res) => {
   console.log(`[UPLOAD] photo: ${req.file.originalname} (${req.file.size} bytes)`);
 
   try {
-    // Лимиты для портфолио
     if (userId && !postId) {
       if (folderId) {
         const folderCount = await prisma.photo.count({ where: { folderId } });
@@ -96,8 +97,7 @@ export const uploadPhoto = async (req, res) => {
       },
     });
 
-    // fire-and-forget: не блокируем ответ пользователю
-    scheduleEmbedding(photo.id, previewUrl);
+    if (!postId) scheduleEmbedding(photo.id, previewUrl);
 
     return res.status(201).json({
       status: 'success',
@@ -209,8 +209,6 @@ export const uploadSearchPhoto = async (req, res) => {
   }
 };
 
-// ── Chat attachment upload ────────────────────────────────────────────────────
-
 const ALLOWED_ARCHIVE_EXTS = ['.zip', '.rar'];
 const ALLOWED_ARCHIVE_MIMES = [
   'application/zip',
@@ -221,8 +219,8 @@ const ALLOWED_ARCHIVE_MIMES = [
   'application/octet-stream',
 ];
 const ALLOWED_IMAGE_EXTS = /\.(jpeg|jpg|png|gif|webp)$/i;
-const MAX_IMAGE_SIZE = 20 * 1024 * 1024;  // 20 МБ
-const MAX_ARCHIVE_SIZE = 100 * 1024 * 1024; // 100 МБ
+const MAX_IMAGE_SIZE = 20 * 1024 * 1024;  
+const MAX_ARCHIVE_SIZE = 100 * 1024 * 1024; 
 
 const chatFileFilter = (_req, file, cb) => {
   const ext = path.extname(file.originalname).toLowerCase();
@@ -294,7 +292,6 @@ export const uploadChatAttachment = async (req, res) => {
       });
     }
 
-    // Archive
     const isArchive = ALLOWED_ARCHIVE_EXTS.includes(ext);
     if (!isArchive) {
       return res.status(400).json({ status: 'error', message: 'Разрешены только .zip и .rar архивы' });
