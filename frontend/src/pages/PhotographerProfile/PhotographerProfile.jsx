@@ -398,6 +398,7 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
       : userData.priceText;
 
   return (
+    <>
     <div className={s.pageWrapper}>
       <div className={s.container}>
         <section className={s.profileCard}>
@@ -685,6 +686,7 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
         </div>
       </div>
     )}
+    </>
   );
 };
 
