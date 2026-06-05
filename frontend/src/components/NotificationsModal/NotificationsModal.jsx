@@ -4,7 +4,8 @@ import { useAuth } from "../../context/AuthContext";
 import defaultAvatar from "../../assets/images/default_avatar.png";
 import closeIcon from "../../assets/icons/carousel_close.svg";
 import notificationIcon from "../../assets/icons/notification.svg";
-import starFilledIcon from "../../assets/icons/star.svg";
+import starFilledIcon from "../../assets/icons/review_star_painted_over.svg";
+import starEmptyIcon from "../../assets/icons/review_star.svg";
 import s from "./NotificationsModal.module.css";
 
 const TABS = [
@@ -121,14 +122,14 @@ const NotificationItem = ({ notif, onRead, onNavigate, currentUserTag }) => {
             <p className={s.systemAnswer}><b>Ответ поддержки:</b> {metadata.adminReply}</p>
           </div>
         )}
-        {type === "FRIEND_DEAL_COMPLETED" && deal?.rating !== null && deal?.rating !== undefined && (
+        {type === "FRIEND_DEAL_COMPLETED" && deal?.rating != null && (
           <div className={s.ratingRow}>
             {Array.from({ length: 5 }).map((_, i) => (
               <img
                 key={i}
-                src={starFilledIcon}
+                src={i < deal.rating ? starFilledIcon : starEmptyIcon}
                 alt=""
-                className={`${s.star} ${i < deal.rating ? s.starFilled : s.starEmpty}`}
+                className={s.star}
               />
             ))}
             {deal.ratingComment && <span className={s.itemSub}>{deal.ratingComment}</span>}
@@ -144,10 +145,11 @@ const NotificationItem = ({ notif, onRead, onNavigate, currentUserTag }) => {
 const NotificationsModal = ({ onClose }) => {
   const { accessToken, user } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab]         = useState("orders");
-  const [items, setItems]     = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [tab, setTab]           = useState("orders");
+  const [items, setItems]       = useState([]);
+  const [loading, setLoading]   = useState(false);
+  const [hasMore, setHasMore]   = useState(true);
+  const [tabCounts, setTabCounts] = useState({});
   const pageRef     = useRef(1);
   const loadingRef  = useRef(false);
   const sentinelRef = useRef(null);
@@ -170,6 +172,14 @@ const NotificationsModal = ({ onClose }) => {
       loadingRef.current = false;
       setLoading(false);
     }
+  }, [accessToken]);
+
+  useEffect(() => {
+    fetch("/api/notifications/unread-count", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }).then((r) => r.json()).then((d) => {
+      if (d.status === "success") setTabCounts(d.data.byTab ?? {});
+    }).catch(() => {});
   }, [accessToken]);
 
   useEffect(() => {
@@ -236,6 +246,9 @@ const NotificationsModal = ({ onClose }) => {
               onClick={() => setTab(t.id)}
             >
               {t.label}
+              {tabCounts[t.id] > 0 && (
+                <span className={s.tabCount}>{tabCounts[t.id]}</span>
+              )}
             </button>
           ))}
         </div>

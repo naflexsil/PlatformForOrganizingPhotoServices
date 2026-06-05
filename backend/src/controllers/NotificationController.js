@@ -52,8 +52,16 @@ export const getNotifications = async (req, res) => {
 export const getUnreadCount = async (req, res) => {
   const userId = req.user.id;
   try {
-    const count = await prisma.notification.count({ where: { userId, isRead: false } });
-    return res.json({ status: 'success', data: { count } });
+    const [total, ...perTab] = await Promise.all([
+      prisma.notification.count({ where: { userId, isRead: false } }),
+      ...Object.entries(TAB_TYPES).map(([tab, types]) =>
+        prisma.notification.count({ where: { userId, isRead: false, type: { in: types } } })
+          .then((c) => ({ tab, count: c })),
+      ),
+    ]);
+
+    const byTab = Object.fromEntries(perTab.map(({ tab, count }) => [tab, count]));
+    return res.json({ status: 'success', data: { count: total, byTab } });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: err.message });
   }

@@ -38,10 +38,11 @@
   border: none;
   cursor: pointer;
   font-family: "Farabee", serif;
-  font-size: 17px;
+  font-size: 16px;
   color: var(--white);
-  opacity: 0.7;
+  opacity: 0.9;
   padding: 0;
+  margin-left: 28px;
   text-decoration: none;
   transition: opacity 0.3s;
 }
@@ -83,7 +84,6 @@
 }
 .loginBtn:hover,
 .logoutBtn:hover { opacity: 1; }
-.logoutBtn { opacity: 0.6; }
 
 /* ── Burger (hidden on desktop) ── */
 .burgerWrap {

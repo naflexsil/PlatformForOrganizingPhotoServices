@@ -42,13 +42,14 @@ const transformPhoto = (photo, userId) => {
 };
 
 const transformPost = (post, userId) => {
-  const { likes, favorites, photos, ...rest } = post;
+  const { likes, favorites, photos, _count, ...rest } = post;
   return {
     ...rest,
+    favoritesCount: _count?.favorites ?? 0,
     photos: (photos || []).map((p) => transformPhoto(p, userId)),
     ...(userId && {
-      isLiked: (likes?.length || 0) > 0,
-      isFavorited: (favorites?.length || 0) > 0,
+      isLiked:      (likes?.length    || 0) > 0,
+      isFavorited:  (favorites?.length || 0) > 0,
     }),
   };
 };
