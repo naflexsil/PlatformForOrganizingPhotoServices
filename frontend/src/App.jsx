@@ -9,6 +9,8 @@ import AuthModal from "./components/AuthModal/AuthModal";
 import RoleModal from "./components/RoleModal/RoleModal";
 import RegistrationFormModal from "./components/RegistrationFormModal/RegistrationFormModal";
 import RestoreAccountModal from "./components/RestoreAccountModal/RestoreAccountModal";
+import NotificationsModal from "./components/NotificationsModal/NotificationsModal";
+import AdminPage from "./pages/AdminPage/AdminPage";
 import PublicProfile from "./pages/PublicProfile/PublicProfile";
 import PortfolioPage from "./pages/Portfolio/PortfolioPage";
 import PortfolioFolderPage from "./pages/Portfolio/PortfolioFolderPage";
@@ -30,7 +32,7 @@ const MyProfile = () => {
 
 const AppContent = () => {
   const navigate = useNavigate();
-  const { isAuth, login, updateUser, logout } = useAuth();
+  const { isAuth, login, updateUser, logout, accessToken } = useAuth();
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
@@ -38,8 +40,21 @@ const AppContent = () => {
   const [selectedRole, setSelectedRole] = useState(null);
   const [pendingTokens, setPendingTokens] = useState(null);
   const [pendingVkUser, setPendingVkUser] = useState(null);
-  const [showRestoreModal, setShowRestoreModal] = useState(false);
-  const [restoreTokens, setRestoreTokens]       = useState(null);
+  const [showRestoreModal, setShowRestoreModal]         = useState(false);
+  const [restoreTokens, setRestoreTokens]               = useState(null);
+  const [showNotifications, setShowNotifications]       = useState(false);
+  const [unreadNotifications, setUnreadNotifications]   = useState(0);
+
+  const fetchUnreadCount = async () => {
+    if (!accessToken) return;
+    try {
+      const res  = await fetch("/api/notifications/unread-count", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await res.json();
+      if (data.status === "success") setUnreadNotifications(data.data.count);
+    } catch {}
+  };
 
   const handleLoginSuccess = (tokens, user) => {
     login(tokens, user);
@@ -115,9 +130,12 @@ const AppContent = () => {
       <Header
         isAuthenticated={isAuth}
         onLoginClick={() => setShowAuthModal(true)}
+        onNotificationsClick={() => { setShowNotifications(true); fetchUnreadCount(); }}
+        unreadNotifications={unreadNotifications}
       />
       <Routes>
         <Route path="/" element={<MainPage />} />
+        <Route path="/admin" element={<AdminPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/feed" element={<InspirationPage />} />
         <Route path="/chats" element={<ChatsPage />} />
@@ -135,6 +153,12 @@ const AppContent = () => {
           onLoginSuccess={handleLoginSuccess}
           onNeedRegistration={handleNeedRegistration}
           onNeedRestore={handleNeedRestore}
+        />
+      )}
+
+      {showNotifications && (
+        <NotificationsModal
+          onClose={() => { setShowNotifications(false); fetchUnreadCount(); }}
         />
       )}
 

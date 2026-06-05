@@ -1,5 +1,6 @@
 import prisma from "../config/db.js";
 import { getIO } from "../socket/index.js";
+import { notify } from "../utils/notifications.js";
 
 const ACTIVE_STATUSES = ["PENDING", "AWAITING_PAYMENT", "IN_PROGRESS", "AWAITING_REVIEW", "REVISION"];
 
@@ -87,8 +88,8 @@ export const proposeDeal = async (req, res, next) => {
     });
 
     emitDealUpdated(deal);
-
     await emitSystemMessage(chatId, userId, `Предложена сделка:\n${conditions.trim()}`);
+    notify({ userId: companionId, type: 'DEAL_PROPOSED', fromUserId: userId, dealId: deal.id });
 
     return res.status(201).json({ status: "success", data: deal });
   } catch (err) { return next(err); }
@@ -109,6 +110,7 @@ export const acceptDeal = async (req, res, next) => {
     });
     emitDealUpdated(updated);
     await emitSystemMessage(deal.chatId, userId, "Сделка принята. Ожидается оплата.");
+    notify({ userId: deal.proposerId, type: 'DEAL_ACCEPTED', fromUserId: userId, dealId: deal.id });
     return res.json({ status: "success", data: updated });
   } catch (err) { return next(err); }
 };
@@ -134,6 +136,7 @@ export const rejectDeal = async (req, res, next) => {
     emitDealUpdated(updated);
     const reasonText = reason?.trim() ? ` Причина: ${reason.trim()}` : "";
     await emitSystemMessage(deal.chatId, userId, `Сделка отклонена.${reasonText}`);
+    notify({ userId: deal.proposerId, type: 'DEAL_REJECTED', fromUserId: userId, dealId: deal.id });
     return res.json({ status: "success", data: updated });
   } catch (err) { return next(err); }
 };
@@ -250,6 +253,20 @@ export const approveDeal = async (req, res, next) => {
     });
     emitDealUpdated(updated);
     await emitSystemMessage(deal.chatId, userId, "Сделка успешно завершена!");
+    notify({ userId: deal.photographerId, type: 'DEAL_COMPLETED', fromUserId: userId, dealId: deal.id });
+
+    const followers = await prisma.subscription.findMany({
+      where: { followingId: deal.clientId },
+      select: { followerId: true },
+      take: 100,
+    });
+    const meta = { clientId: deal.clientId, photographerId: deal.photographerId, dealId: deal.id };
+    followers.forEach(({ followerId }) => {
+      if (followerId !== deal.clientId && followerId !== deal.photographerId) {
+        notify({ userId: followerId, type: 'FRIEND_DEAL_COMPLETED', fromUserId: deal.clientId, dealId: deal.id, metadata: meta });
+      }
+    });
+
     return res.json({ status: "success", data: updated });
   } catch (err) { return next(err); }
 };
@@ -273,6 +290,7 @@ export const requestRevision = async (req, res, next) => {
     emitDealUpdated(updated);
     const txt = reason?.trim() ? reason.trim() : "Без указания причины";
     await emitSystemMessage(deal.chatId, userId, `Работа отправлена на доработку. Причина: ${txt}`);
+    notify({ userId: deal.photographerId, type: 'DEAL_REVISION_REQUESTED', fromUserId: userId, dealId: deal.id });
     return res.json({ status: "success", data: updated });
   } catch (err) { return next(err); }
 };

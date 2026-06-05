@@ -1,4 +1,5 @@
 import prisma from '../config/db.js';
+import { notify } from '../utils/notifications.js';
 import { deleteFile } from '../services/fileService.js';
 
 const deleteFromUrl = async (url) => {
@@ -118,6 +119,7 @@ export const togglePhotoLike = async (req, res) => {
       data: { likesCount: count },
     });
 
+    if (!existing && photo.userId) notify({ userId: photo.userId, type: 'LIKE_PHOTO', fromUserId: userId, photoId });
     return res.json({ status: 'success', data: { liked: !existing, count } });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: err.message });

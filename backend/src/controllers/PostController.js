@@ -1,4 +1,5 @@
 import prisma from '../config/db.js';
+import { notify } from '../utils/notifications.js';
 
 const MAX_PHOTOS = 10;
 
@@ -231,6 +232,7 @@ export const toggleLike = async (req, res) => {
     }
 
     const count = await prisma.like.count({ where: { postId } });
+    if (!existing) notify({ userId: post.authorId, type: 'LIKE_POST', fromUserId: userId, postId });
     return res.status(200).json({ status: 'success', data: { liked: !existing, count } });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: err.message });

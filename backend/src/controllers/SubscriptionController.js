@@ -1,4 +1,5 @@
 import prisma from '../config/db.js';
+import { notify } from '../utils/notifications.js';
 
 export const subscribe = async (req, res) => {
   const { targetId } = req.params;
@@ -26,6 +27,7 @@ export const subscribe = async (req, res) => {
     }
 
     await prisma.subscription.create({ data: { followerId, followingId: targetId } });
+    notify({ userId: targetId, type: 'NEW_SUBSCRIBER', fromUserId: followerId });
     return res.json({ status: 'success', subscribed: true });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: err.message });

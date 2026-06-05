@@ -11,6 +11,19 @@ enum Role {
   PHOTOGRAPHER
 }
 
+enum NotificationType {
+  DEAL_PROPOSED
+  DEAL_ACCEPTED
+  DEAL_REJECTED
+  DEAL_COMPLETED
+  DEAL_REVISION_REQUESTED
+  NEW_SUBSCRIBER
+  LIKE_POST
+  LIKE_PHOTO
+  FRIEND_DEAL_COMPLETED
+  SYSTEM_REPLY
+}
+
 model User {
   id            String           @id @default(uuid())
   vkId          String           @unique
@@ -34,6 +47,8 @@ model User {
   portfolioPhotos Photo[]        @relation("PortfolioPhotos")
   subscriptions  Subscription[]   @relation("Subscriber")
   subscribers    Subscription[]   @relation("Subscribed")
+  receivedNotifications Notification[] @relation("ReceivedNotifications")
+  sentNotifications     Notification[] @relation("SentNotifications")
   photoLikes     PhotoLike[]
   photoFavorites PhotoFavorite[]
   supportTickets SupportTicket[]
@@ -67,17 +82,18 @@ model Photographer {
 }
 
 model Post {
-  id          String     @id @default(uuid())
-  authorId    String
-  author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  description String?
-  images      String[]
-  photos      Photo[]
-  isPinned    Boolean    @default(false)
-  likes       Like[]
-  favorites   Favorite[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id            String         @id @default(uuid())
+  authorId      String
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  description   String?
+  images        String[]
+  photos        Photo[]
+  isPinned      Boolean        @default(false)
+  likes         Like[]
+  favorites     Favorite[]
+  notifications Notification[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@map("posts")
 }
@@ -113,6 +129,7 @@ model Photo {
   embeddingVector Unsupported("vector(512)")?
   category        String?
   colorTone       String?
+  notifications   Notification[]
   createdAt       DateTime         @default(now())
 
   @@map("photos")
@@ -222,6 +239,7 @@ model Deal {
   clientPaid                  Boolean @default(false)
   photographerConfirmedPayment Boolean @default(false)
   revisions      DealRevision[]
+  notifications  Notification[]
   rating         Int?
   ratingComment  String?
   createdAt      DateTime     @default(now())
@@ -244,12 +262,36 @@ model SupportTicket {
   message   String
   dealId    String?
   chatId    String?
-  status    SupportTicketStatus @default(OPEN)
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
+  status     SupportTicketStatus @default(OPEN)
+  adminReply String?
+  resolvedAt DateTime?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
 
   @@index([userId])
   @@map("support_tickets")
+}
+
+model Notification {
+  id         String           @id @default(uuid())
+  userId     String
+  user       User             @relation("ReceivedNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  type       NotificationType
+  fromUserId String?
+  fromUser   User?            @relation("SentNotifications", fields: [fromUserId], references: [id], onDelete: SetNull)
+  postId     String?
+  post       Post?            @relation(fields: [postId], references: [id], onDelete: SetNull)
+  photoId    String?
+  photo      Photo?           @relation(fields: [photoId], references: [id], onDelete: SetNull)
+  dealId     String?
+  deal       Deal?            @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  metadata   Json?
+  isRead     Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@map("notifications")
 }
 
 model DealRevision {

@@ -5,7 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import burgerIcon from "../../assets/icons/burger_menu.svg";
 
-const Header = ({ isAuthenticated, onLoginClick }) => {
+const Header = ({ isAuthenticated, onLoginClick, onNotificationsClick, unreadNotifications = 0 }) => {
   const { logout } = useAuth();
   const { unreadTotal } = useSocket() || {};
   const navigate = useNavigate();
@@ -45,7 +45,12 @@ const Header = ({ isAuthenticated, onLoginClick }) => {
               Чат
               {unreadTotal > 0 && <span className={s.unreadBadge}>{unreadTotal}</span>}
             </Link>
-            <Link to="/notifications">Уведомления</Link>
+            <button className={s.notifBtn} onClick={onNotificationsClick}>
+              Уведомления
+              {unreadNotifications > 0 && (
+                <span className={s.unreadBadge}>{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>
+              )}
+            </button>
             <Link to="/profile" className={s.profileLink}>Профиль</Link>
             <button className={s.logoutBtn} onClick={logout}>Выйти</button>
           </>
@@ -69,7 +74,10 @@ const Header = ({ isAuthenticated, onLoginClick }) => {
                 <Link to="/chats" onClick={closeMenu}>
                   Чат {unreadTotal > 0 && `(${unreadTotal})`}
                 </Link>
-                <Link to="/notifications" onClick={closeMenu}>Уведомления</Link>
+                <button className={s.notifBtn} onClick={() => { closeMenu(); onNotificationsClick(); }}>
+              Уведомления
+              {unreadNotifications > 0 && <span className={s.unreadBadge}>{unreadNotifications}</span>}
+            </button>
                 <Link to="/profile" onClick={closeMenu}>Профиль</Link>
                 <button className={s.mobileLogout} onClick={handleLogout}>Выйти</button>
               </>

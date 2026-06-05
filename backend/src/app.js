@@ -23,6 +23,8 @@ import inspirationRoutes from "./routes/inspirationRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import dealRoutes from "./routes/dealRoutes.js";
 import supportRoutes from "./routes/supportRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,6 +61,8 @@ app.use("/api/inspiration", inspirationRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/deals", dealRoutes);
 app.use("/api/support", supportRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
