@@ -10,7 +10,7 @@ const DealProposalModal = ({ chatId, onClose, onCreated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!conditions.trim()) { setError("Опишите условия съёмки"); return; }
+    if (!conditions.trim()) { setError("Опишите условия съемки"); return; }
     setIsLoading(true);
     setError("");
     try {

@@ -100,7 +100,8 @@ export const acceptDeal = async (req, res, next) => {
     const userId = req.user.id;
     const deal = await prisma.deal.findUnique({ where: { id: req.params.id } });
     if (!deal) return res.status(404).json({ status: "error", message: "Сделка не найдена" });
-    if (deal.photographerId !== userId) return res.status(403).json({ status: "error", message: "Только исполнитель может принять сделку" });
+    const isReceiver = userId !== deal.proposerId && (userId === deal.clientId || userId === deal.photographerId);
+    if (!isReceiver) return res.status(403).json({ status: "error", message: "Только получатель предложения может принять сделку" });
     if (deal.status !== "PENDING") return res.status(400).json({ status: "error", message: "Нельзя принять сделку в текущем статусе" });
 
     const updated = await prisma.deal.update({
@@ -121,7 +122,8 @@ export const rejectDeal = async (req, res, next) => {
     const { reason } = req.body;
     const deal = await prisma.deal.findUnique({ where: { id: req.params.id } });
     if (!deal) return res.status(404).json({ status: "error", message: "Сделка не найдена" });
-    if (deal.photographerId !== userId) return res.status(403).json({ status: "error", message: "Только исполнитель может отклонить сделку" });
+    const isReceiver = userId !== deal.proposerId && (userId === deal.clientId || userId === deal.photographerId);
+    if (!isReceiver) return res.status(403).json({ status: "error", message: "Только получатель предложения может отклонить сделку" });
     if (deal.status !== "PENDING") return res.status(400).json({ status: "error", message: "Нельзя отклонить сделку в текущем статусе" });
 
     if (reason?.trim()) {

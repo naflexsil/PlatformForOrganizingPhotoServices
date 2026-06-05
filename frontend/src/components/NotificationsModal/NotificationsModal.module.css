@@ -138,10 +138,10 @@
   transition: background 0.1s;
 }
 
-.item:hover { background: var(--gray); }
+.itemClickable:hover { background: var(--gray); }
 
 .itemUnread { background: #EAD0D0; }
-.itemUnread:hover { background: #dfc0c0; }
+.itemUnread.itemClickable:hover { background: #dfc0c0; }
 
 
 .dot {

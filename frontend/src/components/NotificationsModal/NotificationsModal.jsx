@@ -99,7 +99,14 @@ const NotificationItem = ({ notif, onRead, onNavigate, currentUserTag }) => {
   };
 
   return (
-    <div className={`${s.item} ${!isRead && type !== "SYSTEM_REPLY" ? s.itemUnread : ""}`} onClick={type !== "SYSTEM_REPLY" ? handleItemClick : undefined}>
+    <div
+      className={[
+        s.item,
+        !isRead && type !== "SYSTEM_REPLY" ? s.itemUnread : "",
+        type !== "SYSTEM_REPLY" ? s.itemClickable : "",
+      ].filter(Boolean).join(" ")}
+      onClick={type !== "SYSTEM_REPLY" ? handleItemClick : undefined}
+    >
       {!isRead && <span className={s.dot} />}
       {type === "SYSTEM_REPLY" ? (
         <img src={notificationIcon} alt="" className={s.systemIcon} />
