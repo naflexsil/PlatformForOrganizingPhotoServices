@@ -16,10 +16,15 @@ export const searchAll = async (req, res) => {
   const skip  = (Math.max(1, parseInt(page)) - 1) * parseInt(limit);
   const take  = Math.min(40, parseInt(limit));
 
+  const currentUserId = req.user?.id ?? null;
+
   const where = {
     isDeleted: false,
     role,
-    NOT: { tag: { startsWith: 'vk_' } },
+    NOT: [
+      { tag: { startsWith: 'vk_' } },
+      ...(currentUserId ? [{ id: currentUserId }] : []),
+    ],
     ...(city.trim() && { city: { equals: city.trim(), mode: 'insensitive' } }),
     ...(q.trim() && {
       OR: [

@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { useToast } from "../../context/ToastContext";
 import defaultAvatar from "../../assets/images/default_avatar.png";
 import arrowLeftIcon from "../../assets/icons/carousel_arrow_left.svg";
 import arrowRightIcon from "../../assets/icons/carousel_arrow_right.svg";
@@ -9,19 +7,13 @@ import s from "./SearchPage.module.css";
 
 const SearchCard = ({ user }) => {
   const navigate = useNavigate();
-  const { isAuth } = useAuth();
-  const { showToast } = useToast();
 
   const isPhotographer = user.role === "PHOTOGRAPHER";
   const photos = user.photographer?.searchPhotos ?? [];
   const [photoIdx, setPhotoIdx] = useState(0);
 
   const handleWrite = () => {
-    if (!isAuth) {
-      showToast("Войдите, чтобы написать", "error");
-      return;
-    }
-    navigate("/chats", { state: { newChat: { userId: user.id } } });
+    navigate(`/@${user.tag}`);
   };
 
   const handleAuthorClick = () => navigate(`/@${user.tag}`);

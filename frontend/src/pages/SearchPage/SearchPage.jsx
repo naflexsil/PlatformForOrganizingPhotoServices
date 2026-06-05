@@ -4,6 +4,7 @@ import filterIcon from "../../assets/icons/filter.svg";
 import closeIcon from "../../assets/icons/carousel_close.svg";
 import radioIcon from "../../assets/icons/radio_button.svg";
 import radioSelectedIcon from "../../assets/icons/radio_button_selected.svg";
+import { useAuth } from "../../context/AuthContext";
 import SearchCard from "./SearchCard";
 import s from "./SearchPage.module.css";
 
@@ -17,6 +18,7 @@ const RATING_OPTIONS = [
 ];
 
 const SearchPage = () => {
+  const { accessToken } = useAuth();
   const [tab, setTab]           = useState("photographer");
   const [query, setQuery]       = useState("");
   const [city, setCity]         = useState("");
@@ -87,7 +89,8 @@ const SearchPage = () => {
         ...(filters.maxPrice  && { maxPrice:  filters.maxPrice }),
       });
 
-      const res  = await fetch(`/api/search?${params}`);
+      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+      const res  = await fetch(`/api/search?${params}`, { headers });
       const data = await res.json();
 
       if (data.status === "success") {

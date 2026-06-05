@@ -6,7 +6,7 @@ import optionalAuthMiddleware from '../middlewares/optionalAuthMiddleware.js';
 const router = Router();
 
 router.get('/cities', getCities);
-router.get('/',       searchAll);
+router.get('/',       optionalAuthMiddleware, searchAll);
 router.post('/by-image', optionalAuthMiddleware, searchByImageMiddleware, searchByImage);
 
 export default router;
