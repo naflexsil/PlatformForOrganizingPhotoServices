@@ -255,12 +255,26 @@ export const approveDeal = async (req, res, next) => {
     await emitSystemMessage(deal.chatId, userId, "Сделка успешно завершена!");
     notify({ userId: deal.photographerId, type: 'DEAL_COMPLETED', fromUserId: userId, dealId: deal.id });
 
-    const followers = await prisma.subscription.findMany({
-      where: { followingId: deal.clientId },
-      select: { followerId: true },
-      take: 100,
-    });
-    const meta = { clientId: deal.clientId, photographerId: deal.photographerId, dealId: deal.id };
+    const [followers, photographer] = await Promise.all([
+      prisma.subscription.findMany({
+        where: { followingId: deal.clientId },
+        select: { followerId: true },
+        take: 100,
+      }),
+      prisma.user.findUnique({
+        where: { id: deal.photographerId },
+        select: { id: true, firstName: true, lastName: true, tag: true, avatarUrl: true },
+      }),
+    ]);
+
+    const meta = {
+      photographerId:        deal.photographerId,
+      photographerFirstName: photographer?.firstName ?? null,
+      photographerLastName:  photographer?.lastName  ?? null,
+      photographerTag:       photographer?.tag        ?? null,
+      photographerAvatarUrl: photographer?.avatarUrl  ?? null,
+    };
+
     followers.forEach(({ followerId }) => {
       if (followerId !== deal.clientId && followerId !== deal.photographerId) {
         notify({ userId: followerId, type: 'FRIEND_DEAL_COMPLETED', fromUserId: deal.clientId, dealId: deal.id, metadata: meta });

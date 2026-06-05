@@ -17,8 +17,8 @@ const RejectReasonModal = ({ title, placeholder, onConfirm, onClose }) => {
           rows={4}
         />
         <div className={s.actions}>
-          <button className={s.cancelBtn} onClick={onClose}>Назад</button>
-          <button className={s.confirmBtn} onClick={() => onConfirm(reason)}>Подтвердить</button>
+          <button className={s.cancelBtn} onClick={(e) => { e.stopPropagation(); onClose(); }}>Назад</button>
+          <button className={s.confirmBtn} onClick={(e) => { e.stopPropagation(); onConfirm(reason); }}>Подтвердить</button>
         </div>
       </div>
     </div>

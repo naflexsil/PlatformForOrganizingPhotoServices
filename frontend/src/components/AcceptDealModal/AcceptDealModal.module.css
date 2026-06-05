@@ -2,11 +2,15 @@
   position: fixed; inset: 0;
   background: rgba(51,39,39,0.55); z-index: 700;
   display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
 }
 .modal {
   background: var(--white); border-radius: 24px;
-  width: 480px; max-width: 95vw; padding: 28px 32px;
+  width: 480px; max-width: 100%; padding: 28px 32px;
   box-shadow: 0 12px 48px rgba(0,0,0,0.2);
+  max-height: 90dvh; overflow-y: auto;
+  flex-shrink: 0;
 }
 .title {
   font-family: "Farabee", serif; font-size: 20px;
@@ -18,9 +22,17 @@
 .body li { margin-bottom: 6px; }
 .actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
 .rejectBtn {
-  background: transparent; color: var(--dark-text); border: 2px solid #ddd;
-  border-radius: 12px; padding: 10px 22px; font-family: "Farabee", serif; font-size: 16px; cursor: pointer;
+  background: transparent;
+  color: var(--accent-red);
+  border: 2px solid var(--accent-red);
+  border-radius: 10px;
+  padding: 8px 20px;
+  font-family: "Farabee", serif;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
+.rejectBtn:hover { background: var(--accent-red); color: var(--white); }
 .acceptBtn {
   background: var(--accent-red); color: var(--white); border: 2px solid transparent;
   border-radius: 12px; padding: 10px 22px; font-family: "Farabee", serif; font-size: 16px; cursor: pointer;

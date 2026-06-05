@@ -5,17 +5,15 @@ const AcceptDealModal = ({ onAccept, onClose }) => (
     <div className={s.modal} onClick={(e) => e.stopPropagation()}>
       <h2 className={s.title}>Важно перед подтверждением</h2>
       <div className={s.body}>
-        <p>Платформа <strong>psyshe.art</strong> находится в разработке.</p>
-        <ul>
-          <li>Не переводите деньги, если не доверяете исполнителю лично.</li>
-          <li>Сайт <strong>не несёт ответственности</strong> за финансовые потери или утечку данных.</li>
-          <li>Все расчёты происходят за пределами платформы.</li>
-          <li>При возникновении споров обращайтесь в поддержку.</li>
-        </ul>
+        <p>Платформа psyshe.art находится в разработке.</p>
+        <p>Не переводите деньги, если не доверяете исполнителю лично.</p>
+        <p>Сайт не несет ответственности за финансовые потери или утечку данных.</p>
+        <p>Все денежные расчеты происходят за пределами платформы.</p>
+        <p>При возникновении споров обращайтесь в поддержку.</p>
       </div>
       <div className={s.actions}>
-        <button className={s.rejectBtn} onClick={onClose}>Отказаться</button>
-        <button className={s.acceptBtn} onClick={onAccept}>Я принимаю условия</button>
+        <button className={s.rejectBtn} onClick={(e) => { e.stopPropagation(); onClose(); }}>Отказаться</button>
+        <button className={s.acceptBtn} onClick={(e) => { e.stopPropagation(); onAccept(); }}>Я принимаю условия</button>
       </div>
     </div>
   </div>

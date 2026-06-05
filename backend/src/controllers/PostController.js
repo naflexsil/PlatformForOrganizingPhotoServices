@@ -121,6 +121,11 @@ export const createPost = async (req, res) => {
       include: buildPostInclude(userId),
     });
 
+    await prisma.photo.updateMany({
+      where: { id: { in: photoIds } },
+      data:  { userId: null, folderId: null },
+    });
+
     return res.status(201).json({ status: 'success', data: transformPost(post, userId) });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: err.message });

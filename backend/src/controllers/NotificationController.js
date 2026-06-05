@@ -33,7 +33,7 @@ export const getNotifications = async (req, res) => {
           fromUser: FROM_USER_SELECT,
           post:  { select: { id: true, images: true } },
           photo: { select: { id: true, urlPreview: true } },
-          deal:  { select: { id: true, status: true, conditions: true, chatId: true } },
+          deal:  { select: { id: true, status: true, conditions: true, chatId: true, rating: true, ratingComment: true } },
         },
       }),
       prisma.notification.count({ where: { userId, type: { in: types } } }),
