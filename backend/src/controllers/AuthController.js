@@ -1,5 +1,5 @@
 import prisma from '../config/db.js';
-import { generateAccessToken, generateRefreshToken } from '../utils/jwt.js';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt.js';
 import {
   generatePkce,
   buildAuthUrl,
@@ -136,6 +136,30 @@ export const loginWithVk = async (req, res) => {
   } catch (err) {
     console.error('[VK ID] loginWithVk error:', err.message);
     return res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
+export const refreshTokenHandler = async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(400).json({ status: 'error', message: 'Refresh token обязателен' });
+  }
+  try {
+    const payload = verifyRefreshToken(refreshToken);
+    const user = await prisma.user.findUnique({ where: { id: payload.id } });
+    if (!user || user.isDeleted) {
+      return res.status(401).json({ status: 'error', message: 'Пользователь не найден' });
+    }
+    const jwtPayload = { id: user.id, vkId: user.vkId, role: user.role };
+    return res.json({
+      status: 'success',
+      data: {
+        accessToken:  generateAccessToken(jwtPayload),
+        refreshToken: generateRefreshToken(jwtPayload),
+      },
+    });
+  } catch {
+    return res.status(401).json({ status: 'error', message: 'Refresh token недействителен или истёк' });
   }
 };
 

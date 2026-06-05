@@ -7,6 +7,7 @@ import {
   getMe,
   completeRegistration,
   cancelRegistration,
+  refreshTokenHandler,
 } from '../controllers/AuthController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 
@@ -16,6 +17,7 @@ router.get('/login', initiateVkLogin);
 router.get('/callback', handleVkCallback);
 router.post('/vk', loginWithVk);
 router.post('/vk-sdk', loginWithVkSdk);
+router.post('/refresh', refreshTokenHandler);
 
 router.get('/me', authMiddleware, getMe);
 router.post('/complete-registration', authMiddleware, completeRegistration);
