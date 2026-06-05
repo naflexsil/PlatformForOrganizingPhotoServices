@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import searchIcon from "../../assets/icons/search.svg";
 import filterIcon from "../../assets/icons/filter.svg";
+import closeIcon from "../../assets/icons/carousel_close.svg";
 import radioIcon from "../../assets/icons/radio_button.svg";
 import radioSelectedIcon from "../../assets/icons/radio_button_selected.svg";
 import SearchCard from "./SearchCard";
@@ -181,9 +182,13 @@ const SearchPage = () => {
     appliedFilters.minRating || appliedFilters.minPrice || appliedFilters.maxPrice;
 
   const ratingLabel = rating ? RATING_OPTIONS.find((r) => r.value === rating)?.label : "Рейтинг";
-  const priceLabel  = (appliedFilters.minPrice || appliedFilters.maxPrice)
-    ? `${appliedFilters.minPrice || "0"} — ${appliedFilters.maxPrice || "∞"}`
-    : "Цена";
+
+  const getPriceLabel = () => {
+    if (priceFrom && priceTo) return `От ${priceFrom} до ${priceTo}`;
+    if (priceFrom) return `От ${priceFrom}`;
+    if (priceTo)   return `До ${priceTo}`;
+    return "Цена";
+  };
 
   return (
     <div className={s.page}>
@@ -206,7 +211,7 @@ const SearchPage = () => {
 
           <div className={s.filtersRow} ref={filterRef}>
             <div className={s.cityWrap} ref={cityInputRef}>
-              <div className={s.cityField} onClick={() => setShowCities(true)}>
+              <div className={`${s.cityField} ${city ? s.cityFieldActive : ""}`} onClick={() => setShowCities(true)}>
                 <img src={searchIcon} alt="" className={s.cityIcon} />
                 <input
                   className={s.cityInput}
@@ -219,6 +224,17 @@ const SearchPage = () => {
                   }}
                   onFocus={() => setShowCities(true)}
                 />
+                {city && (
+                  <img
+                    src={closeIcon}
+                    alt="Очистить"
+                    className={s.cityClear}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCity(""); setCityInput(""); setShowCities(false);
+                    }}
+                  />
+                )}
               </div>
               {showCities && filteredCities.length > 0 && (
                 <div className={s.cityDropdown}>
@@ -274,7 +290,7 @@ const SearchPage = () => {
                     className={`${s.filterBtn} ${openFilter === "price" ? s.filterBtnOpen : ""} ${(priceFrom || priceTo) ? s.filterBtnActive : ""}`}
                     onClick={() => setOpenFilter((p) => p === "price" ? null : "price")}
                   >
-                    {priceLabel}
+                    {getPriceLabel()}
                     <img
                       src={filterIcon}
                       alt=""

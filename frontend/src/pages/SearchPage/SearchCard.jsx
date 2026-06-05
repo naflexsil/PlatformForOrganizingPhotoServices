@@ -79,9 +79,11 @@ const SearchCard = ({ user }) => {
         )}
       </div>
 
-      <button className={s.writeBtn} onClick={handleWrite}>
-        Написать
-      </button>
+      <div className={s.cardFooter}>
+        <button className={s.writeBtn} onClick={handleWrite}>
+          Написать
+        </button>
+      </div>
     </div>
   );
 };
