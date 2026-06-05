@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import searchIcon from "../../assets/icons/search.svg";
 import filterIcon from "../../assets/icons/filter.svg";
 import closeIcon from "../../assets/icons/carousel_close.svg";
@@ -11,50 +12,56 @@ import s from "./SearchPage.module.css";
 const LIMIT = 12;
 
 const RATING_OPTIONS = [
-  { value: null,  label: "Любой" },
-  { value: "4",   label: "4 и выше" },
-  { value: "3",   label: "3 и выше" },
-  { value: "2",   label: "2 и выше" },
+  { value: null, label: "Любой" },
+  { value: "4",  label: "4 и выше" },
+  { value: "3",  label: "3 и выше" },
+  { value: "2",  label: "2 и выше" },
 ];
+
+const readURL = (params) => ({
+  tab:       params.get("tab")       || "photographer",
+  q:         params.get("q")         || "",
+  city:      params.get("city")      || "",
+  minRating: params.get("minRating") || null,
+  minPrice:  params.get("minPrice")  || "",
+  maxPrice:  params.get("maxPrice")  || "",
+});
 
 const SearchPage = () => {
   const { accessToken } = useAuth();
-  const [tab, setTab]           = useState("photographer");
-  const [query, setQuery]       = useState("");
-  const [city, setCity]         = useState("");
-  const [cityInput, setCityInput] = useState("");
-  const [cities, setCities]     = useState([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const init = readURL(searchParams);
+
+  const [tab, setTab]               = useState(init.tab);
+  const [query, setQuery]           = useState(init.q);
+  const [city, setCity]             = useState(init.city);
+  const [cityInput, setCityInput]   = useState(init.city);
+  const [cities, setCities]         = useState([]);
   const [showCities, setShowCities] = useState(false);
   const [openFilter, setOpenFilter] = useState(null);
-  const [rating, setRating]     = useState(null);
-  const [priceFrom, setPriceFrom] = useState("");
-  const [priceTo, setPriceTo]   = useState("");
+  const [rating, setRating]         = useState(init.minRating);
+  const [priceFrom, setPriceFrom]   = useState(init.minPrice);
+  const [priceTo, setPriceTo]       = useState(init.maxPrice);
 
-  const [appliedFilters, setAppliedFilters] = useState({
-    tab: "photographer", q: "", city: "", minRating: null, minPrice: "", maxPrice: "",
-  });
-
-  const [results, setResults]         = useState([]);
-  const [loading, setLoading]         = useState(false);
+  const [results, setResults]             = useState([]);
+  const [loading, setLoading]             = useState(false);
   const [initialLoaded, setInitialLoaded] = useState(false);
-  const [hasMore, setHasMore]         = useState(true);
+  const [hasMore, setHasMore]             = useState(true);
 
-  const pageRef      = useRef(1);
-  const loadingRef   = useRef(false);
-  const hasMoreRef   = useRef(true);
-  const seenIdsRef   = useRef(new Set());
-  const sentinelRef  = useRef(null);
-  const filterRef    = useRef(null);
-  const cityInputRef = useRef(null);
+  const pageRef          = useRef(1);
+  const loadingRef       = useRef(false);
+  const hasMoreRef       = useRef(true);
+  const seenIdsRef       = useRef(new Set());
+  const sentinelRef      = useRef(null);
+  const filterRef        = useRef(null);
+  const cityInputRef     = useRef(null);
+  const currentFiltersRef = useRef(init);
 
   useEffect(() => {
     const handler = (e) => {
-      if (filterRef.current && !filterRef.current.contains(e.target)) {
-        setOpenFilter(null);
-      }
-      if (cityInputRef.current && !cityInputRef.current.contains(e.target)) {
-        setShowCities(false);
-      }
+      if (filterRef.current && !filterRef.current.contains(e.target)) setOpenFilter(null);
+      if (cityInputRef.current && !cityInputRef.current.contains(e.target)) setShowCities(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -67,10 +74,6 @@ const SearchPage = () => {
       if (data.status === "success") setCities(data.data);
     } catch {}
   }, []);
-
-  useEffect(() => {
-    fetchCities(tab);
-  }, [tab, fetchCities]);
 
   const loadPage = useCallback(async (pageNum, filters) => {
     if (loadingRef.current || !hasMoreRef.current) return;
@@ -115,40 +118,61 @@ const SearchPage = () => {
       setLoading(false);
       setInitialLoaded(true);
     }
-  }, []);
+  }, [accessToken]);
 
-  const resetAndLoad = useCallback((filters) => {
+  useEffect(() => {
+    const filters = readURL(searchParams);
+
+    setTab(filters.tab);
+    setCity(filters.city);
+    setCityInput(filters.city);
+    setRating(filters.minRating);
+    setPriceFrom(filters.minPrice);
+    setPriceTo(filters.maxPrice);
+    setQuery(filters.q);
+    currentFiltersRef.current = filters;
+
     pageRef.current    = 1;
     hasMoreRef.current = true;
     seenIdsRef.current = new Set();
     setResults([]);
     setInitialLoaded(false);
     setHasMore(true);
-    setAppliedFilters(filters);
-    loadPage(1, filters);
-  }, [loadPage]);
 
-  useEffect(() => {
-    resetAndLoad({ tab, q: "", city: "", minRating: null, minPrice: "", maxPrice: "" });
-  }, [tab]);
+    fetchCities(filters.tab);
+    loadPage(1, filters);
+  }, [searchParams]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !loadingRef.current && hasMoreRef.current) {
-          loadPage(pageRef.current, appliedFilters);
+          loadPage(pageRef.current, currentFiltersRef.current);
         }
       },
       { threshold: 0.1, rootMargin: "200px" },
     );
     if (sentinelRef.current) observer.observe(sentinelRef.current);
     return () => observer.disconnect();
-  }, [loadPage, appliedFilters]);
+  }, [loadPage]);
+
+  const applyURL = (overrides = {}) => {
+    const base = {
+      tab,
+      ...(query.trim() && { q:         query.trim() }),
+      ...(city          && { city }),
+      ...(rating        && { minRating: rating }),
+      ...(priceFrom     && { minPrice:  priceFrom }),
+      ...(priceTo       && { maxPrice:  priceTo }),
+    };
+    setSearchParams({ ...base, ...overrides });
+  };
 
   const handleTabChange = (newTab) => {
-    setTab(newTab);
     setCity(""); setCityInput(""); setRating(null);
-    setPriceFrom(""); setPriceTo(""); setOpenFilter(null);
+    setPriceFrom(""); setPriceTo(""); setQuery("");
+    setOpenFilter(null);
+    setSearchParams({ tab: newTab });
   };
 
   const handleCitySelect = (c) => {
@@ -157,34 +181,21 @@ const SearchPage = () => {
     setShowCities(false);
   };
 
-  const filteredCities = cities.filter((c) =>
-    c.toLowerCase().includes(cityInput.toLowerCase()),
-  );
-
   const handleApply = () => {
     setOpenFilter(null);
-    resetAndLoad({
-      tab,
-      q:         query.trim(),
-      city:      city.trim(),
-      minRating: rating,
-      minPrice:  priceFrom,
-      maxPrice:  priceTo,
-    });
+    applyURL();
   };
 
   const handleResetAll = () => {
     setQuery(""); setCity(""); setCityInput("");
     setRating(null); setPriceFrom(""); setPriceTo("");
     setOpenFilter(null);
-    resetAndLoad({ tab, q: "", city: "", minRating: null, minPrice: "", maxPrice: "" });
+    setSearchParams({ tab });
   };
 
-  const hasActiveFilters =
-    appliedFilters.q || appliedFilters.city ||
-    appliedFilters.minRating || appliedFilters.minPrice || appliedFilters.maxPrice;
-
-  const ratingLabel = rating ? RATING_OPTIONS.find((r) => r.value === rating)?.label : "Рейтинг";
+  const filteredCities = cities.filter((c) =>
+    c.toLowerCase().includes(cityInput.toLowerCase()),
+  );
 
   const getPriceLabel = () => {
     if (priceFrom && priceTo) return `От ${priceFrom} до ${priceTo}`;
@@ -192,6 +203,14 @@ const SearchPage = () => {
     if (priceTo)   return `До ${priceTo}`;
     return "Цена";
   };
+
+  const ratingLabel = rating
+    ? RATING_OPTIONS.find((r) => r.value === rating)?.label
+    : "Рейтинг";
+
+  const applied = readURL(searchParams);
+  const hasActiveFilters =
+    applied.city || applied.minRating || applied.minPrice || applied.maxPrice || applied.q;
 
   return (
     <div className={s.page}>
@@ -214,7 +233,10 @@ const SearchPage = () => {
 
           <div className={s.filtersRow} ref={filterRef}>
             <div className={s.cityWrap} ref={cityInputRef}>
-              <div className={`${s.cityField} ${city ? s.cityFieldActive : ""}`} onClick={() => setShowCities(true)}>
+              <div
+                className={`${s.cityField} ${city ? s.cityFieldActive : ""}`}
+                onClick={() => setShowCities(true)}
+              >
                 <img src={searchIcon} alt="" className={s.cityIcon} />
                 <input
                   className={s.cityInput}
