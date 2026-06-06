@@ -465,7 +465,10 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
                     />
                     {isSettingsOpen && (
                       <div className={s.settingsModal}>
-                        <div className={s.modalItem}>
+                        <div
+                          className={s.modalItem}
+                          onClick={() => { setIsSettingsOpen(false); navigate('/stats'); }}
+                        >
                           <img src={chartIcon} alt="Stats" />
                           <span>Статистика</span>
                         </div>
