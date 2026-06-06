@@ -337,7 +337,7 @@ const FavoritesPage = () => {
             {photosInitialLoaded && photos.length === 0 && (
               <div className={s.empty}>
                 <p>Нет избранных фотографий</p>
-                <span>Лайкайте фото из ленты вдохновения</span>
+                <span>Добавьте в избранное понравившиеся фотографии</span>
               </div>
             )}
 
@@ -380,7 +380,7 @@ const FavoritesPage = () => {
             {postsInitialLoaded && posts.length === 0 && (
               <div className={s.empty}>
                 <p>Нет избранных постов</p>
-                <span>Добавляйте посты из профилей фотографов</span>
+                <span>Добавьте в избранное понравившиеся посты</span>
               </div>
             )}
 

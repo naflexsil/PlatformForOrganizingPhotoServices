@@ -340,7 +340,10 @@ export const getMe = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      include: { photographer: true },
+      include: {
+        photographer: true,
+        _count: { select: { subscribers: true, subscriptions: true } },
+      },
     });
 
     if (!user) {
@@ -363,6 +366,8 @@ export const getMe = async (req, res) => {
         role: user.role,
         photographer: user.photographer ?? null,
         createdAt: user.createdAt,
+        subscribersCount: user._count?.subscribers ?? 0,
+        subscriptionsCount: user._count?.subscriptions ?? 0,
       },
     });
   } catch (err) {

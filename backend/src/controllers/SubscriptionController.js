@@ -111,3 +111,69 @@ export const checkSubscription = async (req, res) => {
     return res.status(500).json({ status: 'error', message: err.message });
   }
 };
+
+export const getUserSubscribers = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const subs = await prisma.subscription.findMany({
+      where: { followingId: userId },
+      include: {
+        follower: {
+          select: { id: true, firstName: true, lastName: true, tag: true, avatarUrl: true, role: true, isDeleted: true },
+        },
+      },
+    });
+
+    const followerIds = subs.map((s) => s.followerId);
+    const mutual = followerIds.length
+      ? await prisma.subscription.findMany({
+          where: { followerId: userId, followingId: { in: followerIds } },
+        })
+      : [];
+    const friendIds = new Set(mutual.map((m) => m.followingId));
+
+    const data = subs
+      .filter((s) => s.follower && !s.follower.isDeleted)
+      .map((s) => {
+        const { isDeleted, ...rest } = s.follower;
+        return { ...rest, isFriend: friendIds.has(s.followerId) };
+      });
+
+    return res.json({ status: 'success', data });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
+export const getUserSubscriptions = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const subs = await prisma.subscription.findMany({
+      where: { followerId: userId },
+      include: {
+        following: {
+          select: { id: true, firstName: true, lastName: true, tag: true, avatarUrl: true, role: true, isDeleted: true },
+        },
+      },
+    });
+
+    const followingIds = subs.map((s) => s.followingId);
+    const mutual = followingIds.length
+      ? await prisma.subscription.findMany({
+          where: { followerId: { in: followingIds }, followingId: userId },
+        })
+      : [];
+    const friendIds = new Set(mutual.map((m) => m.followerId));
+
+    const data = subs
+      .filter((s) => s.following && !s.following.isDeleted)
+      .map((s) => {
+        const { isDeleted, ...rest } = s.following;
+        return { ...rest, isFriend: friendIds.has(s.followingId) };
+      });
+
+    return res.json({ status: 'success', data });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: err.message });
+  }
+};

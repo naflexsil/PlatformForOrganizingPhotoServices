@@ -65,13 +65,23 @@ export const getUserByTag = async (req, res) => {
   try {
     const user = await prisma.user.findFirst({
       where: { tag, isDeleted: false },
-      include: { photographer: true },
+      include: {
+        photographer: true,
+        _count: { select: { subscribers: true, subscriptions: true } },
+      },
     });
     if (!user) {
       return res.status(404).json({ status: 'error', message: 'Пользователь не найден' });
     }
-    const { vkId, isDeleted, deletedAt, ...publicData } = user;
-    return res.json({ status: 'success', data: publicData });
+    const { vkId, isDeleted, deletedAt, _count, ...publicData } = user;
+    return res.json({
+      status: 'success',
+      data: {
+        ...publicData,
+        subscribersCount: _count?.subscribers ?? 0,
+        subscriptionsCount: _count?.subscriptions ?? 0,
+      },
+    });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: err.message });
   }

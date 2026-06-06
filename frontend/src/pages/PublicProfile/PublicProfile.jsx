@@ -25,6 +25,8 @@ const normalizeProfileData = (data) => ({
     ? String(data.photographer.pricePerHour) : "",
   priceText: data.photographer?.additionalPriceInfo || "",
   searchPhotos: data.photographer?.searchPhotos || [],
+  subscribersCount: data.subscribersCount ?? 0,
+  subscriptionsCount: data.subscriptionsCount ?? 0,
 });
 
 const PublicProfile = () => {

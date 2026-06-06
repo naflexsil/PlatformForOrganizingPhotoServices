@@ -13,6 +13,7 @@ import PhotoModal from "../../components/PhotoModal/PhotoModal";
 import CreatePostModal from "../../components/CreatePostModal/CreatePostModal";
 import EditPostModal from "../../components/EditPostModal/EditPostModal";
 import EditProfile from "../EditProfile/EditProfile";
+import SubscribersModal from "../../components/SubscribersModal/SubscribersModal";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 
@@ -25,6 +26,8 @@ const EMPTY_PROFILE = {
   city: "—",
   avatarUrl: null,
   avatarUrlOriginal: null,
+  subscribersCount: 0,
+  subscriptionsCount: 0,
 };
 
 const normalizePost = (p) => ({
@@ -33,15 +36,15 @@ const normalizePost = (p) => ({
     id: ph.id,
     urlPreview: ph.urlPreview,
     urlOriginal: ph.urlOriginal,
-    likesCount: ph._count?.likes ?? 0,
-    favoritesCount: ph._count?.favorites ?? 0,
+    likesCount: ph.likesCount ?? 0,
+    favoritesCount: ph.favoritesCount ?? 0,
     isLiked: ph.isLiked ?? false,
     isFavorited: ph.isFavorited ?? false,
   })),
   images: p.photos?.map((ph) => ph.urlPreview) || p.images || [],
   description: p.description || "",
-  likes: p._count?.likes ?? 0,
-  favoritesCount: p._count?.favorites ?? 0,
+  likes: p.likesCount ?? 0,
+  favoritesCount: p.favoritesCount ?? 0,
   isLiked: p.isLiked ?? false,
   isFavorited: p.isFavorited ?? false,
   isPinned: p.isPinned ?? false,
@@ -66,6 +69,7 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
   const [isLoading, setIsLoading] = useState(!profileData);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscribeLoading, setSubscribeLoading] = useState(false);
+  const [subsModal, setSubsModal] = useState(null);
   const settingsRef = useRef(null);
 
   const [userData, setUserData] = useState(profileData ?? EMPTY_PROFILE);
@@ -98,6 +102,8 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
           city: d.city || "—",
           avatarUrl: d.avatarUrl || null,
           avatarUrlOriginal: d.avatarUrlOriginal || d.avatarUrl || null,
+          subscribersCount: d.subscribersCount ?? 0,
+          subscriptionsCount: d.subscriptionsCount ?? 0,
         });
       })
       .finally(() => setIsLoading(false));
@@ -247,6 +253,10 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
       const data = await r.json();
       if (data.status === "success") {
         setIsSubscribed(data.subscribed);
+        setUserData((prev) => ({
+          ...prev,
+          subscribersCount: prev.subscribersCount + (data.subscribed ? 1 : -1),
+        }));
         showToast(data.subscribed ? "Вы подписались" : "Вы отписались", "success");
       }
     } finally {
@@ -348,8 +358,14 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
                 >{userData.username}</p>
               </div>
               <div className={s.stats}>
-                <p><span className={s.clickableStat}>Подписчики</span> 0</p>
-                <p><span className={s.clickableStat}>Подписки</span> 0</p>
+                <p>
+                  <span className={s.clickableStat} onClick={() => setSubsModal("subscribers")}>Подписчики</span>
+                  {" "}{userData.subscribersCount}
+                </p>
+                <p>
+                  <span className={s.clickableStat} onClick={() => setSubsModal("subscriptions")}>Подписки</span>
+                  {" "}{userData.subscriptionsCount}
+                </p>
                 {userData.city && userData.city !== "—" && (
                   <p className={s.cityRow}>
                     <img src={locIcon} alt="" className={s.cityIcon} />
@@ -521,6 +537,14 @@ const UserProfile = ({ isMyProfile = true, profileData = null }) => {
             onClick={(e) => e.stopPropagation()}
           />
         </div>
+      )}
+
+      {subsModal && (
+        <SubscribersModal
+          userId={userData.id}
+          type={subsModal}
+          onClose={() => setSubsModal(null)}
+        />
       )}
     </div>
 
