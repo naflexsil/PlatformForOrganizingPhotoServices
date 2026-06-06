@@ -1,8 +1,8 @@
 import { useState } from "react";
 import s from "./RoleModal.module.css";
 import closeIcon from "../../assets/icons/carousel_close.svg";
-import photographerBg from "../../assets/images/photographer_registration.png";
-import clientBg from "../../assets/images/client_registration.png";
+import photographerBg from "../../assets/images/photographer_registration.webp";
+import clientBg from "../../assets/images/client_registration.webp";
 
 const RoleModal = ({ onClose, onRoleSelected }) => {
   const [showWarning, setShowWarning] = useState(false);

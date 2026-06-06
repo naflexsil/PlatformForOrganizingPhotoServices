@@ -5,7 +5,7 @@ import { useToast } from "../../context/ToastContext";
 import MasonryGrid from "../../components/MasonryGrid/MasonryGrid";
 import PortfolioPhotoModal from "../../components/PortfolioPhotoModal/PortfolioPhotoModal";
 import AddPhotoModal from "../../components/AddPhotoModal/AddPhotoModal";
-import defaultAvatar from "../../assets/images/default_avatar.png";
+import defaultAvatar from "../../assets/images/default_avatar.webp";
 import arrowLeftIcon from "../../assets/icons/carousel_arrow_left.svg";
 import s from "./PortfolioFolderPage.module.css";
 

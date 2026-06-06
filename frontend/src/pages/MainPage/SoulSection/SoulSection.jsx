@@ -1,6 +1,6 @@
 import React from "react";
 import s from "./SoulSection.module.css";
-import mirrorImg from "../../../assets/images/picSoulSection.png";
+import mirrorImg from "../../../assets/images/picSoulSection.webp";
 
 const SoulSection = () => {
   const benefits = [

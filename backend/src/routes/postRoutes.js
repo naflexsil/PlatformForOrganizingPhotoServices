@@ -9,11 +9,13 @@ import {
   deletePost,
   toggleLike,
   toggleFavorite,
+  getFavoritePosts,
   pinPost,
 } from '../controllers/PostController.js';
 
 const router = Router();
 
+router.get('/favorites', authMiddleware, getFavoritePosts);
 router.get('/', optionalAuthMiddleware, getAllPosts);
 router.get('/:id', optionalAuthMiddleware, getPostById);
 router.post('/', authMiddleware, createPost);

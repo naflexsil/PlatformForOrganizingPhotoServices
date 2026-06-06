@@ -8,7 +8,7 @@ import clockIcon from "../../assets/icons/clock.svg";
 import expIcon from "../../assets/icons/experience.svg";
 import heartIcon from "../../assets/icons/heart.svg";
 import heartFilledIcon from "../../assets/icons/heart_filled.svg";
-import defaultAvatar from "../../assets/images/default_avatar.png";
+import defaultAvatar from "../../assets/images/default_avatar.webp";
 import chartIcon from "../../assets/icons/chart.svg";
 import editIcon from "../../assets/icons/edit.svg";
 import deleteIcon from "../../assets/icons/delete.svg";
@@ -67,15 +67,15 @@ const normalizePost = (p) => ({
     id: ph.id,
     urlPreview: ph.urlPreview,
     urlOriginal: ph.urlOriginal,
-    likesCount: ph._count?.likes ?? 0,
-    favoritesCount: ph._count?.favorites ?? 0,
+    likesCount: ph.likesCount ?? 0,
+    favoritesCount: ph.favoritesCount ?? 0,
     isLiked: ph.isLiked ?? false,
     isFavorited: ph.isFavorited ?? false,
   })),
   images: p.photos?.map((ph) => ph.urlPreview) || p.images || [],
   description: p.description || "",
-  likes: p._count?.likes ?? 0,
-  favoritesCount: p._count?.favorites ?? 0,
+  likes: p.likesCount ?? 0,
+  favoritesCount: p.favoritesCount ?? 0,
   isLiked: p.isLiked ?? false,
   isFavorited: p.isFavorited ?? false,
   isPinned: p.isPinned ?? false,

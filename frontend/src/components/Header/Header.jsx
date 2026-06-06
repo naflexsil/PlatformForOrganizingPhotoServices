@@ -74,10 +74,9 @@ const Header = ({ isAuthenticated, onLoginClick, onNotificationsClick, unreadNot
                 <Link to="/chats" onClick={closeMenu}>
                   Чат {unreadTotal > 0 && `(${unreadTotal})`}
                 </Link>
-                <button className={s.notifBtn} onClick={() => { closeMenu(); onNotificationsClick(); }}>
-              Уведомления
-              {unreadNotifications > 0 && <span className={s.unreadBadge}>{unreadNotifications}</span>}
-            </button>
+                <button className={s.mobileNotifBtn} onClick={() => { closeMenu(); onNotificationsClick(); }}>
+                  Уведомления{unreadNotifications > 0 && ` (${unreadNotifications > 99 ? "99+" : unreadNotifications})`}
+                </button>
                 <Link to="/profile" onClick={closeMenu}>Профиль</Link>
                 <button className={s.mobileLogout} onClick={handleLogout}>Выйти</button>
               </>

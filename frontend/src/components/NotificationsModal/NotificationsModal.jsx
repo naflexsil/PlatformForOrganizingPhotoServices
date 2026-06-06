@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import defaultAvatar from "../../assets/images/default_avatar.png";
+import defaultAvatar from "../../assets/images/default_avatar.webp";
 import closeIcon from "../../assets/icons/carousel_close.svg";
 import notificationIcon from "../../assets/icons/notification.svg";
 import starFilledIcon from "../../assets/icons/review_star_painted_over.svg";

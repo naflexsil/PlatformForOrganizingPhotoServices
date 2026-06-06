@@ -126,6 +126,70 @@ export const togglePhotoLike = async (req, res) => {
   }
 };
 
+export const getFavoritePhotos = async (req, res) => {
+  const userId = req.user.id;
+  const page  = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = 20;
+  const skip  = (page - 1) * limit;
+
+  try {
+    const [rows, total] = await Promise.all([
+      prisma.photoFavorite.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          photo: {
+            include: {
+              _count: { select: { likes: true, favorites: true } },
+              likes:     { where: { userId }, select: { userId: true } },
+              favorites: { where: { userId }, select: { userId: true } },
+              user: { select: { id: true, firstName: true, lastName: true, tag: true, avatarUrl: true, isDeleted: true } },
+            },
+          },
+        },
+      }),
+      prisma.photoFavorite.count({ where: { userId } }),
+    ]);
+
+    const data = rows
+      .filter((r) => r.photo)
+      .map((r) => {
+        const p = r.photo;
+        return {
+          id: p.id,
+          userId: p.userId,
+          urlPreview: p.urlPreview,
+          urlOriginal: p.urlOriginal,
+          folderId: p.folderId,
+          description: p.description || '',
+          likesCount: p._count.likes,
+          favoritesCount: p._count.favorites,
+          isLiked: (p.likes?.length || 0) > 0,
+          isFavorited: true,
+          author: p.user
+            ? {
+                id: p.user.id,
+                firstName: p.user.isDeleted ? 'Удалённый' : p.user.firstName,
+                lastName: p.user.isDeleted ? 'пользователь' : p.user.lastName,
+                tag: p.user.isDeleted ? null : p.user.tag,
+                avatarUrl: p.user.isDeleted ? null : p.user.avatarUrl,
+              }
+            : null,
+        };
+      });
+
+    return res.json({
+      status: 'success',
+      data,
+      pagination: { page, limit, total, hasMore: skip + data.length < total },
+    });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
 export const togglePhotoFavorite = async (req, res) => {
   const { id: photoId } = req.params;
   const userId = req.user.id;

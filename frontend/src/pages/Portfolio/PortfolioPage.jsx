@@ -6,7 +6,7 @@ import MasonryGrid from "../../components/MasonryGrid/MasonryGrid";
 import PortfolioPhotoModal from "../../components/PortfolioPhotoModal/PortfolioPhotoModal";
 import AddPhotoModal from "../../components/AddPhotoModal/AddPhotoModal";
 import CreateFolderModal from "../../components/CreateFolderModal/CreateFolderModal";
-import defaultAvatar from "../../assets/images/default_avatar.png";
+import defaultAvatar from "../../assets/images/default_avatar.webp";
 import editIcon from "../../assets/icons/edit.svg";
 import deleteIcon from "../../assets/icons/delete.svg";
 import s from "./PortfolioPage.module.css";

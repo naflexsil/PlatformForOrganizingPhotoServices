@@ -1,6 +1,6 @@
 import React from "react";
 import s from "./WelcomeSection.module.css";
-import welcomeImg from "../../../assets/images/picWelcomeSection.png";
+import welcomeImg from "../../../assets/images/picWelcomeSection.webp";
 
 const WelcomeSection = () => {
   return (

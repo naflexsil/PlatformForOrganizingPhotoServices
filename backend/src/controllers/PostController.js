@@ -45,6 +45,7 @@ const transformPost = (post, userId) => {
   const { likes, favorites, photos, _count, ...rest } = post;
   return {
     ...rest,
+    likesCount: _count?.likes ?? 0,
     favoritesCount: _count?.favorites ?? 0,
     photos: (photos || []).map((p) => transformPhoto(p, userId)),
     ...(userId && {
@@ -265,6 +266,40 @@ export const toggleFavorite = async (req, res) => {
 
     const count = await prisma.favorite.count({ where: { postId } });
     return res.status(200).json({ status: 'success', data: { favorited: !existing, count } });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
+export const getFavoritePosts = async (req, res) => {
+  const userId = req.user.id;
+  const page  = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = 20;
+  const skip  = (page - 1) * limit;
+
+  try {
+    const [rows, total] = await Promise.all([
+      prisma.favorite.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          post: { include: buildPostInclude(userId) },
+        },
+      }),
+      prisma.favorite.count({ where: { userId } }),
+    ]);
+
+    const data = rows
+      .filter((r) => r.post)
+      .map((r) => transformPost(r.post, userId));
+
+    return res.json({
+      status: 'success',
+      data,
+      pagination: { page, limit, total, hasMore: skip + data.length < total },
+    });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: err.message });
   }

@@ -9,7 +9,7 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [unreadTotal, setUnreadTotal] = useState(0);
-  // Ref to the currently open chat — new messages for it won't increment unread
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const activeChatIdRef = useRef(null);
 
   const refreshUnread = useCallback(async () => {
@@ -26,14 +26,26 @@ export const SocketProvider = ({ children }) => {
     } catch {}
   }, [accessToken]);
 
-  // Load unread count on auth change
+  const refreshUnreadNotifications = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      const r = await fetch("/api/notifications/unread-count", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await r.json();
+      if (data.status === "success") setUnreadNotifications(data.data.count);
+    } catch {}
+  }, [accessToken]);
+
   useEffect(() => {
     if (!isAuth || !accessToken) {
       setUnreadTotal(0);
+      setUnreadNotifications(0);
       return;
     }
     refreshUnread();
-  }, [isAuth, accessToken, refreshUnread]);
+    refreshUnreadNotifications();
+  }, [isAuth, accessToken, refreshUnread, refreshUnreadNotifications]);
 
   // Socket lifecycle tied to auth token
   useEffect(() => {
@@ -72,6 +84,10 @@ export const SocketProvider = ({ children }) => {
       }
     });
 
+    s.on("new-notification", () => {
+      setUnreadNotifications((prev) => prev + 1);
+    });
+
     s.on("connect_error", (err) => {
       console.error("[Socket] connect error:", err.message);
       setIsConnected(false);
@@ -89,7 +105,7 @@ export const SocketProvider = ({ children }) => {
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected, unreadTotal, refreshUnread, setActiveChatId }}>
+    <SocketContext.Provider value={{ socket, isConnected, unreadTotal, refreshUnread, setActiveChatId, unreadNotifications, refreshUnreadNotifications }}>
       {children}
     </SocketContext.Provider>
   );

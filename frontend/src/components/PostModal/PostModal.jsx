@@ -12,7 +12,7 @@ import unpinIcon from "../../assets/icons/unpin.svg";
 import arrowLeftIcon from "../../assets/icons/carousel_arrow_left.svg";
 import arrowRightIcon from "../../assets/icons/carousel_arrow_right.svg";
 import closeIcon from "../../assets/icons/carousel_close.svg";
-import defaultAvatar from "../../assets/images/default_avatar.png";
+import defaultAvatar from "../../assets/images/default_avatar.webp";
 
 const PostModal = ({
   post,

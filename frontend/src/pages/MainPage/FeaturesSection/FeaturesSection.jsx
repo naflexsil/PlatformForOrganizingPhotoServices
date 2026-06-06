@@ -1,7 +1,7 @@
 import React from "react";
 import s from "./FeaturesSection.module.css";
-import photoFilter from "../../../assets/images/photo_filter.png";
-import photoComm from "../../../assets/images/photo_comm.png";
+import photoFilter from "../../../assets/images/photo_filter.webp";
+import photoComm from "../../../assets/images/photo_comm.webp";
 
 const FeaturesSection = () => {
   const features = [

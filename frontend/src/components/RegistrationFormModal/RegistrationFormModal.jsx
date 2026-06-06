@@ -2,7 +2,7 @@ import { useState } from "react";
 import s from "./RegistrationFormModal.module.css";
 import closeIcon from "../../assets/icons/carousel_close.svg";
 import choiceArrowIcon from "../../assets/icons/choice_arrow_down.svg";
-import defaultAvatar from "../../assets/images/default_avatar.png";
+import defaultAvatar from "../../assets/images/default_avatar.webp";
 import { RUSSIAN_CITIES } from "../../data/russianCities";
 import { useAuth } from "../../context/AuthContext";
 

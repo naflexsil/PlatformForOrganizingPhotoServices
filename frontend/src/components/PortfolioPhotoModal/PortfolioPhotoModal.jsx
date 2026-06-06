@@ -8,7 +8,7 @@ import moreIcon from "../../assets/icons/more.svg";
 import editIcon from "../../assets/icons/edit.svg";
 import deleteIcon from "../../assets/icons/delete.svg";
 import closeIcon from "../../assets/icons/carousel_close.svg";
-import defaultAvatar from "../../assets/images/default_avatar.png";
+import defaultAvatar from "../../assets/images/default_avatar.webp";
 
 const PortfolioPhotoModal = ({
   photo,

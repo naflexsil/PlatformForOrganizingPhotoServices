@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import defaultAvatar from "../../assets/images/default_avatar.png";
+import defaultAvatar from "../../assets/images/default_avatar.webp";
 import s from "./AdminPage.module.css";
 
 const STATUS_LABELS = {

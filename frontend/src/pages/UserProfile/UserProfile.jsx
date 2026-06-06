@@ -5,7 +5,7 @@ import settingsIcon from "../../assets/icons/settings.svg";
 import locIcon from "../../assets/icons/location.svg";
 import heartIcon from "../../assets/icons/heart.svg";
 import heartFilledIcon from "../../assets/icons/heart_filled.svg";
-import defaultAvatar from "../../assets/images/default_avatar.png";
+import defaultAvatar from "../../assets/images/default_avatar.webp";
 import editIcon from "../../assets/icons/edit.svg";
 import deleteIcon from "../../assets/icons/delete.svg";
 import PostModal from "../../components/PostModal/PostModal";

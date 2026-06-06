@@ -5,7 +5,7 @@ import closeIcon from "../../assets/icons/carousel_close.svg";
 import arrowLeftIcon from "../../assets/icons/carousel_arrow_left.svg";
 import arrowRightIcon from "../../assets/icons/carousel_arrow_right.svg";
 import imagePlaceholderIcon from "../../assets/icons/image_placeholder.svg";
-import defaultAvatar from "../../assets/images/default_avatar.png";
+import defaultAvatar from "../../assets/images/default_avatar.webp";
 import { RUSSIAN_CITIES } from "../../data/russianCities";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch, uploadFile } from "../../services/api";
