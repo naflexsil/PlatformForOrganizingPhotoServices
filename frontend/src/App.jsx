@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
+import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
 import MainPage from "./pages/MainPage/MainPage";
 import PhotographerProfile from "./pages/PhotographerProfile/PhotographerProfile";
 import UserProfile from "./pages/UserProfile/UserProfile";
@@ -121,6 +122,7 @@ const AppContent = () => {
 
   return (
     <>
+      <ScrollToTop />
       <Header
         isAuthenticated={isAuth}
         onLoginClick={() => setShowAuthModal(true)}
