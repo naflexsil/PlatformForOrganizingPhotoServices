@@ -2,7 +2,7 @@ import React from "react";
 import s from "./SoulSection.module.css";
 import mirrorImg from "../../../assets/images/picSoulSection.webp";
 
-const SoulSection = () => {
+const SoulSection = ({ onOpenAuthModal }) => {
   const benefits = [
     <>
       Оставь социальные сети для личной жизни, пусть{" "}
@@ -31,7 +31,9 @@ const SoulSection = () => {
               ))}
             </ul>
 
-            <button className={s.regBtn}>Зарегистрироваться</button>
+            <button className={s.regBtn} onClick={onOpenAuthModal}>
+              Зарегистрироваться
+            </button>
           </div>
 
           <div className={s.imageSide}>

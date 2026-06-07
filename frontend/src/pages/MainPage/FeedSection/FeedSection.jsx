@@ -1,8 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import s from "./FeedSection.module.css";
 import feedPhoto from "../../../assets/images/feed_preview.webp";
 
 const FeedSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section className={s.feed}>
       <div className={s.container}>
@@ -15,7 +18,9 @@ const FeedSection = () => {
               Или может в какую позу лучше встать? <br />
               Посмотрите, что фотографируют другие!
             </p>
-            <button className={s.showBtn}>Перейти на ленту</button>
+            <button className={s.showBtn} onClick={() => navigate("/feed")}>
+              Перейти на ленту
+            </button>
           </div>
 
           <div className={s.imageWrapper}>

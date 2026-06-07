@@ -19,6 +19,9 @@ import FavoritesPage from "./pages/FavoritesPage/FavoritesPage";
 import SearchPage from "./pages/SearchPage/SearchPage";
 import ChatsPage from "./pages/ChatsPage/ChatsPage";
 import StatsPage from "./pages/StatsPage/StatsPage";
+import ContactsPage from "./pages/ContactsPage/ContactsPage";
+import PrivacyPage from "./pages/PrivacyPage/PrivacyPage";
+import TermsPage from "./pages/TermsPage/TermsPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import { SocketProvider, useSocket } from "./context/SocketContext";
@@ -125,7 +128,7 @@ const AppContent = () => {
         unreadNotifications={unreadNotifications ?? 0}
       />
       <Routes>
-        <Route path="/" element={<MainPage />} />
+        <Route path="/" element={<MainPage onOpenAuthModal={() => setShowAuthModal(true)} />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/feed" element={<InspirationPage />} />
@@ -134,11 +137,14 @@ const AppContent = () => {
         <Route path="/chats/:chatId" element={<ChatsPage />} />
         <Route path="/profile" element={<MyProfile />} />
         <Route path="/stats" element={<StatsPage />} />
+        <Route path="/contacts" element={<ContactsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
         <Route path="/:tag/portfolio/:folderId" element={<PortfolioFolderPage />} />
         <Route path="/:tag/portfolio" element={<PortfolioPage />} />
         <Route path="/:handle" element={<PublicProfile />} />
       </Routes>
-      <Footer />
+      <Footer onOpenAuthModal={() => setShowAuthModal(true)} />
 
       {showAuthModal && (
         <AuthModal

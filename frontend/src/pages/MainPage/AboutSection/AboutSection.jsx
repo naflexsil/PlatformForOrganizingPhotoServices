@@ -1,8 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import s from "./AboutSection.module.css";
 import aboutImg from "../../../assets/images/picAboutSection.webp";
 
 const AboutSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section className={s.about}>
       <div className={s.contentWrapper}>
@@ -23,7 +26,9 @@ const AboutSection = () => {
             </p>
           </div>
 
-          <button className={s.showBtn}>Показать фотографов</button>
+          <button className={s.showBtn} onClick={() => navigate("/search")}>
+            Показать фотографов
+          </button>
         </div>
 
         <div className={s.imageSide}>

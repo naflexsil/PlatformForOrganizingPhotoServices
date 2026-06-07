@@ -1,8 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import s from "./WelcomeSection.module.css";
 import welcomeImg from "../../../assets/images/picWelcomeSection.webp";
 
 const WelcomeSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section className={s.welcome}>
       <div className={s.contentWrapper}>
@@ -24,7 +27,9 @@ const WelcomeSection = () => {
 
         <div className={s.imageSide}>
           <img src={welcomeImg} alt="Коллаж работ" className={s.mainImage} />
-          <button className={s.actionBtn}>Найти фотографа</button>
+          <button className={s.actionBtn} onClick={() => navigate("/search")}>
+            Найти фотографа
+          </button>
         </div>
       </div>
     </section>

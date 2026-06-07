@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "../../context/ToastContext";
 import s from "./Footer.module.css";
 import vkLogo from "../../assets/icons/vk_logo.svg";
 import mailLogo from "../../assets/icons/mail_logo.svg";
 
-const Footer = () => {
+const Footer = ({ onOpenAuthModal }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const freepikLinks = [
     {
@@ -62,29 +66,38 @@ const Footer = () => {
     <footer className={s.footer}>
       <div className={s.grid}>
         <div className={`${s.card} ${s.topLeft}`}>
-          <img src="/logo_psyshe.svg" alt="Psyshe" className={s.logo} />
+          <img
+            src="/logo_psyshe.svg"
+            alt="Psyshe"
+            className={s.logo}
+            onClick={() => navigate("/")}
+            style={{ cursor: "pointer" }}
+          />
         </div>
 
         <div className={`${s.card} ${s.topRight}`}>
           <div className={s.socials}>
-            <a
-              href="https://vk.com"
-              target="_blank"
-              rel="noreferrer"
+            <button
+              type="button"
               className={s.socialIcon}
+              onClick={() => showToast("Скоро создадим свое VK сообщество!", "success")}
             >
               <img src={vkLogo} alt="VK" />
-            </a>
-            <a href="mailto:contact@psyshe.ru" className={s.socialIcon}>
+            </button>
+            <button
+              type="button"
+              className={s.socialIcon}
+              onClick={() => showToast("Скоро можно будет написать нам на почту!", "success")}
+            >
               <img src={mailLogo} alt="Email" />
-            </a>
+            </button>
           </div>
         </div>
 
         <div className={`${s.card} ${s.bottomLeft}`}>
           <div className={s.legalContent}>
-            <a href="/privacy">Политика конфиденциальности</a>
-            <a href="/terms">Правила сервиса</a>
+            <a href="/privacy" onClick={(e) => { e.preventDefault(); navigate("/privacy"); }}>Политика конфиденциальности</a>
+            <a href="/terms" onClick={(e) => { e.preventDefault(); navigate("/terms"); }}>Правила сервиса</a>
 
             <div className={s.detailsContainer} ref={dropdownRef}>
               <button
@@ -115,13 +128,13 @@ const Footer = () => {
         <div className={`${s.card} ${s.bottomRight}`}>
           <div className={s.navGrid}>
             <div className={s.navColumn}>
-              <a href="/">Главная</a>
-              <a href="/catalog">Поиск</a>
-              <a href="/inspiration">Лента вдохновения</a>
+              <a href="/" onClick={(e) => { e.preventDefault(); navigate("/"); }}>Главная</a>
+              <a href="/search" onClick={(e) => { e.preventDefault(); navigate("/search"); }}>Поиск</a>
+              <a href="/feed" onClick={(e) => { e.preventDefault(); navigate("/feed"); }}>Лента вдохновения</a>
             </div>
             <div className={s.navColumn}>
-              <a href="/contacts">Контакты</a>
-              <a href="/login">Войти</a>
+              <a href="/contacts" onClick={(e) => { e.preventDefault(); navigate("/contacts"); }}>Контакты</a>
+              <a href="/login" onClick={(e) => { e.preventDefault(); onOpenAuthModal?.(); }}>Войти</a>
             </div>
           </div>
         </div>
