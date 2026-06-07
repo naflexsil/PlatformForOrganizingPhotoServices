@@ -12,12 +12,10 @@
 .own { flex-direction: row-reverse; }
 .theirs { flex-direction: row; }
 
-/* ── Avatar ── */
 .avatarSlot { flex-shrink: 0; width: 34px; }
 .avatar { width: 34px; height: 34px; border-radius: 10px; object-fit: cover; }
 .avatarSpacer { width: 34px; }
 
-/* ── Bubble wrap ── */
 .bubbleWrap {
   display: flex;
   flex-direction: column;
@@ -27,7 +25,6 @@
 .own .bubbleWrap { align-items: flex-end; }
 .theirs .bubbleWrap { align-items: flex-start; }
 
-/* Sender name */
 .senderName {
   font-family: "Farabee", serif;
   font-size: 20px;
@@ -37,7 +34,6 @@
   line-height: 1.2;
 }
 
-/* ── Bubble ── */
 .bubble {
   padding: 10px 14px;
   border-radius: 16px;
@@ -83,7 +79,6 @@
   overflow: hidden;
 }
 
-/* ── Photo grids ── */
 .gridImg {
   object-fit: cover;
   cursor: pointer;
@@ -95,7 +90,6 @@
 }
 .gridImg:hover { opacity: 0.88; }
 
-/* Single photo — natural aspect ratio, no square crop */
 .gridSolo {
   max-width: 280px;
   overflow: hidden;
@@ -111,7 +105,6 @@
   border-radius: 10px;
 }
 
-/* 2 photos */
 .grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -121,7 +114,6 @@
 }
 .grid2 .gridImg { height: 130px; }
 
-/* 3+ photos: Telegram-style (first full-width, rest rows of 3) */
 .gridStack {
   display: flex;
   flex-direction: column;
@@ -146,11 +138,9 @@
   flex-shrink: 0;
 }
 .gridBottomRow .gridImg { flex: 1; min-width: 0; border-radius: 0; }
-/* Round corners for first/last image in last row */
 .gridBottomRow:last-child .gridImg:first-child { border-bottom-left-radius: 8px; }
 .gridBottomRow:last-child .gridImg:last-child { border-bottom-right-radius: 8px; }
 
-/* ── Gallery overlay ── */
 .galleryOverlay {
   position: fixed;
   inset: 0;
@@ -203,7 +193,6 @@
   border-radius: 20px;
 }
 
-/* ── File card ── */
 .fileCard {
   display: flex;
   align-items: center;

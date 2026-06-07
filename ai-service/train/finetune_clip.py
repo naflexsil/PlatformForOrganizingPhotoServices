@@ -54,7 +54,7 @@ class TripletDataset(Dataset):
 
         if not csv_path.exists():
             sys.exit(
-                f"ОШИБКА: {csv_path} не найден. Запусти prepare_dataset.py сначала.")
+                f"ОШИБКА: {csv_path} не найден. Запустите prepare_dataset.py сначала.")
 
         with open(csv_path, encoding="utf-8") as f:
             for row in csv.DictReader(f):
@@ -66,7 +66,7 @@ class TripletDataset(Dataset):
             c for c, paths in self.by_category.items() if len(paths) >= 2]
         if not self.categories:
             sys.exit(
-                "ОШИБКА: нет категорий с ≥2 изображениями. Проверь labels.csv и пути к файлам.")
+                "ОШИБКА: нет категорий с ≥2 изображениями. Проверьте labels.csv и пути к файлам.")
 
         self.triplets = self._build_triplets()
 

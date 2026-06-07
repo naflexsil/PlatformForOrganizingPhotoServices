@@ -5,7 +5,6 @@
   padding: 8px 40px;
 }
 
-/* ── Offline / reconnecting notice ── */
 .offlineNotice {
   display: flex;
   align-items: center;
@@ -15,7 +14,6 @@
   color: var(--accent-red);
 }
 
-/* ── Upload progress bar ── */
 .uploadingBar {
   display: flex;
   align-items: center;
@@ -38,7 +36,6 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Pending photos strip ── */
 .pendingPhotos {
   display: flex;
   gap: 8px;
@@ -104,7 +101,6 @@
   opacity: 0.45;
 }
 
-/* ── Pending file ── */
 .pendingFile {
   display: flex;
   align-items: center;
@@ -146,7 +142,6 @@
   opacity: 0.5;
 }
 
-/* ── Input row ── */
 .inputRow {
   display: flex;
   align-items: flex-end;
@@ -154,7 +149,6 @@
   padding: 4px 0;
 }
 
-/* Attach button: 50x50, icon 36x36 */
 .attachBtn {
   flex-shrink: 0;
   width: 50px;
@@ -177,7 +171,6 @@
   display: block;
 }
 
-/* Send button: transparent bg — SVG has its own red rounded rect */
 .sendBtn {
   flex-shrink: 0;
   width: 50px;
@@ -191,12 +184,10 @@
   padding: 0;
 }
 
-/* Disabled: grayscale the SVG (red rect becomes gray, white arrow stays visible) */
 .sendBtn:not(.sendBtnActive) .sendIcon {
   filter: grayscale(1) opacity(0.55);
 }
 
-/* Active: no filter, natural SVG colors */
 .sendBtnActive .sendIcon {
   filter: none;
 }
@@ -204,7 +195,6 @@
   filter: brightness(1.05);
 }
 
-/* Icon fills the button completely — SVG already has built-in rounded rect bg */
 .sendIcon {
   width: 50px;
   height: 50px;
@@ -214,7 +204,6 @@
 
 .hiddenInput { display: none; }
 
-/* Textarea: grows first, scrolls only at max height */
 .textarea {
   flex: 1;
   resize: none;
@@ -238,7 +227,6 @@
 .textarea:focus { border-color: var(--accent-red); }
 .textarea::placeholder { color: var(--dark-text); opacity: 0.35; }
 
-/* ── Mobile ── */
 @media (max-width: 768px) {
   .root { padding: 8px 16px; }
 }

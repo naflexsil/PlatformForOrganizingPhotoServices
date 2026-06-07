@@ -28,7 +28,6 @@
   display: block;
 }
 
-/* Online dot: fill --light-pink, white stroke, flush to avatar corner */
 .onlineDot {
   position: absolute;
   bottom: 0;
@@ -86,7 +85,6 @@
   max-width: 190px;
 }
 
-/* Unread dot: --accent-red */
 .unreadDot {
   width: 10px;
   height: 10px;

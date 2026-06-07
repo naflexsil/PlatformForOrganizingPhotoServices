@@ -1,6 +1,5 @@
 import prisma from "../config/db.js";
 
-// POST /api/support — создать тикет
 export const createTicket = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -33,7 +32,6 @@ export const createTicket = async (req, res, next) => {
   }
 };
 
-// GET /api/support — тикеты текущего пользователя
 export const getMyTickets = async (req, res, next) => {
   try {
     const userId = req.user.id;

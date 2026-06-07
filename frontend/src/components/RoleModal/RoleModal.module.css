@@ -110,7 +110,6 @@
   text-align: center;
 }
 
-/* Warning overlay inside the modal */
 .warningOverlay {
   position: absolute;
   inset: 0;

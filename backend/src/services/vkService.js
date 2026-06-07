@@ -24,11 +24,6 @@ export const buildAuthUrl = (codeChallenge, state) => {
 };
 
 export const exchangeCodeForToken = async (code, codeVerifier) => {
-  console.log('[VK ID] Exchanging code for token…');
-  console.log('[VK ID] redirect_uri:', process.env.VK_REDIRECT_URI);
-  console.log('[VK ID] code_verifier length:', codeVerifier?.length);
-  console.log('[VK ID] code (preview):', code?.slice(0, 6) + '…');
-
   const body = new URLSearchParams({
     grant_type: 'authorization_code',
     code,
@@ -45,7 +40,6 @@ export const exchangeCodeForToken = async (code, codeVerifier) => {
   });
 
   const data = await res.json();
-  console.log('[VK ID] Token response status:', res.status);
 
   if (data.error) {
     console.error('[VK ID] Token error:', data.error, '|', data.error_description);
@@ -63,7 +57,6 @@ export const parseUserFromIdToken = (idToken) => {
   try {
     const raw = idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
     const payload = JSON.parse(Buffer.from(raw, 'base64').toString('utf8'));
-    console.log('[VK ID] id_token claims:', Object.keys(payload));
 
     let birthDate = null;
     if (payload.bdate) {

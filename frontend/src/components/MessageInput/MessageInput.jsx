@@ -35,7 +35,6 @@ const MessageInput = ({ chatId, socketReady = true }) => {
       ta.style.height = "auto";
       const newH = Math.min(ta.scrollHeight, 120);
       ta.style.height = `${newH}px`;
-      // Only show scrollbar when text doesn't fit within max height
       ta.style.overflowY = ta.scrollHeight > 120 ? "auto" : "hidden";
     }
   };
@@ -137,7 +136,6 @@ const MessageInput = ({ chatId, socketReady = true }) => {
 
   return (
     <div className={s.root}>
-      {/* Upload progress */}
       {isUploading && (
         <div className={s.uploadingBar}>
           <div className={s.uploadSpinner} />
@@ -145,7 +143,6 @@ const MessageInput = ({ chatId, socketReady = true }) => {
         </div>
       )}
 
-      {/* Pending photos strip */}
       {pendingPhotos.length > 0 && (
         <div className={s.pendingPhotos}>
           {pendingPhotos.map((p, i) => (
@@ -164,7 +161,6 @@ const MessageInput = ({ chatId, socketReady = true }) => {
         </div>
       )}
 
-      {/* Pending file */}
       {pendingFile && (
         <div className={s.pendingFile}>
           <img src={attachIcon} alt="" className={s.pendingFileIcon} />
@@ -175,7 +171,6 @@ const MessageInput = ({ chatId, socketReady = true }) => {
         </div>
       )}
 
-      {/* Offline notice */}
       {!socketReady && (
         <div className={s.offlineNotice}>
           <div className={s.uploadSpinner} />
@@ -183,7 +178,6 @@ const MessageInput = ({ chatId, socketReady = true }) => {
         </div>
       )}
 
-      {/* Input row */}
       <div className={s.inputRow}>
         <button className={`${s.attachBtn} ${isUploading ? s.attachBtnDisabled : ""}`} onClick={() => !isUploading && fileInputRef.current?.click()} title="Прикрепить файл">
           <img src={attachIcon} alt="Прикрепить" className={s.attachIcon} />
@@ -208,7 +202,6 @@ const MessageInput = ({ chatId, socketReady = true }) => {
           rows={1}
         />
 
-        {/* No disabled attr — prevents iOS touch issues; guard inside handleSend */}
         <button className={`${s.sendBtn} ${canSend ? s.sendBtnActive : ""}`} onClick={handleSend} title="Отправить">
           <img src={sendIcon} alt="Отправить" className={s.sendIcon} />
         </button>

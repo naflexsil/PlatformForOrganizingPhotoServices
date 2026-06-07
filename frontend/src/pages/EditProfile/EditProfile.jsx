@@ -134,18 +134,15 @@ const EditProfile = ({
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
-  // Существующие фото в поиске (S3 URL), пришедшие с сервера
   const [existingSearchPhotos, setExistingSearchPhotos] = useState(
     initialData.searchPhotos || [],
   );
-  // Удалённые существующие фото (нужно DELETE на сервере)
   const [removedSearchPhotos, setRemovedSearchPhotos] = useState([]);
-  // Новые файлы для загрузки
+
   const [newSearchPhotoFiles, setNewSearchPhotoFiles] = useState([]);
-  // Превью новых файлов (blob URL)
+
   const [newSearchPhotoPreviews, setNewSearchPhotoPreviews] = useState([]);
 
-  // Все отображаемые фото (существующие + новые превью)
   const searchPhotos = [...existingSearchPhotos, ...newSearchPhotoPreviews];
 
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -221,12 +218,10 @@ const EditProfile = ({
     const idx = currentPhotoIndex;
     const existingCount = existingSearchPhotos.length;
     if (idx < existingCount) {
-      // Удаляем существующую S3-фотографию
       const url = existingSearchPhotos[idx];
       setRemovedSearchPhotos((prev) => [...prev, url]);
       setExistingSearchPhotos((prev) => prev.filter((_, i) => i !== idx));
     } else {
-      // Удаляем новую (ещё не загруженную) фотографию
       const newIdx = idx - existingCount;
       setNewSearchPhotoFiles((prev) => prev.filter((_, i) => i !== newIdx));
       setNewSearchPhotoPreviews((prev) => prev.filter((_, i) => i !== newIdx));
@@ -266,7 +261,6 @@ const EditProfile = ({
     if (form.deliveryDays && isNaN(Number(form.deliveryDays)))
       newErrors.deliveryDays = "Введите число";
 
-    // preserve existing tag error from blur check
     if (errors.tag) newErrors.tag = errors.tag;
 
     setErrors(newErrors);
@@ -281,7 +275,6 @@ const EditProfile = ({
       const authHeaders = { Authorization: `Bearer ${accessToken}` };
       const jsonHeaders = { "Content-Type": "application/json", ...authHeaders };
 
-      // 1. Загрузка аватара (если выбран новый)
       let newAvatarUrl = null;
       let newAvatarUrlOriginal = null;
       if (avatarFile) {
@@ -293,7 +286,6 @@ const EditProfile = ({
         newAvatarUrlOriginal = avatarResult.data?.originalUrl || null;
       }
 
-      // 2. Удаление снятых фото поиска
       for (const url of removedSearchPhotos) {
         await apiFetch("/api/upload/search-photo", {
           method: "DELETE",
@@ -302,7 +294,6 @@ const EditProfile = ({
         });
       }
 
-      // 3. Загрузка новых фото поиска
       for (const file of newSearchPhotoFiles) {
         const result = await uploadFile("/api/upload/search-photo", file, "image", accessToken);
         if (result.status !== "success") {
@@ -310,7 +301,6 @@ const EditProfile = ({
         }
       }
 
-      // 4. Сохранение основных данных профиля
       const userResult = await apiFetch("/api/users/me", {
         method: "PATCH",
         headers: jsonHeaders,
@@ -324,7 +314,6 @@ const EditProfile = ({
       });
       if (userResult.status !== "success") throw new Error(userResult.message);
 
-      // 5. Сохранение данных фотографа (если нужно)
       if (isPhotographer) {
         const phResult = await apiFetch("/api/users/me/photographer", {
           method: "PATCH",

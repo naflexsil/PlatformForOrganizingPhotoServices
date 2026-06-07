@@ -14,7 +14,7 @@ const NewChatModal = ({ onClose }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("friends");
   const [search, setSearch] = useState("");
-  const [subscriptions, setSubscriptions] = useState([]); // includes isFriend
+  const [subscriptions, setSubscriptions] = useState([]); 
   const [subscribers, setSubscribers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [starting, setStarting] = useState(false);

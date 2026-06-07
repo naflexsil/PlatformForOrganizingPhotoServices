@@ -206,7 +206,6 @@ const PortfolioPage = () => {
     <div className={s.pageWrapper}>
       <div className={s.container}>
 
-        {/* Шапка */}
         <div className={s.pageHeader}>
           <Link to={`/@${tag}`} className={s.authorLink}>
             <img
@@ -232,7 +231,6 @@ const PortfolioPage = () => {
           )}
         </div>
 
-        {/* Папки */}
         {folders.length > 0 && (
           <div className={s.foldersRow}>
             {folders.map((folder) => (
@@ -263,7 +261,6 @@ const PortfolioPage = () => {
           </div>
         )}
 
-        {/* Сетка фото */}
         {photos.length > 0 ? (
           <MasonryGrid
             photos={photos}
@@ -285,7 +282,6 @@ const PortfolioPage = () => {
         )}
       </div>
 
-      {/* Модалки */}
       {selectedPhoto && (
         <PortfolioPhotoModal
           photo={selectedPhoto}
@@ -318,7 +314,6 @@ const PortfolioPage = () => {
         />
       )}
 
-      {/* Подтверждение удаления фото */}
       {photoToDelete && (
         <div className={s.confirmOverlay} onClick={() => setPhotoToDelete(null)}>
           <div className={s.confirmModal} onClick={(e) => e.stopPropagation()}>
@@ -332,7 +327,6 @@ const PortfolioPage = () => {
         </div>
       )}
 
-      {/* Подтверждение удаления папки */}
       {folderToDelete && (
         <div className={s.confirmOverlay} onClick={() => setFolderToDelete(null)}>
           <div className={s.confirmModal} onClick={(e) => e.stopPropagation()}>

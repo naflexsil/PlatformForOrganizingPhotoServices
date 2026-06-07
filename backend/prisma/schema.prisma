@@ -95,6 +95,7 @@ model Post {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
+  @@index([authorId])
   @@map("posts")
 }
 
@@ -132,6 +133,8 @@ model Photo {
   notifications   Notification[]
   createdAt       DateTime         @default(now())
 
+  @@index([userId])
+  @@index([folderId])
   @@map("photos")
 }
 
@@ -246,6 +249,8 @@ model Deal {
   updatedAt      DateTime     @updatedAt
 
   @@index([chatId])
+  @@index([photographerId])
+  @@index([clientId])
   @@map("deals")
 }
 

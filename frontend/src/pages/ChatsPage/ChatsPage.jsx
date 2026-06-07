@@ -30,7 +30,6 @@ const ChatsPage = () => {
   return (
     <div className={s.page}>
       <div className={s.leftPanel}>
-        {/* Tabs act as the title row */}
         <div className={s.leftHeader}>
           <div className={s.tabs}>
             <button

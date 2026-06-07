@@ -2,6 +2,7 @@ import multer from 'multer';
 import path from 'path';
 import prisma from '../config/db.js';
 import { uploadImage as s3UploadImage, deleteFile, uploadChatImage, uploadChatFile } from '../services/fileService.js';
+import { multerErrorMessage } from '../utils/multerError.js';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
 
@@ -48,7 +49,7 @@ const upload = multer({
 
 const wrapUpload = (req, res, next) => {
   upload.single('image')(req, res, (err) => {
-    if (err) return res.status(400).json({ status: 'error', message: err.message });
+    if (err) return res.status(400).json({ status: 'error', message: multerErrorMessage(err) });
     next();
   });
 };
@@ -64,7 +65,6 @@ export const uploadPhoto = async (req, res) => {
 
   const { postId, folderId, description } = req.body;
   const userId = req.user?.id;
-  console.log(`[UPLOAD] photo: ${req.file.originalname} (${req.file.size} bytes)`);
 
   try {
     if (userId && !postId) {
@@ -86,7 +86,6 @@ export const uploadPhoto = async (req, res) => {
       req.file.originalname,
       req.file.mimetype,
     );
-    console.log(`[UPLOAD] photo OK → originalUrl="${originalUrl}" previewUrl="${previewUrl}"`);
 
     const photo = await prisma.photo.create({
       data: {
@@ -128,7 +127,6 @@ export const uploadAvatar = async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ status: 'error', message: 'Файл не загружен' });
   }
-  console.log(`[UPLOAD] avatar: ${req.file.originalname} (${req.file.size} bytes)`);
 
   try {
     const currentUser = await prisma.user.findUnique({
@@ -142,7 +140,6 @@ export const uploadAvatar = async (req, res) => {
       req.file.mimetype,
     );
 
-    console.log(`[UPLOAD] avatar OK → previewUrl="${previewUrl}" originalUrl="${originalUrl}"`);
     const user = await prisma.user.update({
       where: { id: req.user.id },
       data: {
@@ -240,7 +237,7 @@ const chatUpload = multer({
 
 export const chatAttachmentMiddleware = (req, res, next) => {
   chatUpload.single('file')(req, res, (err) => {
-    if (err) return res.status(400).json({ status: 'error', message: err.message });
+    if (err) return res.status(400).json({ status: 'error', message: multerErrorMessage(err) });
     next();
   });
 };
@@ -281,7 +278,6 @@ export const uploadChatAttachment = async (req, res) => {
         req.file.mimetype,
         chatId,
       );
-      console.log(`[UPLOAD] chat image OK chatId="${chatId}"`);
       return res.status(201).json({
         status: 'success',
         data: {
@@ -305,7 +301,6 @@ export const uploadChatAttachment = async (req, res) => {
       req.file.mimetype,
       chatId,
     );
-    console.log(`[UPLOAD] chat file OK chatId="${chatId}" fileName="${req.file.originalname}"`);
     return res.status(201).json({
       status: 'success',
       data: {

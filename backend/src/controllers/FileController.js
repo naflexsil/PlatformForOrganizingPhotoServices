@@ -3,7 +3,6 @@ import { s3Client } from '../services/fileService.js';
 
 export const serveFile = async (req, res) => {
   const { bucket, key } = req.params;
-  console.log(`[FILE] GET bucket="${bucket}" key="${key}"`);
 
   try {
     const command = new GetObjectCommand({ Bucket: bucket, Key: key });

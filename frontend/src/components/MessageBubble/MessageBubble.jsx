@@ -15,7 +15,6 @@ function formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
 }
 
-// Gallery overlay: shows preview, click → open original in new tab
 const Gallery = ({ photos, startIndex, onClose }) => {
   const [index, setIndex] = useState(startIndex);
 
@@ -33,7 +32,6 @@ const Gallery = ({ photos, startIndex, onClose }) => {
           <img src={arrowLeft} alt="←" />
         </button>
       )}
-      {/* previewUrl shown; click opens originalUrl in new tab */}
       <img
         src={photos[index].previewUrl}
         alt=""
@@ -53,7 +51,6 @@ const Gallery = ({ photos, startIndex, onClose }) => {
   );
 };
 
-// Telegram-style photo grid
 const PhotoGrid = ({ photos, onOpen }) => {
   const count = photos.length;
 
@@ -75,7 +72,6 @@ const PhotoGrid = ({ photos, onOpen }) => {
     return <div className={s.grid2}>{photos.map((p, i) => img(p, i))}</div>;
   }
 
-  // 3+: first photo full-width, rest in rows of 3
   const restRows = [];
   for (let i = 1; i < count; i += 3) {
     restRows.push(photos.slice(i, i + 3));

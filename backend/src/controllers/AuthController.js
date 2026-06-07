@@ -85,7 +85,6 @@ export const initiateVkLogin = (req, res) => {
   });
 
   const authUrl = buildAuthUrl(codeChallenge, role);
-  console.log('[VK ID] Redirecting to:', authUrl);
   return res.redirect(authUrl);
 };
 
@@ -216,11 +215,9 @@ export const loginWithVkSdk = async (req, res) => {
       const isRegistered = user.tag && !user.tag.startsWith('vk_');
       const updateData = {};
       if (!isRegistered) {
-        // До завершения регистрации синхронизируем данные из VK
         if (firstName) updateData.firstName = firstName;
         if (lastName) updateData.lastName = lastName;
       }
-      // Аватар из VK обновляем только если пользователь не загрузил свой
       if (avatarUrl && !user.avatarUrlOriginal) {
         updateData.avatarUrl = avatarUrl;
       }

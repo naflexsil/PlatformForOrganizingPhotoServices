@@ -27,7 +27,6 @@
   color: var(--dark-text); opacity: 0.45; cursor: pointer; padding: 4px;
 }
 
-/* Timeline */
 .timeline {
   flex: 1; overflow-y: auto;
   padding: 16px 24px;

@@ -1,6 +1,7 @@
 import multer from 'multer';
 import path from 'path';
 import prisma from '../config/db.js';
+import { multerErrorMessage } from '../utils/multerError.js';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
 
@@ -19,7 +20,7 @@ const upload = multer({
 
 export const searchByImageMiddleware = (req, res, next) => {
   upload.single('image')(req, res, (err) => {
-    if (err) return res.status(400).json({ status: 'error', message: err.message });
+    if (err) return res.status(400).json({ status: 'error', message: multerErrorMessage(err) });
     next();
   });
 };

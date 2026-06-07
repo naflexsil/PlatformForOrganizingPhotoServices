@@ -27,7 +27,7 @@ def load_test_queries():
                  "Создайте train/data/test_images/<category>/ и положите туда фото.")
 
     paths, labels = [], []
-    print("\nТестовая выборка (query) — новые, невиданные фото:")
+    print("\nТестовая выборка (query) - новые фото:")
     for cat_dir in sorted(TEST_DIR.iterdir()):
         if not cat_dir.is_dir():
             continue
@@ -35,7 +35,7 @@ def load_test_queries():
         imgs = sorted(p for p in cat_dir.iterdir()
                       if p.suffix.lower() in IMG_EXTS)
         if not imgs:
-            print(f"  {cat:12s}: 0 фото  ← пропущено")
+            print(f"  {cat:12s}: 0 фото - пропущено")
             continue
         paths.extend(imgs)
         labels.extend([cat] * len(imgs))
@@ -49,7 +49,8 @@ def load_test_queries():
 
 def load_db(categories: list[str]):
     if not DATA_CSV.exists():
-        sys.exit(f"ОШИБКА: {DATA_CSV} не найден. Запусти prepare_dataset.py.")
+        sys.exit(
+            f"ОШИБКА: {DATA_CSV} не найден. Запустите prepare_dataset.py.")
 
     by_cat: dict[str, list[Path]] = defaultdict(list)
     with open(DATA_CSV, encoding="utf-8") as f:
@@ -62,7 +63,7 @@ def load_db(categories: list[str]):
     random.seed(SEED)
     paths, labels = [], []
     print(
-        f"База поиска (db) — обучающий датасет (до {MAX_DB_PER_CAT} фото/кат.):")
+        f"База поиска (db) - обучающий датасет (до {MAX_DB_PER_CAT} фото/кат.):")
     for cat in sorted(categories):
         pool = by_cat.get(cat, [])
         sample = random.sample(pool, min(MAX_DB_PER_CAT, len(pool)))
@@ -118,7 +119,7 @@ def print_model_results(title, q_labels, db_labels, q_emb, db_emb):
     for k in TOP_KS:
         res = cross_precision_at_k(q_labels, db_labels, q_emb, db_emb, k)
         per_cat = res["per_category"]
-        print(f"\n  Precision@{k}  (overall: {res['overall']:.3f})")
+        print(f"\n  Точность@{k}  (общая: {res['overall']:.3f})")
         for cat in categories:
             score = per_cat.get(cat, 0.0)
             bar = "█" * round(score * 20)
@@ -129,9 +130,9 @@ def print_comparison(q_labels, db_labels,
                      q_emb_base, db_emb_base,
                      q_emb_ft,   db_emb_ft):
     print(f"\n{'═'*58}")
-    print("  Итог: Baseline  vs  Fine-tuned  (тестовая выборка)")
+    print("  Итог: базовая модель  vs  дообученная модель  (тестовая выборка)")
     print(f"{'═'*58}")
-    print(f"  {'':4s}  {'Baseline':>10}  {'Fine-tuned':>10}  {'Δ':>8}")
+    print(f"  {'':4s}  {'До':>10}  {'После':>10}  {'Разница':>8}")
     print(f"  {'─'*46}")
     for k in TOP_KS:
         r_b = cross_precision_at_k(
@@ -141,7 +142,7 @@ def print_comparison(q_labels, db_labels,
         d = r_f - r_b
         sign = "+" if d >= 0 else ""
         marker = "▲" if d > 0.01 else ("▼" if d < -0.01 else "≈")
-        print(f"  P@{k}  {r_b:>10.3f}  {r_f:>10.3f}  {sign}{d:>7.3f}  {marker}")
+        print(f"  Точность@{k}  {r_b:>10.3f}  {r_f:>10.3f}  {sign}{d:>7.3f}  {marker}")
     print()
 
 
@@ -155,31 +156,31 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Устройство: {device}\n")
 
-    print("Загружаю Baseline CLIP (без дообучения)...")
+    print("Загружаю базовую модель CLIP (без дообучения)...")
     model_b, proc_b, _ = build_model(weights_path=None)
     q_emb_base = encode_all(q_paths,  model_b, proc_b,
-                            device, "Query  baseline")
+                            device, "Запросы  (база)")
     db_emb_base = encode_all(db_paths, model_b, proc_b,
-                             device, "DB     baseline")
+                             device, "База      (база)")
     del model_b
     if device == "cuda":
         torch.cuda.empty_cache()
 
     if not WEIGHTS_PATH.exists():
         sys.exit(f"\nВеса не найдены: {WEIGHTS_PATH}\n"
-                 "Запусти python train/finetune_clip.py сначала.")
+                 "Запустите python train/finetune_clip.py сначала.")
 
-    print(f"Загружаю Fine-tuned CLIP ({WEIGHTS_PATH.name})...")
+    print(f"Загружаю дообученную модель CLIP ({WEIGHTS_PATH.name})...")
     model_ft, proc_ft, _ = build_model(weights_path=WEIGHTS_PATH)
     q_emb_ft = encode_all(q_paths,  model_ft, proc_ft,
-                          device, "Query  fine-tuned")
+                          device, "Запросы  (дообуч.)")
     db_emb_ft = encode_all(db_paths, model_ft, proc_ft,
-                           device, "DB     fine-tuned")
+                           device, "База      (дообуч.)")
     del model_ft
 
-    print_model_results("Baseline CLIP  (openai/clip-vit-base-patch32)",
+    print_model_results("Базовая модель CLIP  (openai/clip-vit-base-patch32)",
                         q_labels, db_labels, q_emb_base, db_emb_base)
-    print_model_results(f"Fine-tuned CLIP  ({WEIGHTS_PATH.name})",
+    print_model_results(f"Дообученная модель CLIP  ({WEIGHTS_PATH.name})",
                         q_labels, db_labels, q_emb_ft, db_emb_ft)
     print_comparison(q_labels, db_labels,
                      q_emb_base, db_emb_base,

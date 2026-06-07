@@ -40,7 +40,7 @@ def load_eval_set() -> tuple[list[Path], list[str]]:
     if not DATA_CSV.exists():
         sys.exit(
             f"ОШИБКА: {DATA_CSV} не найден.\n"
-            "Запусти python train/prepare_dataset.py сначала."
+            "Запустите python train/prepare_dataset.py сначала."
         )
 
     by_category: dict[str, list[Path]] = defaultdict(list)
@@ -179,7 +179,7 @@ def main() -> None:
 
     if not WEIGHTS_PATH.exists():
         print(f"\nВеса не найдены: {WEIGHTS_PATH}")
-        print("   Запусти python train/finetune_clip.py сначала.")
+        print("   Запустите python train/finetune_clip.py сначала.")
         sys.exit(1)
 
     print(f"Загружаю Fine-tuned CLIP ({WEIGHTS_PATH.name})...")

@@ -28,7 +28,6 @@ const ChatList = ({ activeChatId }) => {
     loadChats();
   }, [loadChats]);
 
-  // Real-time: update chat item on new message
   useEffect(() => {
     if (!socket) return;
 
@@ -36,19 +35,17 @@ const ChatList = ({ activeChatId }) => {
       setChats((prev) => {
         const idx = prev.findIndex((c) => c.id === message.chatId);
         if (idx === -1) {
-          // New chat appeared — reload list
           loadChats();
           return prev;
         }
         const updated = [...prev];
         const chat = { ...updated[idx] };
         chat.lastMessage = message;
-        // Increment unread if not currently active chat
         if (message.chatId !== activeChatId) {
           chat.unreadCount = (chat.unreadCount || 0) + 1;
         }
         updated.splice(idx, 1);
-        return [chat, ...updated]; // bring to top
+        return [chat, ...updated]; 
       });
     };
 
@@ -66,7 +63,6 @@ const ChatList = ({ activeChatId }) => {
     };
   }, [socket, activeChatId, loadChats]);
 
-  // Update online status in real-time
   useEffect(() => {
     if (!socket) return;
 

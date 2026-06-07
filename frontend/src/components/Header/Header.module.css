@@ -12,7 +12,6 @@
   display: block;
 }
 
-/* ── Desktop nav ── */
 .nav {
   display: flex;
   align-items: center;
@@ -85,7 +84,6 @@
 .loginBtn:hover,
 .logoutBtn:hover { opacity: 1; }
 
-/* ── Burger (hidden on desktop) ── */
 .burgerWrap {
   display: none;
   position: relative;
@@ -107,7 +105,6 @@
   display: block;
 }
 
-/* Mobile dropdown menu */
 .mobileMenu {
   position: absolute;
   top: calc(100% + 8px);
@@ -160,7 +157,6 @@
 .mobileLogin:hover,
 .mobileNotifBtn:hover { background: rgba(255, 255, 255, 0.1); }
 
-/* ── Mobile breakpoint ── */
 @media (max-width: 900px) {
   .nav { display: none; }
   .burgerWrap { display: block; }

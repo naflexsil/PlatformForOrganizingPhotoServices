@@ -1,10 +1,6 @@
 import { verifyAccessToken } from '../utils/jwt.js';
 
 const authMiddleware = (req, res, next) => {
-
-  console.log('Новый запрос');
-  console.log('Заголовки:', JSON.stringify(req.headers, null, 2));
-
   const authHeader = req.headers['authorization'];
 
   if (!authHeader?.startsWith('Bearer ')) {

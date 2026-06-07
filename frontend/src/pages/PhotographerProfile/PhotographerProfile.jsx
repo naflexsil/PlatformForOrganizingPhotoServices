@@ -109,7 +109,6 @@ const PhotographerProfile = ({ isMyProfile = true, profileData = null }) => {
 
   const [userData, setUserData] = useState(profileData ?? EMPTY_PROFILE);
 
-  // Load subscription status when viewing another photographer's profile
   useEffect(() => {
     if (isMyProfile || !accessToken || !userData.id) return;
     fetch(`/api/subscriptions/${userData.id}/check`, {

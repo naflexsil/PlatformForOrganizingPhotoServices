@@ -61,7 +61,6 @@ export const getMyChats = async (req, res, next) => {
       orderBy: { updatedAt: "desc" },
     });
 
-    // Batch-query unread counts for all chats
     const chatIds = chats.map((c) => c.id);
     const unreadRows = await prisma.message.groupBy({
       by: ["chatId"],

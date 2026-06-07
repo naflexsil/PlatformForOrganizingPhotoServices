@@ -60,7 +60,6 @@ export const SocketProvider = ({ children }) => {
 
     const s = io(SOCKET_URL, {
       auth: { token: accessToken },
-      // No transports restriction — allows polling fallback for mobile networks that block WS
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,

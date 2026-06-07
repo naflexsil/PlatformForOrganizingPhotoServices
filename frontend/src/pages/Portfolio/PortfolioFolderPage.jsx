@@ -172,7 +172,6 @@ const PortfolioFolderPage = () => {
     <div className={s.pageWrapper}>
       <div className={s.container}>
 
-        {/* Шапка папки */}
         <div className={s.pageHeader}>
           <div className={s.headerLeft}>
             <button className={s.backLink} onClick={() => navigate(`/@${tag}/portfolio`)}>
@@ -196,7 +195,6 @@ const PortfolioFolderPage = () => {
           )}
         </div>
 
-        {/* Сетка фото */}
         {photos.length > 0 ? (
           <MasonryGrid
             photos={photos}

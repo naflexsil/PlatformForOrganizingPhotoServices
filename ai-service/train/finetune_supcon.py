@@ -3,19 +3,11 @@ Fine-tuning CLIP ViT-B/32 с Supervised Contrastive Loss.
 
 Почему SupCon лучше Triplet Loss для этой задачи:
 
-  Triplet Loss: за один шаг — 1 позитив, 1 негатив.
-  SupCon Loss:  за один шаг — ВСЕ позитивы и ВСЕ негативы батча.
+  Triplet Loss: за один шаг - 1 позитив, 1 негатив.
+  SupCon Loss:  за один шаг - ВСЕ позитивы и ВСЕ негативы батча.
   При batch=48 (8 примеров × 6 классов):
-    каждый sample видит 7 позитивов и 40 негативов → сигнала в ~50× больше.
+    каждый sample видит 7 позитивов и 40 негативов - сигнала в ~50× больше.
 
-Математика (Khosla et al., 2020):
-
-    L = (1/N) Σ_i [ -1/|P(i)| Σ_{p∈P(i)} log( exp(sim(z_i,z_p)/τ) / Σ_{a≠i} exp(sim(z_i,z_a)/τ) ) ]
-
-    P(i) — позитивы для i (тот же класс, другой индекс)
-    A(i) — все индексы кроме i
-    sim   — косинусное сходство (векторы L2-нормализованы)
-    τ     — temperature: чем меньше, тем жёстче граница между классами
 """
 
 import csv
@@ -237,12 +229,11 @@ def train():
             best_loss = avg_loss
             out = WEIGHTS_DIR / "clip_finetuned.pt"
             torch.save(model.vision_model.state_dict(), out)
-            print(f"  ✓ Лучшие веса сохранены → {out}")
+            print(f"Лучшие веса сохранены → {out}")
 
     print(f"\nОбучение завершено. Лучший loss: {best_loss:.4f}")
     print(f"История: {[f'{l:.4f}' for l in history]}")
     print(f"\nВеса перезаписаны в: {WEIGHTS_DIR / 'clip_finetuned.pt'}")
-    print("Следующий шаг: python train/evaluate_model.py")
 
 
 if __name__ == "__main__":
