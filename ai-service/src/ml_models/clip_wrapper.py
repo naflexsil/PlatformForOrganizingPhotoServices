@@ -77,11 +77,13 @@ class CLIPWrapper:
         n = len(pixels)
         avg_v = brightness_sum / n
         avg_s = saturation_sum / n
+
+        if avg_v > 0.75:
+            return "light"
+        if avg_v < 0.25:
+            return "dark"
+
         if avg_s < 0.12:
-            if avg_v > 0.72:
-                return "light"
-            if avg_v < 0.28:
-                return "dark"
             return "neutral"
         if warm >= cool and warm >= neutral:
             return "warm"
