@@ -1,0 +1,6 @@
+model_cache
+weights
+train/data
+__pycache__
+*.pyc
+.venv
