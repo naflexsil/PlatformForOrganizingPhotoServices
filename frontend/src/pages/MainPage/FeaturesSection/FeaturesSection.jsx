@@ -6,10 +6,10 @@ import photoComm from "../../../assets/images/photo_comm.webp";
 const FeaturesSection = () => {
   const features = [
     {
-      title: "БЕЗОПАСНОСТЬ БРОНИРОВАНИЯ",
+      title: "СОЗДАНИЕ СДЕЛОК",
       desc: (
         <>
-          Сервис сохраняет ваши деньги <br /> до полного завершения съемки
+          Договаривайтесь с фотографом внутри чата <br />и просматривайте историю сделок
         </>
       ),
       overlayPhoto: null,
