@@ -20,7 +20,7 @@ async function scheduleEmbedding(photoId, buffer, mimetype) {
     if (data.embedding) {
       const vectorLiteral = `[${data.embedding.join(',')}]`;
       await prisma.$executeRawUnsafe(
-        `UPDATE photos SET "embeddingVector" = $1::vector, "category" = $2, "colorTone" = $3 WHERE id = $4::uuid`,
+        `UPDATE photos SET "embeddingVector" = $1::vector, "category" = $2, "colorTone" = $3 WHERE id = $4`,
         vectorLiteral,
         data.category ?? null,
         data.colorTone ?? null,
